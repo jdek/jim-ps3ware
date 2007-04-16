@@ -1,7 +1,7 @@
 PPU_CC=g++
 SPU_CC=spu-gcc
-PPU_CFLAGS=-m64
-SPU_CFLAGS=-std=c99
+PPU_CFLAGS=
+SPU_CFLAGS=-std=c99 -O2
 PPU_BIN=yuv2rgb
 SPU_BIN=spu_yuv2rgb
 PPU_LDFLAGS=-lspe2
