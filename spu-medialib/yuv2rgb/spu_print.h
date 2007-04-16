@@ -19,7 +19,7 @@ static inline void printshortvec(char * name,vector short vs) {
 	printf("Vector %s=( %d, %d, %d, %d, %d, %d, %d, %d )\n",name, spu_extract(vs,0), spu_extract(vs,1), spu_extract(vs,2), spu_extract(vs,3), spu_extract(vs,4), spu_extract(vs,5), spu_extract(vs,6), spu_extract(vs,7));
 }
 
-void printcharvec(char*name,vector unsigned char vc) {
+static inline void printcharvec(char*name,vector unsigned char vc) {
 
 printf("Vector %s=( %d, %d, %d, %d, %d, %d, %d, %d,%d, %d, %d, %d, %d, %d, %d, %d )\n",name, spu_extract(vc,0), spu_extract(vc,1), spu_extract(vc,2), spu_extract(vc,3), spu_extract(vc,4), spu_extract(vc,5), spu_extract(vc,6), spu_extract(vc,7), spu_extract(vc,8), spu_extract(vc,9), spu_extract(vc,10), spu_extract(vc,11), spu_extract(vc,12), spu_extract(vc,13), spu_extract(vc,14), spu_extract(vc,15));
 	
