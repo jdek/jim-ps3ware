@@ -41,8 +41,8 @@ static inline void YUV2RGB(vector float Y,vector float U, vector float V ,vector
 static inline vector unsigned char packfARGB(vector float R, vector float G, vector float B)
 {
 		vector unsigned int max = spu_splats((unsigned int)0x00FF);
-		static vector unsigned char Rff=(vector unsigned char){0,19,2,3,4,23,6,7,8,27,10,11,12,31,14,15};
-		static vector unsigned char Gff=(vector unsigned char){0,1,19,3,4,5,23,7,8,9 ,27,11,12,13,31,15};
+		static vector unsigned char Rff=/*(vector unsigned char)*/{0,19,2,3,4,23,6,7,8,27,10,11,12,31,14,15};
+		static vector unsigned char Gff=/*(vector unsigned char)*/{0,1,19,3,4,5,23,7,8,9 ,27,11,12,13,31,15};
 		vector unsigned int Ri=spu_convtu(R,0);
 		Ri= spu_sel(Ri, max, spu_cmpgt(Ri,255));
 		vector unsigned int Gi=spu_convtu(B,0);
