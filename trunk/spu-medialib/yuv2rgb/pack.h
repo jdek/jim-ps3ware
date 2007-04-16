@@ -25,22 +25,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.*/
 #ifndef __PACK_H
 #define __PACK_H
 
-static inline vector float unpackhh(vector char a)
+static inline vector float unpackhh(vector unsigned char a)
 {
 	return (spu_convtf((vector unsigned int)spu_shuffle(a,((vector unsigned char){0}),((vector unsigned char){16,16,16,0,16,16,16,1,16,16,16,2,16,16,16,3})),0));
 }
 
-static inline vector float unpacklh(vector char a)
+static inline vector float unpacklh(vector unsigned char a)
 {
 	return (spu_convtf((vector signed int)spu_shuffle(a,((vector unsigned char){0}),((vector unsigned char){16,16,16,4,16,16,16,5,16,16,16,6,16,16,16,7})),0));
 }
 
-static inline vector float unpackhl(vector char a)
+static inline vector float unpackhl(vector unsigned char a)
 {
 	return (spu_convtf((vector signed int)spu_shuffle(a,((vector unsigned char){0}),((vector unsigned char){16,16,16,8,16,16,16,9,16,16,16,10,16,16,16,11})),0));
 }
 
-static inline vector float unpackll(vector char a)
+static inline vector float unpackll(vector unsigned char a)
 {
 	return (spu_convtf((vector signed int)spu_shuffle(a,((vector unsigned char){0}),((vector unsigned char){16,16,16,12,16,16,16,13,16,16,16,14,16,16,16,15})),0));
 }
