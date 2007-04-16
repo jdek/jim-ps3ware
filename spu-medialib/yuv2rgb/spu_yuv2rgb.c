@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.*/
 #include "yuv_datastructs.h"
 #include "spu_control.h"
 
-#define MASK	0xFF0000000000000000ULL
+#define MASK	0xFF00000000000000ULL
 int main(unsigned long long speid, unsigned long long argp, unsigned long long envp) 
 {
 	int tgiA=1;
