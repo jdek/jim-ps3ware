@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.*/
 #include "yuv_datastructs.h"
 #include "spu_control.h"
 
+#define MASK	0xFF0000000000000000ULL
 int main(unsigned long long speid, unsigned long long argp, unsigned long long envp) 
 {
 	int tgiA=1;
@@ -45,6 +46,16 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	iargs =(struct img_args*)memalign(128,sizeof(*iargs));
 
 	dmaGetnWait(iargs,(unsigned int)argp,(int)envp,tag); //getting neccesary data to process image
+	
+	//32-bit ppu program fix
+	if ((iargs->Ystart & MASK) == MASK) {
+		printf("Detected 32-bit PPU program, fixing pointers for sign extension\n");
+		iargs->Ystart  &= 0xFFFFFFFF;
+		iargs->Ustart  &= 0xFFFFFFFF;
+		iargs->Vstart  &= 0xFFFFFFFF;
+		iargs->Ostart  &= 0xFFFFFFFF;
+		iargs->Ostartb &= 0xFFFFFFFF;
+	}
 
 	vector unsigned char* IybufferA=(vector unsigned char*)memalign(128,iargs->width*4);	// 4 lines of Y 
 	vector unsigned char* IubufferA=(vector unsigned char*)memalign(128,iargs->width);	// 1 line of U
