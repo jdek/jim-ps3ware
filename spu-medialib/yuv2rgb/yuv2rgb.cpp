@@ -145,8 +145,8 @@ int main (int nArg, char* cArg[]) {
 	iargs->Vstart=iargs->Ystart + width*height + width*height/4;
 //	iargs->maxwidth=FB.getWidth();
 //	iargs->maxheight=FB.getHeight();
-	iargs->maxwidth=1280;
-	iargs->maxheight=720;
+	iargs->maxwidth=width;
+	iargs->maxheight=height;
 	iargs->Ostart=(unsigned long long)RAMbufferA;
 	iargs->Ostartb=iargs->Ostart;
 
