@@ -7,7 +7,7 @@
  *
  * Copyright (c) 2007 John Kelley <ps2dev@kelley.ca>
  *
- * $Id:
+ * $Id$
  */
 
 #include <stdio.h>
