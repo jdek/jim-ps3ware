@@ -10,6 +10,7 @@
  * $Id$
  */
 
+extern "C" {
 /**
   * Initialize the FrameBuffer library and disable the console
   *
@@ -58,4 +59,5 @@ void fb_cleanup();
   * @return description of the error
   */
 char *fb_getError();
+} // extern "C"
 
