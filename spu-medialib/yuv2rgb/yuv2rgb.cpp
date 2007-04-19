@@ -80,14 +80,14 @@ void * spe_thread(void * arg)
 int main (int nArg, char* cArg[]) {
 	int width=1280;
 	int height=720;
-	int frame=10;
+//	int frame=10;
 	char *filename="default", *inBuf[2];
 	int curBuf = 0;
 
 	if (nArg > 0) filename=cArg[1];
 	if (nArg > 1) width=(int)atoi(cArg[2]);
 	if (nArg > 2) height=(int)atoi(cArg[3]);
-	if (nArg > 3) frame=atoi(cArg[4]);
+//	if (nArg > 3) frame=atoi(cArg[4]);
 	
 
 	char *RAMBufferA = (char *)fb_init();	
