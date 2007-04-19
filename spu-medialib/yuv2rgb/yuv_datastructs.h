@@ -31,8 +31,7 @@ struct img_args {
  	unsigned long long  Ystart;
 	unsigned long long  Ustart;
 	unsigned long long  Vstart;
-	unsigned long long  Ostart;
-	unsigned long long  Ostartb;
+	unsigned long long  Output[2];
 	unsigned long long  dummy; // to achive automatic 128 bit alligment
 };
 
