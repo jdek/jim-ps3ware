@@ -37,6 +37,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	int tgiB=2;
 	int tgoA=3;
 	int tgoB=4;
+	int selOut = 0;
 	
 	
 
@@ -53,8 +54,8 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 		iargs->Ystart  &= 0xFFFFFFFF;
 		iargs->Ustart  &= 0xFFFFFFFF;
 		iargs->Vstart  &= 0xFFFFFFFF;
-		iargs->Ostart  &= 0xFFFFFFFF;
-		iargs->Ostartb &= 0xFFFFFFFF;
+		iargs->Output[0] &= 0xFFFFFFFF;
+		iargs->Output[1] &= 0xFFFFFFFF;
 	}
 
 	vector unsigned char* IybufferA=(vector unsigned char*)memalign(128,iargs->width*4);	// 4 lines of Y 
@@ -92,7 +93,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	
 	while (msg!=STOP) 
 	{
-		Op=iargs->Ostart;
+		Op=iargs->Output[selOut];
 		Yp=iargs->Ystart;
 		Up=iargs->Ustart;
 		Vp=iargs->Vstart;
@@ -121,7 +122,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			yuv420toARGB(IybufferA,IubufferA,IvbufferA,ObufferA,iargs->width,iargs->maxwidth);
 			dmaPut(ObufferA,Op,iargs->maxwidth*4*2,tgoA);
 			
-			Op=Op+iargs->maxwidth*4*2;
+			Op += iargs->maxwidth*4*2;
 			IyAp=IybufferA+iargs->width*2/16;
 			IuAp=IubufferA+iargs->width/32;
 			IvAp=IvbufferA+iargs->width/32;
@@ -133,7 +134,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			Yp=Yp+iargs->width*4;
 			Up=Up+iargs->width;
 			Vp=Vp+iargs->width;
-			Op=Op+iargs->maxwidth*4*2;
+			Op += iargs->maxwidth*4*2;
 
 			if (iargs->height/8-1 != i){ // do not get on the last loop ..
 		
@@ -148,7 +149,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			yuv420toARGB(IybufferB,IubufferB,IvbufferB,ObufferA,iargs->width,iargs->maxwidth);
 			dmaPut(ObufferA,Op,iargs->maxwidth*4*2,tgoA);
 			
-			Op=Op+iargs->maxwidth*4*2;	
+			Op += iargs->maxwidth*4*2;	
 			IyBp=IybufferB+iargs->width*2/16;
 			IuBp=IubufferB+iargs->width/32;
 			IvBp=IvbufferB+iargs->width/32;		
@@ -160,7 +161,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			Yp=Yp+iargs->width*4;
 			Up=Up+iargs->width;
 			Vp=Vp+iargs->width;
-			Op=Op+iargs->maxwidth*4*2;
+			Op += iargs->maxwidth*4*2;
 			
 			if (iargs->height/8-1 != i) { // do not get on the last loop ..
 
@@ -173,14 +174,13 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 		dmaWaitTag(tgoB);
 		
 		while (spu_stat_out_mbox() == 0);
-			msg=RDY;
+		msg=RDY;
 			// MANUALLY FLIPPING THE BUFFERS
-			tmp=iargs->Ostart;
-			iargs->Ostart=iargs->Ostartb;
-			iargs->Ostartb=tmp;
-			spu_write_out_mbox(msg);	
+//			selOut != selOut;
+		spu_write_out_mbox(msg);	
+		
 		while (spu_stat_in_mbox() == 0);
-			msg=spu_read_in_mbox();
+		msg=spu_read_in_mbox();
 		
 		if (msg == RUN){
 

@@ -31,7 +31,7 @@
 #include <sys/time.h>
 #include "spu_control.h"
 #include "yuv_datastructs.h"
-//#include "fb_lib.h" will come soon..
+#include "libfb.h"
 
 using namespace std;
 
@@ -81,43 +81,32 @@ int main (int nArg, char* cArg[]) {
 	int width=1280;
 	int height=720;
 	int frame=10;
-	char *filename="default";
-	
+	char *filename="default", *inBuf[2];
+	int curBuf = 0;
+
 	if (nArg > 0) filename=cArg[1];
 	if (nArg > 1) width=(int)atoi(cArg[2]);
 	if (nArg > 2) height=(int)atoi(cArg[3]);
 	if (nArg > 3) frame=atoi(cArg[4]);
 	
 
-
-//	control ctrl;
-//	PS3FB  FB;
-//	FB=new PS3FB();
-//	FB.open();
-//	cout<<"BPP:"<<FB.getBPP()<<endl;
-//	FB->clear();
-	
+	char *RAMBufferA = (char *)fb_init();	
 	
 	ifstream Source;
 	Source.open(filename,ios::binary);
-	char* IbufferA;
-	char* IbufferB;
-	IbufferA=(char*)memalign(128,width*height+((width*height)/2));
-	IbufferB=(char*)memalign(128,width*height+((width*height)/2));
-	char * RAMbufferA=(char*)memalign(128,width*height*4);
-	char * RAMbufferB=(char*)memalign(128,width*height*4);
-//	char* ObufferA=(char*)memalign(128,width*height*4);
+	inBuf[0]=(char*)memalign(128,width*height+((width*height)/2));
+	inBuf[1]=(char*)memalign(128,width*height+((width*height)/2));
 	
 	int ftot =10000; //number of frames to run trough
 	int fcount=1;	
 
-	Source.seekg((width*height+width*height/2)*frame);
-	Source.read(IbufferA,(width*height+(width*height)/2));
+//	Source.seekg((width*height+width*height/2)*frame);
+	Source.read(inBuf[0],(width*height+(width*height)/2));
 	cout<<"reading file"<<endl;
 		 // Read in prior to spe startup..
-	Source.seekg((width*height+width*height/2)*frame);
-	Source.read(IbufferB,(width*height+(width*height)/2));
-	Source.close();
+//	Source.seekg((width*height+width*height/2)*frame);
+	Source.read(inBuf[1],(width*height+(width*height)/2));
+	//Source.close();
 	cout<<"file closed"<<endl;
 
 	
@@ -128,11 +117,9 @@ int main (int nArg, char* cArg[]) {
 	char * Vpointer;
 	char * OpA;
 	char * OpB;
-	Ypointer=IbufferA;
+	Ypointer=inBuf[curBuf];
 	Upointer=Ypointer+width*height;
 	Vpointer=Upointer+width*height/4;
-	
-//	FB = new PS3FB();
 	
 	struct img_args *iargs;
 
@@ -140,15 +127,13 @@ int main (int nArg, char* cArg[]) {
 	cout<<"iargs created"<<endl;
 	iargs->width=width;
 	iargs->height=height;
-	iargs->Ystart=(unsigned long long)IbufferA;
+	iargs->Ystart=(unsigned long long)inBuf[curBuf];
 	iargs->Ustart=iargs->Ystart+width*height;
 	iargs->Vstart=iargs->Ystart + width*height + width*height/4;
-//	iargs->maxwidth=FB.getWidth();
-//	iargs->maxheight=FB.getHeight();
-	iargs->maxwidth=width;
-	iargs->maxheight=height;
-	iargs->Ostart=(unsigned long long)RAMbufferA;
-	iargs->Ostartb=iargs->Ostart;
+	iargs->maxwidth=fb_getXres();
+	iargs->maxheight=fb_getYres();
+	iargs->Output[0]=(unsigned long long)RAMBufferA;
+	iargs->Output[1]=iargs->Output[0]+(width*height+(width*height)/2);
 
 
 	int thread_id;
@@ -212,8 +197,8 @@ int main (int nArg, char* cArg[]) {
 		}
 		if (msg2 ==RDY ) {
 			
-		//	FB.swapBuffers(true); //framebuffer
-
+			RAMBufferA = (char *)fb_swap();
+			//usleep(1000000);
 			if (time_elapsed > (old_time_elapsed + 10))
 			{
 				printf("Frames per second %f:\n",counter/time_elapsed);
@@ -221,12 +206,10 @@ int main (int nArg, char* cArg[]) {
 				old_time_elapsed=time_elapsed;
 			}
 
-	//		C=RAMbufferA;		//RAMbuffers swapping
-	//		RAMbufferA=RAMbufferB;
-	//		RAMbufferB=C;
-
 			fcount++;
 			msg2=RDY;
+		
+			Source.read(inBuf[curBuf],(width*height+(width*height)/2));
 			while (spe_in_mbox_status(ctx) == 0);//start on next image
 			spe_in_mbox_write(ctx,&msg2,1,SPE_MBOX_ALL_BLOCKING);
 		}
@@ -236,6 +219,8 @@ int main (int nArg, char* cArg[]) {
 	
 	pthread_join(pts,NULL);
 	spe_context_destroy(ctx);
+	fb_cleanup();
+	Source.close();
 	return(0) ;
 }
 
