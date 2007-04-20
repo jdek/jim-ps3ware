@@ -77,7 +77,7 @@ static inline void yuv420toARGB(vector unsigned char *Y,vector unsigned char *U,
 			int j=i/2;
 	
 			
-			if ( i&1 == 1) {
+			if ( (i&1) == 1) {
 				Uf0=unpackhl(U[j]);
 				Uf1=unpackll(U[j]);
 				Vf0=unpackhl(V[j]);

@@ -55,7 +55,6 @@ void * spe_thread(void * arg)
 	
    	unsigned int          runflags    = 0;
    	unsigned int          entry       = SPE_DEFAULT_ENTRY;
-   	spe_stop_info_t       stop_info;
 	struct thread_args * arg_ptr;
 	
 	arg_ptr=(struct thread_args *) arg;
@@ -115,8 +114,6 @@ int main (int nArg, char* cArg[]) {
 	char * Ypointer;
 	char * Upointer;
 	char * Vpointer;
-	char * OpA;
-	char * OpB;
 	Ypointer=inBuf[curBuf];
 	Upointer=Ypointer+width*height;
 	Vpointer=Upointer+width*height/4;
@@ -133,7 +130,8 @@ int main (int nArg, char* cArg[]) {
 	iargs->maxwidth=fb_getXres();
 	iargs->maxheight=fb_getYres();
 	iargs->Output[0]=(unsigned long long)RAMBufferA;
-	iargs->Output[1]=iargs->Output[0]+(width*height+(width*height)/2);
+	iargs->Output[1]=(unsigned long long)fb_swap();
+	fb_swap();
 
 
 	int thread_id;
@@ -163,20 +161,18 @@ int main (int nArg, char* cArg[]) {
 	printf("spe run initiatied\n");
 
 	unsigned int msg=RUN;
-	char * C;
 	while (spe_in_mbox_status(ctx) == 0); //start processing
 	spe_in_mbox_write(ctx,&msg,1,SPE_MBOX_ALL_BLOCKING);
 	
 	unsigned int msg2=RDY;
 	
 	int counter=0;
-	int lastcount=0;
 
-	double time_elapsed;
+	double time_elapsed=0.0;
 	double start=mysecond();
 	double stop;
 	double old_time_elapsed=-11.0;
-
+	//fprintf(stderr, "PPU Out: 0x%08X\n", RAMBufferA);
 	while (msg2 != STOP)
 	{
 		counter++;
@@ -189,16 +185,17 @@ int main (int nArg, char* cArg[]) {
 			while (spe_in_mbox_status(ctx) == 0);
 			spe_in_mbox_write(ctx,&msg2,1,SPE_MBOX_ALL_BLOCKING);
 			stop=mysecond();
-			printf("clock%d\n",stop);
+			printf("clock %f\n", stop);
 			time_elapsed=(double)stop-start;
 			printf("Time of execution :%f\n",time_elapsed);
 			printf("Number of frames displayed %d\n",fcount);
 			printf("width : %d, height : %d , FPS : %f\n",iargs->width,iargs->height,fcount/time_elapsed);
 		}
 		if (msg2 ==RDY ) {
-			
+			//fprintf(stderr, "PPU Out: 0x%08X\n", RAMBufferA);
 			RAMBufferA = (char *)fb_swap();
-			//usleep(1000000);
+			//fprintf(stderr, "PPU Out: 0x%08X\n", fb_swap());
+			//usleep(100000);
 			if (time_elapsed > (old_time_elapsed + 10))
 			{
 				printf("Frames per second %f:\n",counter/time_elapsed);
