@@ -1,26 +1,15 @@
-
-/* 
-Copyright (c) 2007, Kristian Jerpetjøn <kristian.jerpetjoen@gmail.com>
-
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the <ORGANIZATION> nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.*/
+/**
+ * SPU YUV to RGB conversion kernel
+ * --------------------------------
+ * Licensed under the BSD license, see LICENSE for details
+ *
+ * spu_yuv2rgb.cpp - SPU YUV to RGB conversion kernel
+ *
+ * Copyright (c) 2007, Kristian Jerpetjøn <kristian.jerpetjoen@gmail.com>
+ * Copyright (c) 2007, John Kelley <ps2dev@kelley.ca>
+ *
+ * $Id$
+ */
 
 #include <spu_mfcio.h>
 #include <malloc.h>
@@ -30,29 +19,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.*/
 #include "yuv_datastructs.h"
 #include "spu_control.h"
 
-#define MASK	0xFF00000000000000ULL
+#define PPU_ADDR_MASK	0xFF00000000000000ULL
+
 int main(unsigned long long speid, unsigned long long argp, unsigned long long envp) 
 {
-	int tgiA=1;
-	int tgiB=2;
-	int tgoA=3;
-	int tgoB=4;
+	int tgiA=1, tgiB=2, tgoA=3, tgoB=4;
 	int selOut = 0;
-	
-	
-
 	int tag = 1;
-	struct img_args *iargs;	
+	struct img_args *iargs;
+	
 	iargs =(struct img_args*)memalign(128,sizeof(*iargs));
-
 	dmaGetnWait(iargs,(unsigned int)argp,(int)envp,tag); //getting neccesary data to process image
 	
 	//32-bit ppu program fix
-	if ((iargs->Ystart & MASK) == MASK) {
+	if ((iargs->Ystart & PPU_ADDR_MASK) == PPU_ADDR_MASK) {
 		printf("Detected 32-bit PPU program, fixing pointers for sign extension\n");
-		iargs->Ystart  &= 0xFFFFFFFF;
-		iargs->Ustart  &= 0xFFFFFFFF;
-		iargs->Vstart  &= 0xFFFFFFFF;
+		iargs->Ystart    &= 0xFFFFFFFF;
+		iargs->Ustart    &= 0xFFFFFFFF;
+		iargs->Vstart    &= 0xFFFFFFFF;
 		iargs->Output[0] &= 0xFFFFFFFF;
 		iargs->Output[1] &= 0xFFFFFFFF;
 	}
@@ -74,13 +58,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	vector unsigned char* IvAp;
 	vector unsigned char* IvBp;
 
-
-
-
-	unsigned long long Op;
-	unsigned long long Yp;
-	unsigned long long Up;
-	unsigned long long Vp;
+	unsigned long long Op, Yp, Up, Vp;
 	unsigned int msg;
 	
 	while (spu_stat_in_mbox() == 0);
@@ -92,7 +70,6 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	while (msg!=STOP) 
 	{
 		Op=iargs->Output[selOut];
-	//	fprintf(stderr, "SPU Out: 0x%08X\n", Op << 32);
 		Yp=iargs->Ystart;
 		Up=iargs->Ustart;
 		Vp=iargs->Vstart;
@@ -174,9 +151,8 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 		
 		while (spu_stat_out_mbox() == 0);
 		msg=RDY;
-			// MANUALLY FLIPPING THE BUFFERS
+		// MANUALLY FLIPPING THE BUFFERS
 		selOut = selOut ^ 1;
-		//fprintf(stderr, "\toutput %d\n", selOut);
 		spu_write_out_mbox(msg);	
 		
 		while (spu_stat_in_mbox() == 0);
@@ -193,8 +169,4 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	
 	return 0;
 }
-
-
-
-
 
