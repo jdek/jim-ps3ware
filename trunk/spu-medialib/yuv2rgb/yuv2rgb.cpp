@@ -74,7 +74,6 @@ int main (int nArg, char* cArg[]) {
 	int ftot = 10000; //< Number of frames to run through for FPS accuracy
 	int fcount = 1;
 	char *filename="default", *inBuf[2];
-	int curBuf = 0;
 	char *RAMBufferA, *Ypointer, *Upointer, *Vpointer;
 	struct img_args *iargs;
 	ifstream Source;
