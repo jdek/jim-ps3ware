@@ -1,5 +1,5 @@
 #ifndef __SPU_PRINT_H
-#define __SPI_PRINT_H
+#define __SPU_PRINT_H
 
 #include <stdlib>
 
