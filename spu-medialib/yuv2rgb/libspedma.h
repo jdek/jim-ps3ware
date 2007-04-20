@@ -29,7 +29,6 @@ typedef unsigned int uint32_t;
 
 static inline void dmaGetnWait(void *localstore, unsigned long long extern_adr, uint32_t size, int tag)
 {
-	static int i=1;
 	int uiMask=1<<tag;
 	mfc_get(localstore, extern_adr, size, tag, 0, 0);
 	mfc_write_tag_mask(uiMask);
@@ -38,7 +37,6 @@ static inline void dmaGetnWait(void *localstore, unsigned long long extern_adr, 
 
 static inline void dmaPutnWait(void *localstore, unsigned long long extern_adr, uint32_t size, int tag)
 {	
-	static int i=1;
 	int uiMask=1<<tag;
 	mfc_put(localstore, extern_adr, size, tag, 0, 0);
 	mfc_write_tag_mask(uiMask);
@@ -47,7 +45,6 @@ static inline void dmaPutnWait(void *localstore, unsigned long long extern_adr, 
 
 static inline void dmaWaitTag(int tag)
 {
-	static int i=1;
 	int uiMask=1<<tag;
 	mfc_write_tag_mask(uiMask);
 	mfc_read_tag_status_all();

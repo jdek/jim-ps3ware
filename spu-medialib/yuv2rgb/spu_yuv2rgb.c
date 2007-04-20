@@ -41,8 +41,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	
 	
 
-	int tag = 1,tag_mask=1<<tag;		
-	int buffsize;
+	int tag = 1;
 	struct img_args *iargs;	
 	iargs =(struct img_args*)memalign(128,sizeof(*iargs));
 
@@ -82,7 +81,6 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	unsigned long long Yp;
 	unsigned long long Up;
 	unsigned long long Vp;
-	unsigned long long tmp;
 	unsigned int msg;
 	
 	while (spu_stat_in_mbox() == 0);
@@ -94,6 +92,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	while (msg!=STOP) 
 	{
 		Op=iargs->Output[selOut];
+	//	fprintf(stderr, "SPU Out: 0x%08X\n", Op << 32);
 		Yp=iargs->Ystart;
 		Up=iargs->Ustart;
 		Vp=iargs->Vstart;
@@ -176,7 +175,8 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 		while (spu_stat_out_mbox() == 0);
 		msg=RDY;
 			// MANUALLY FLIPPING THE BUFFERS
-//			selOut != selOut;
+		selOut = selOut ^ 1;
+		//fprintf(stderr, "\toutput %d\n", selOut);
 		spu_write_out_mbox(msg);	
 		
 		while (spu_stat_in_mbox() == 0);
