@@ -1,26 +1,14 @@
-/* 
+/**
+ * SPU Bilinear sclaler kernel
+ * --------------------------------
+ * Licensed under the BSD license, see LICENSE for details
+ *
+ * scaler.c RGBA to RGBA bilinear scaler
+ *
  * Copyright (c) 2007, Rasmus Rohde <rohde@duff.dk>
  *
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
- *
- *     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <ORGANIZATION> nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
- *
- *             THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *             "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *             LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- *             A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- *             CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- *             EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- *             PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *             PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *             LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *             NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *             SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.*/
-
+ * $Id:
+ */
 #include <spu_mfcio.h>
 #include <spu_intrinsics.h>
 
@@ -49,6 +37,8 @@ typedef struct {
 
   A zero will be written to the interrupt mailbox when a new frame is ready
   to be received.
+
+  Compile with -funroll-loops -O4 for best performance.
  */
 int main(unsigned long long spe_id, unsigned long long program_data_ea, unsigned 
 	 long long env) {
@@ -121,7 +111,7 @@ int main(unsigned long long spe_id, unsigned long long program_data_ea, unsigned
 			vector float weight_y = spu_splats(yc*scale - pixel_y);
 			
 			if(pixel_y != last_pixel_y) {
-				if(pixel_y+1 != last_pixel_y) {
+				if(pixel_y != last_pixel_y+1) {
 					//Initiate copy
 					mfc_get(frame, in+pixel_y*width2x*2, width2x*4, tag_id_input, 0, 0);
 					//Wait for completion
@@ -140,7 +130,7 @@ int main(unsigned long long spe_id, unsigned long long program_data_ea, unsigned
 				} else {
 					//Initiate copy
 					mfc_get(frame, in+(pixel_y+1)*width2x*2, width2x*2, tag_id_input, 0, 0);
-					for(xc=0; xc<width2x / 8; xc++) {
+					for(xc=0; xc<width2x / 2; xc++) {
 						fframe[xc] = fframe[xc+width2x/2];
 					}
 
