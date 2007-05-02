@@ -33,7 +33,7 @@ static inline vector unsigned char packfARGB(vector float R, vector float G, vec
 		static vector unsigned char Gff=/*(vector unsigned char)*/{0,1,19,3,4,5,23,7,8,9 ,27,11,12,13,31,15};
 		vector unsigned int Ri=spu_convtu(R,0);
 		Ri= spu_sel(Ri, max, spu_cmpgt(Ri,255));
-		vector unsigned int Gi=spu_convtu(B,0);
+		vector unsigned int Gi=spu_convtu(G,0);
 		Gi= spu_sel(Gi, max, spu_cmpgt(Gi,255));
 		vector unsigned int Bi=spu_convtu(B,0);
 		Bi= spu_sel(Bi, max, spu_cmpgt(Bi,255));
