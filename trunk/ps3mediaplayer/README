@@ -1,0 +1,13 @@
+Ps3MediaPlayer
+--------------
+
+This project aims to do a very slim native mediaplayer running as an "OtherOS" on Playstation(r) 3
+It will be based on the ffmpeg project and thus be under the GPL license due to various parts of ffmpeg
+is under that license. 
+
+I currently with this project has no intention of making it a fullblown mediacenter app. It will only
+feature a limited gui and stream data over network as thats what I mostly want and what I think many
+people wants as well. A simple player that starts very fast and lets you stream mkv/xvid/etc over network.
+
+-emoon
+
