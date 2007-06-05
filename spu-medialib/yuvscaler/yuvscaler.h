@@ -81,10 +81,10 @@ void sws_yuvscaler_destroy(yuvscaler_t*);
 /**
 * get functions for src and dst sizes
 */
-unsigned int sws_get_dstW(yuvscaler_t*);
-unsigned int sws_get_srcW(yuvscaler_t*);
-unsigned int sws_get_dstH(yuvscaler_t*);
-unsigned int sws_get_srcH(yuvscaler_t*);
+unsigned int sws_get_dstW(const yuvscaler_t*);
+unsigned int sws_get_srcW(const yuvscaler_t*);
+unsigned int sws_get_dstH(const yuvscaler_t*);
+unsigned int sws_get_srcH(const yuvscaler_t*);
 
 /**
 * set functions for src and dst sizes (only usable if followed by a update!)
