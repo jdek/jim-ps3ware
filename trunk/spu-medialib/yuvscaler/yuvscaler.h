@@ -3,7 +3,7 @@
  * --------------------------------
  * Licensed under the BSDv2 
  *
- * yuvscaler.h - ppu header 
+ * yuvscaler.h - ppu header for the spe accellerated yuvscaler 
  *
  * Copyright (c) 2007, Kristian Jerpetjøn <kristian.jerpetjoen@gmail.com>
  * $Id:
@@ -41,30 +41,58 @@
 
 #include "spu_control.h"
 
+extern "C"
+
+
 struct yuvscaler_s;
 typedef struct yuvscaler_s yuvscaler_t;
 
 typedef void * ea_t;
- 
-yuvscaler_t *init_yuvscaler(int srcW, int srcH, int dstW, int dstH,
+
+/**
+* init_yuvscaler 
+* initiates the spu yuvscaler.
+*/ 
+yuvscaler_t * sws_init_yuvscaler(int srcW, int srcH, int dstW, int dstH,
                                 ea_t front_inBuffer, ea_t back_inBuffer,
                                 ea_t front_outBuffer, ea_t back_outBuffer);
 
-spe_context_ptr_t getCTX(yuvscaler_t*);
+/**
+*gets the spe context pointer from the initiated yuvscaler
+*/
+spe_context_ptr_t sws_getCTX(yuvscaler_t*);
 
-unsigned int recieve_message(yuvscaler_t*);
-
-void send_message(yuvscaler_t*,unsigned int message);
-
-unsigned int get_dstW(yuvscaler_t*);
-unsigned int get_srcW(yuvscaler_t*);
-unsigned int get_dstH(yuvscaler_t*);
-unsigned int get_srcH(yuvscaler_t*);
+/**
+* recive_message waits for a interrupt message from the spu notifying a loop completion
+*/
+unsigned int sws_receive_message(yuvscaler_t*);
 
 
-void set_dstW(yuvscaler_t*,int dstw);
-void set_srcW(yuvscaler_t*,int srcw);
-void set_dstH(yuvscaler_t*,int dsth);
-void set_srcHW(yuvscaler_t*,int srch);
+/**
+* sends a message to the spu telling it what to do options are RDY UPDATE and STOP defined in spu_control.h
+*/
+void sws_send_message(yuvscaler_t*,unsigned int message);
+
+/**
+* destroys the spu scaler object and this object
+*/
+void sws_yuvscaler_destroy(yuvscaler_t*);
+
+/**
+* get functions for src and dst sizes
+*/
+unsigned int sws_get_dstW(yuvscaler_t*);
+unsigned int sws_get_srcW(yuvscaler_t*);
+unsigned int sws_get_dstH(yuvscaler_t*);
+unsigned int sws_get_srcH(yuvscaler_t*);
+
+/**
+* set functions for src and dst sizes (only usable if followed by a update!)
+*/
+void sws_set_dstW(yuvscaler_t*,int dstw);
+void sws_set_srcW(yuvscaler_t*,int srcw);
+void sws_set_dstH(yuvscaler_t*,int dsth);
+void sws_set_srcHW(yuvscaler_t*,int srch);
+
 
 #endif

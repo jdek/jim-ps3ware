@@ -109,7 +109,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	int crblockdst0;
 	int crblockdst1;
 	while (spu_stat_in_mbox() == 0);
-	msg=spu_read_in_mbox();
+		msg=spu_read_in_mbox();
 	if (msg==RUN){	
 		printf("RUN\n");
 	}
@@ -409,18 +409,16 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			LineSelOut=LineSelOut ^ 1; // we flip since we want to use another buffer for the next line..
 		}
 
-		while (spu_stat_out_mbox() == 0);
+		
+		while (spu_stat_out_intr_mbox() == 0);
 		msg=RDY;
-		// MANUALLY FLIPPING THE BUFFERS
-		selOut = selOut ^ 1; // flips the output buffers
-		selIn = selIn ^ 1; // flips the input buffers
-		spu_write_out_mbox(msg);	
+		spu_writech(SPU_WrOutIntrMbox, msg);
 		
 		while (spu_stat_in_mbox() == 0);
 		msg=spu_read_in_mbox();
 		
 		if (msg == RUN){
-
+			
 		}
 		else if (msg == STOP)
 		{
@@ -431,6 +429,8 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			dmaGetnWait(iargs,(unsigned int)argp,(int)envp,tag); //getting neccesary data to process the new image	
 			first=0; // update filters to reflect the new image!
 		}
+		selOut = selOut ^ 1; // flips the output buffers
+		selIn = selIn ^ 1; // flips the input buffers
 	}
 	
 	return 0;
