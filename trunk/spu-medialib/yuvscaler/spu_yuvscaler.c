@@ -66,6 +66,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	iargs =(struct img_args*)memalign(128,sizeof(*iargs));
 	dmaGetnWait(iargs,(unsigned int)argp,(int)envp,tag); //getting neccesary data to process image
 	printf("SRC width %d,DST width %d\n",iargs->srcW,iargs->dstW);
+	printf("iargs->Ystart=%p\n",(int)iargs->Ystart[0]);
 
 	vector unsigned char *widthfilter0=(vector unsigned char*)memalign(128,MAXWIDTH*4);
 	vector unsigned char *widthfilter1=(vector unsigned char*)memalign(128,MAXWIDTH*4);
