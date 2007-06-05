@@ -46,6 +46,9 @@
 struct yuvscaler_s {
 		struct img_args *iargs;
 		struct spe_context * ctx;
+		struct spe_event_unit event;
+	//	spe_event_handler_ptr_t spe_event_yuv2rgb;
+		spe_event_handler_ptr_t spe_event_yuvscaler;
 		pthread_t pts;
 		int thread_id;
 		void *argp;
@@ -55,7 +58,7 @@ struct yuvscaler_s {
    		unsigned int entry;
 };
 
-static void * spe_thread(void * arg) 
+static void * sws_spe_thread(void * arg) 
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;	
@@ -72,7 +75,7 @@ static void * spe_thread(void * arg)
 	pthread_exit(NULL);
 }
 
-yuvscaler_s *init_yuvscaler(int srcW,int srcH,int dstW, int dstH,ea_t front_inBuffer, ea_t back_inBuffer, ea_t front_outBuffer, ea_t back_outBuffer)
+yuvscaler_s * sws_init_yuvscaler(int srcW,int srcH,int dstW, int dstH,ea_t front_inBuffer, ea_t back_inBuffer, ea_t front_outBuffer, ea_t back_outBuffer)
 {
 	struct yuvscaler_s *yuvs;
 	yuvs=(struct yuvscaler_s *)memalign(64,sizeof(struct yuvscaler_s));
@@ -93,34 +96,55 @@ yuvscaler_s *init_yuvscaler(int srcW,int srcH,int dstW, int dstH,ea_t front_inBu
 	yuvs->iargs->Output[1]=(unsigned long long)back_outBuffer;
 	yuvs->envp=(void*)sizeof(struct img_args);
 	yuvs->argp=yuvs->iargs;	
-	yuvs->createflags=0;
+	yuvs->createflags=SPE_EVENTS_ENABLE;
 	yuvs->entry=SPE_DEFAULT_ENTRY;
 	yuvs->runflags=0;
 	yuvs->ctx=spe_context_create(yuvs->createflags, NULL);
-	yuvs->thread_id=pthread_create(&yuvs->pts,NULL,&spe_thread,yuvs);
+	yuvs->thread_id=pthread_create(&yuvs->pts,NULL,&sws_spe_thread,yuvs);
+
+	yuvs->spe_event_yuvscaler = spe_event_handler_create();
+	yuvs->event.spe = yuvs->ctx;
+	yuvs->event.events = SPE_EVENT_OUT_INTR_MBOX | SPE_EVENT_SPE_STOPPED;
+	spe_event_handler_register(yuvs->spe_event_yuvscaler, &yuvs->event);
+
 
 	return yuvs;
 }
 
-spe_context_ptr_t getCTX(yuvscaler_s * arg)
+spe_context_ptr_t sws_getCTX(yuvscaler_s * arg)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
 	return arg_ptr->ctx;
 }
 
-unsigned int recieve_message(yuvscaler_s *arg)
+unsigned int sws_receive_message(yuvscaler_s *arg)
 {
 	unsigned int message;
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
-	while (spe_out_mbox_status(arg_ptr->ctx) == 0); // switch this to a nice little interupt based one
-	spe_out_mbox_read(arg_ptr->ctx,&message,1);	
+
+	int retries = 3;
+
+	while(retries) {
+		if(spe_event_wait(arg->spe_event_yuvscaler, &arg->event, 1, -1) <= 0 ||
+			!(arg->event.events & SPE_EVENT_OUT_INTR_MBOX)) {
+			retries--;
+		} else {
+			break;
+		}
+	}
+
+	if(retries == 0) {
+		perror("Failed to recive result from spe");
+	}
+
+	spe_out_intr_mbox_read(arg_ptr->ctx,&message,1,SPE_MBOX_ANY_NONBLOCKING);	
 	return message;
 
 }
 
-void send_message(yuvscaler_s *arg,unsigned int message)
+void sws_send_message(yuvscaler_s *arg,unsigned int message)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
@@ -128,55 +152,69 @@ void send_message(yuvscaler_s *arg,unsigned int message)
 	spe_in_mbox_write(arg_ptr->ctx,&message,1,SPE_MBOX_ALL_BLOCKING);	
 }
 
-unsigned int get_dstW(yuvscaler_t* arg)
+
+void sws_yuvscaler_destroy(yuvscaler_t* arg)
+{
+	unsigned int message=STOP;
+	struct yuvscaler_s * arg_ptr;
+	arg_ptr=(struct yuvscaler_s *) arg;
+
+	spe_in_mbox_write(arg_ptr->ctx,&message,1,SPE_MBOX_ALL_BLOCKING);
+	
+	pthread_join(arg_ptr->pts,NULL);
+	spe_context_destroy(arg_ptr->ctx);
+	
+}
+
+unsigned int sws_get_dstW(yuvscaler_t* arg)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
 	return arg->iargs->dstW;
 }
-unsigned int get_srcW(yuvscaler_t* arg)
+unsigned int sws_get_srcW(yuvscaler_t* arg)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
 	return arg->iargs->srcW;
 }
 
-unsigned int get_dstH(yuvscaler_t* arg)
+unsigned int sws_get_dstH(yuvscaler_t* arg)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
 	return arg->iargs->dstH;
 }
 
-unsigned int get_srcH(yuvscaler_t* arg)
+unsigned int sws_get_srcH(yuvscaler_t* arg)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
 	return arg->iargs->srcH;
 }
 
-void set_dstW(yuvscaler_t* arg,int dstw)
+void sws_set_dstW(yuvscaler_t* arg,int dstw)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
 	arg->iargs->dstW=dstw;
 }
 
-void set_srcW(yuvscaler_t* arg,int srcw)
+void sws_set_srcW(yuvscaler_t* arg,int srcw)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
 	arg->iargs->srcW=srcw;
 }
 
-void set_dstH(yuvscaler_t* arg,int dsth)
+void sws_set_dstH(yuvscaler_t* arg,int dsth)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
 	arg->iargs->dstH=dsth;
 }
 
-void set_srcHW(yuvscaler_t* arg,int srch)
+void sws_set_srcHW(yuvscaler_t* arg,int srch)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;

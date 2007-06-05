@@ -103,22 +103,22 @@ int main (int nArg, char* cArg[]) {
 	RAMBufferA[1]=(char*)memalign(128,dstW*dstH+((dstW*dstH)/2));	
 
 	
-	yuvscaler_t *yuvs = init_yuvscaler(srcW, srcH, dstW, dstH, (ea_t)inBuf[0], (ea_t)inBuf[1], (ea_t)RAMBufferA[0], (ea_t)RAMBufferA[1]);
+	yuvscaler_t *yuvs = sws_init_yuvscaler(srcW, srcH, dstW, dstH, (ea_t)inBuf[0], (ea_t)inBuf[1], (ea_t)RAMBufferA[0], (ea_t)RAMBufferA[1]);
 
 	printf("yuvscaler_initialised\n");
 
-	spe_context_ptr_t ctx=getCTX(yuvs);//=yuvs->ctx;
+	spe_context_ptr_t ctx=sws_getCTX(yuvs); //not used !
 
-	send_message(yuvs,RDY);
+	sws_send_message(yuvs,RDY);
 
 	while (msg != STOP)
 	{
 		counter++;
 		
-		msg=recieve_message(yuvs);	
+		msg=sws_receive_message(yuvs);	
 
 		if (fcount == ftot)  {
-			send_message(yuvs,STOP);
+			sws_send_message(yuvs,STOP);
 			msg=STOP;
 			stop=mysecond();
 			printf("clock %f\n", stop);
@@ -138,15 +138,15 @@ int main (int nArg, char* cArg[]) {
 
 			fcount++;
 	
-			send_message(yuvs,RDY);
+			sws_send_message(yuvs,RDY);
 		}
 	}
 	Destination.write(RAMBufferA[0],dstW*dstH + ((dstW*dstH)/2)); // writes your new scaled YUV to a file!
 	Destination.close();
-
-	spe_context_destroy(ctx);
-
 	Source.close();
+	
+	sws_yuvscaler_destroy(yuvs);
+
 	return(0) ;
 }
 
