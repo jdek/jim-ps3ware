@@ -38,7 +38,7 @@ void *av_tree_find(const AVTreeNode *t, void *key, int (*cmp)(void *key, const v
             return t->elem;
         }
     }
-    return NULL;
+    return 0;
 }
 
 void *av_tree_insert(AVTreeNode **tp, void *key, int (*cmp)(void *key, const void *b)){
@@ -81,7 +81,7 @@ void *av_tree_insert(AVTreeNode **tp, void *key, int (*cmp)(void *key, const voi
     }else{
         *tp= av_mallocz(sizeof(AVTreeNode));
         (*tp)->elem= key;
-        return NULL;
+        return 0;
     }
 }
 

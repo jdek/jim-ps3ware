@@ -43,7 +43,8 @@ int av_reduce(int *dst_nom, int *dst_den, int64_t nom, int64_t den, int64_t max)
         den = FFABS(den)/gcd;
     }
     if(nom<=max && den<=max){
-        a1= (AVRational){nom, den};
+		a1.num = nom;
+		a1.den = den;
         den=0;
     }
 
@@ -58,12 +59,17 @@ int av_reduce(int *dst_nom, int *dst_den, int64_t nom, int64_t den, int64_t max)
             if(a1.den) x= FFMIN(x, (max - a0.den) / a1.den);
 
             if (den*(2*x*a1.den + a0.den) > nom*a1.den)
-                a1 = (AVRational){x*a1.num + a0.num, x*a1.den + a0.den};
-            break;
+			{
+				a1.num = x*a1.num + a0.num;
+				a1.den = x*a1.den + a0.den;
+			}
+			break;
         }
 
         a0= a1;
-        a1= (AVRational){a2n, a2d};
+		a1.num = a2n;
+		a1.den = a2d;
+        //a1= (AVRational){a2n, a2d};
         nom= den;
         den= next_den;
     }
@@ -81,7 +87,8 @@ AVRational av_mul_q(AVRational b, AVRational c){
 }
 
 AVRational av_div_q(AVRational b, AVRational c){
-    return av_mul_q(b, (AVRational){c.den, c.num});
+	AVRational temp = {c.den, c.num};
+	return av_mul_q(b, temp);
 }
 
 AVRational av_add_q(AVRational b, AVRational c){
@@ -90,7 +97,8 @@ AVRational av_add_q(AVRational b, AVRational c){
 }
 
 AVRational av_sub_q(AVRational b, AVRational c){
-    return av_add_q(b, (AVRational){-c.num, c.den});
+	AVRational temp = {-c.num, c.den};
+	return av_add_q(b, temp);
 }
 
 AVRational av_d2q(double d, int max){

@@ -26,6 +26,12 @@
 
 #define AV_RANDOM_N 624
 
+#if !defined(__GNUC__)
+#define inline __forceinline
+#else
+#define inline inline
+#endif
+
 typedef struct {
     unsigned int mt[AV_RANDOM_N]; ///< the array for the state vector
     int index; ///< current untempered value we use as the base.
