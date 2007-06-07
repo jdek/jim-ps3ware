@@ -71,6 +71,8 @@
 #endif
 #endif
 
+#undef inline
+
 #include "mem.h"
 
 //rounded divison & shift
@@ -87,6 +89,12 @@
 
 /* misc math functions */
 extern const uint8_t ff_log2_tab[256];
+
+#if !defined(__GNUC__)
+#define inline __forceinline
+#else
+#define inline inline
+#endif
 
 static inline int av_log2(unsigned int v)
 {

@@ -29,15 +29,38 @@
 #include "intfloat_readwrite.h"
 
 double av_int2dbl(int64_t v){
-    if(v+v > 0xFFEULL<<52)
-        return 0.0/0.0;
-    return ldexp(((v&((1LL<<52)-1)) + (1LL<<52)) * (v>>63|1), (v>>52&0x7FF)-1075);
+	
+	if(v+v > 0xFFEULL<<52)
+	{
+		union
+		{
+			double d;
+			int64_t x;
+		} v;
+
+		v.x = 0x7FF80000;	// gcc returns this for 0.0 / 0.0
+		
+		return v.d;
+	}
+		
+	return ldexp(((v&((1LL<<52)-1)) + (1LL<<52)) * (v>>63|1), (v>>52&0x7FF)-1075);
 }
 
 float av_int2flt(int32_t v){
     if(v+v > 0xFF000000U)
-        return 0.0/0.0;
-    return ldexp(((v&0x7FFFFF) + (1<<23)) * (v>>31|1), (v>>23&0xFF)-150);
+	{
+		union
+		{
+			double d;
+			int64_t x;
+		} v;
+
+		v.x = 0x7FF80000;	// gcc returns this for 0.0 / 0.0
+		
+		return v.d;
+	}
+
+	return ldexp(((v&0x7FFFFF) + (1<<23)) * (v>>31|1), (v>>23&0xFF)-150);
 }
 
 double av_ext2dbl(const AVExtFloat ext){
@@ -48,8 +71,19 @@ double av_ext2dbl(const AVExtFloat ext){
         m = (m<<8) + ext.mantissa[i];
     e = (((int)ext.exponent[0]&0x7f)<<8) | ext.exponent[1];
     if (e == 0x7fff && m)
-        return 0.0/0.0;
-    e -= 16383 + 63;        /* In IEEE 80 bits, the whole (i.e. 1.xxxx)
+	{
+		union
+		{
+			double d;
+			int64_t x;
+		} v;
+
+		v.x = 0x7FF80000;	// gcc returns this for 0.0 / 0.0
+		
+		return v.d;
+	}
+
+	e -= 16383 + 63;        /* In IEEE 80 bits, the whole (i.e. 1.xxxx)
                              * mantissa bit is written as opposed to the
                              * single and double precision formats */
     if (ext.exponent[0]&0x80)

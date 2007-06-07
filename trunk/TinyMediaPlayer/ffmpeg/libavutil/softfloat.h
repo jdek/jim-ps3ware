@@ -23,6 +23,12 @@
 #define MAX_EXP  126
 #define ONE_BITS 29
 
+#if !defined(__GNUC__)
+#define inline __forceinline
+#else
+#define inline inline
+#endif
+
 typedef struct SoftFloat{
     int32_t  exp;
     int32_t mant;
@@ -74,7 +80,7 @@ static inline SoftFloat av_normalize1_sf(SoftFloat a){
  */
 static inline SoftFloat av_mul_sf(SoftFloat a, SoftFloat b){
     a.exp += b.exp;
-    a.mant = (a.mant * (int64_t)b.mant) >> ONE_BITS;
+    a.mant = (int32_t)((a.mant * (int64_t)b.mant) >> ONE_BITS);
     return av_normalize1_sf(a);
 }
 
@@ -85,7 +91,7 @@ static inline SoftFloat av_mul_sf(SoftFloat a, SoftFloat b){
  */
 static SoftFloat av_div_sf(SoftFloat a, SoftFloat b){
     a.exp -= b.exp+1;
-    a.mant = ((int64_t)a.mant<<(ONE_BITS+1)) / b.mant;
+    a.mant = (int32_t)(((int64_t)a.mant << (ONE_BITS+1)) / b.mant);
     return av_normalize1_sf(a);
 }
 
@@ -95,20 +101,37 @@ static inline int av_cmp_sf(SoftFloat a, SoftFloat b){
     else    return  a.mant          - (b.mant >> t);
 }
 
-static inline SoftFloat av_add_sf(SoftFloat a, SoftFloat b){
-    int t= a.exp - b.exp;
-    if(t<0) return av_normalize1_sf((SoftFloat){b.exp, b.mant + (a.mant >> (-t))});
-    else    return av_normalize1_sf((SoftFloat){a.exp, a.mant + (b.mant >>   t )});
+static inline SoftFloat av_add_sf(SoftFloat a, SoftFloat b) {
+	SoftFloat value;
+	int t= a.exp - b.exp;
+	
+	if (t<0) 
+	{
+		value.exp = b.exp;
+		value.mant = b.mant + (a.mant >> -t);
+		return av_normalize1_sf(value);
+	}
+
+	value.exp = b.exp;
+	value.mant = a.mant + (b.mant >> t);
+	return av_normalize1_sf(value);
 }
 
 static inline SoftFloat av_sub_sf(SoftFloat a, SoftFloat b){
-    return av_add_sf(a, (SoftFloat){b.exp, -b.mant});
+	SoftFloat value;
+	value.exp = b.exp;
+	value.mant = -b.mant;
+	
+	return av_add_sf(a, value);
 }
 
 //FIXME sqrt, log, exp, pow, sin, cos
 
 static inline SoftFloat av_int2sf(int v, int frac_bits){
-    return av_normalize_sf((SoftFloat){ONE_BITS-frac_bits, v});
+	SoftFloat value;
+	value.exp = ONE_BITS - frac_bits;
+	value.mant = frac_bits;
+    return av_normalize_sf(value);
 }
 
 /**

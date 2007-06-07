@@ -21,6 +21,7 @@
  */
 #include "common.h"
 #include "fifo.h"
+#include <stddef.h>
 
 int av_fifo_init(AVFifoBuffer *f, int size)
 {

@@ -21,6 +21,8 @@
 #ifndef CRC_H
 #define CRC_H
 
+#include <stddef.h>
+
 typedef uint32_t AVCRC;
 
 #if LIBAVUTIL_VERSION_INT  < (50<<16)
