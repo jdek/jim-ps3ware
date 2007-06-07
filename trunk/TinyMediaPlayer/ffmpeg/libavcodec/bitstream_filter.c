@@ -19,6 +19,7 @@
  */
 
 #include "avcodec.h"
+#include <stddef.h>
 
 AVBitStreamFilter *first_bitstream_filter= NULL;
 

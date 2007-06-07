@@ -22,6 +22,7 @@
 
 #include "parser.h"
 #include "aac_ac3_parser.h"
+#include <stddef.h>
 
 int ff_aac_ac3_parse(AVCodecParserContext *s1,
                      AVCodecContext *avctx,

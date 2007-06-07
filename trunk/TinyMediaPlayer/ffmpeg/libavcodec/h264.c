@@ -33,6 +33,7 @@
 #include "h264data.h"
 #include "h264_parser.h"
 #include "golomb.h"
+#include "internal.h"
 
 #include "cabac.h"
 
@@ -8251,7 +8252,8 @@ AVCodec h264_decoder = {
     decode_end,
     decode_frame,
     /*CODEC_CAP_DRAW_HORIZ_BAND |*/ CODEC_CAP_DR1 | CODEC_CAP_TRUNCATED | CODEC_CAP_DELAY,
-    .flush= flush_dpb,
+	NULL,
+	flush_dpb,
 };
 
 #include "svq3.c"

@@ -129,11 +129,16 @@ static int bethsoftvid_decode_end(AVCodecContext *avctx)
 }
 
 AVCodec bethsoftvid_decoder = {
-    .name = "bethsoftvid",
-    .type = CODEC_TYPE_VIDEO,
-    .id = CODEC_ID_BETHSOFTVID,
-    .priv_data_size = sizeof(BethsoftvidContext),
-    .init = bethsoftvid_decode_init,
-    .close = bethsoftvid_decode_end,
-    .decode = bethsoftvid_decode_frame,
+    "bethsoftvid",
+    CODEC_TYPE_VIDEO,
+    CODEC_ID_BETHSOFTVID,
+    sizeof(BethsoftvidContext),
+    bethsoftvid_decode_init,
+	0,
+	bethsoftvid_decode_end,
+    bethsoftvid_decode_frame,
+	0,
+	0,
+	0,
+	0
 };

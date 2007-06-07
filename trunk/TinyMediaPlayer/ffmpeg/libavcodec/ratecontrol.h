@@ -29,6 +29,7 @@
  */
 
 #include "eval.h"
+#include <stdio.h>
 
 typedef struct Predictor{
     double coeff;
