@@ -190,6 +190,7 @@ void audio_decode_example(const char *outfilename, const char *filename)
 void video_encode_example(const char *filename)
 {
     AVCodec *codec;
+	AVRational time_base = {1, 25};
     AVCodecContext *c= NULL;
     int i, out_size, size, x, y, outbuf_size;
     FILE *f;
@@ -214,9 +215,9 @@ void video_encode_example(const char *filename)
     c->width = 352;
     c->height = 288;
     /* frames per second */
-    c->time_base= (AVRational){1,25};
+    c->time_base = time_base;
     c->gop_size = 10; /* emit one intra frame every ten frames */
-    c->max_b_frames=1;
+    c->max_b_frames = 1;
     c->pix_fmt = PIX_FMT_YUV420P;
 
     /* open it */

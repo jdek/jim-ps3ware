@@ -1054,11 +1054,16 @@ static int atrac3_decode_init(AVCodecContext *avctx)
 
 AVCodec atrac3_decoder =
 {
-    .name = "atrac 3",
-    .type = CODEC_TYPE_AUDIO,
-    .id = CODEC_ID_ATRAC3,
-    .priv_data_size = sizeof(ATRAC3Context),
-    .init = atrac3_decode_init,
-    .close = atrac3_decode_close,
-    .decode = atrac3_decode_frame,
+    "atrac 3",
+    CODEC_TYPE_AUDIO,
+    CODEC_ID_ATRAC3,
+    sizeof(ATRAC3Context),
+    atrac3_decode_init,
+	0,
+	atrac3_decode_close,
+    atrac3_decode_frame,
+	0,
+	0,
+	0,
+	0
 };

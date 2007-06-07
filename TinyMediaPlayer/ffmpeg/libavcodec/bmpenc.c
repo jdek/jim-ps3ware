@@ -22,6 +22,7 @@
 #include "avcodec.h"
 #include "bytestream.h"
 #include "bmp.h"
+#include <stddef.h>
 
 static int bmp_encode_init(AVCodecContext *avctx){
     BMPContext *s = avctx->priv_data;
@@ -86,6 +87,8 @@ static int bmp_encode_frame(AVCodecContext *avctx, unsigned char *buf, int buf_s
     return n_bytes;
 }
 
+static enum PixelFormat pixelFormat[] = {PIX_FMT_BGR24, -1};
+
 AVCodec bmp_encoder = {
     "bmp",
     CODEC_TYPE_VIDEO,
@@ -93,6 +96,11 @@ AVCodec bmp_encoder = {
     sizeof(BMPContext),
     bmp_encode_init,
     bmp_encode_frame,
-    NULL, //encode_end,
-    .pix_fmts= (enum PixelFormat[]){PIX_FMT_BGR24, -1},
+    0, //encode_end, // close
+	0, // decpde
+	0, // app
+	0, // next
+	0, // flush
+	0, // framerates
+	pixelFormat,
 };
