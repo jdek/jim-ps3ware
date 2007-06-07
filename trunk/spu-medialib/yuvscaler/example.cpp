@@ -45,7 +45,7 @@
 #include <iostream>
 #include <fstream>
 #include <sys/time.h>
-#include "spu_control.h"
+#include <spu_control.h>
 #include "yuvscaler.h"
 
 using namespace std;

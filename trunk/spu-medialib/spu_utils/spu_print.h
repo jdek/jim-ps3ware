@@ -1,5 +1,5 @@
 /**
- * SPU YUV scaler kernel
+ * SPU-MEDIALIB utility
  * --------------------------------
  * Licensed under the BSDv2 
  *

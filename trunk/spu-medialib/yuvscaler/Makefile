@@ -1,8 +1,8 @@
 PPU_CC=g++
 SPU_CC=spu-elf-gcc
-PPU_CFLAGS=-I../../libfb -O2 yuvscaler.c 
+PPU_CFLAGS=-I../../libfb -I../spu_utils -O2 yuvscaler.c 
 PPU_CFLAGS64=-m64 $(PPU_CFLAGS)
-SPU_CFLAGS=-O2
+SPU_CFLAGS=-O2 -O2 -fno-exceptions -g -I../spu_utils
 PPU_BIN=yuvscaler
 SPU_BIN=spu_yuvscaler
 PPU_LDFLAGS=-lspe2

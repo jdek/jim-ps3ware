@@ -1,5 +1,5 @@
 /**
- * SPU YUV scaler kernel
+ * SPU-MEDIALIB utility
  * --------------------------------
  * Licensed under the BSDv2 
  *
@@ -36,8 +36,8 @@
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-#ifndef __LIBSPEDMA_H
-#define __LIBSPEDMA_H
+#ifndef __SPU_DMALIB_H
+#define __SPU_DMALIB_H
 
 #include <spu_mfcio.h>
 typedef unsigned int uint32_t;
