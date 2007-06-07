@@ -39,15 +39,14 @@
 #include <libspe2.h>
 #include <pthread.h>
 #include <malloc.h>
-#include "yuv_datastructs.h"
-#include "spu_control.h"
+#include <yuv_datastructs.h>
+#include <spu_control.h>
 #include "yuvscaler.h"
 
 struct yuvscaler_s {
 		struct img_args *iargs;
 		struct spe_context * ctx;
 		struct spe_event_unit event;
-	//	spe_event_handler_ptr_t spe_event_yuv2rgb;
 		spe_event_handler_ptr_t spe_event_yuvscaler;
 		pthread_t pts;
 		int thread_id;

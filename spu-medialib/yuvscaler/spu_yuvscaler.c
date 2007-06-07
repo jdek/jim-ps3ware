@@ -38,11 +38,11 @@
 #include <spu_mfcio.h>
 #include <malloc.h>
 #include <stdio.h>
-#include "libspedma.h"
-#include "yuv_datastructs.h"
-#include "spu_control.h"
+#include <spu_dmalib.h>
+#include <yuv_datastructs.h>
+#include <spu_control.h>
+#include <spu_print.h>
 #include "spu_scaler.h"
-#include "spu_print.h"
 
 #define MAXWIDTH 1920
 #define MAXHEIGHT 1080

@@ -1,9 +1,9 @@
 /**
- * SPU YUV scaler kernel
+ * SPU YUV 2 RGB conversion kernel
  * --------------------------------
  * Licensed under the BSDv2 
  *
- * yuvscaler.h - ppu header for the spe accellerated yuvscaler 
+ * yuv2rgb.h - ppu header for the spe accellerated yuv2rgb converter 
  *
  * Copyright (c) 2007, Kristian Jerpetjøn <kristian.jerpetjoen@gmail.com>
  * $Id:
@@ -36,63 +36,61 @@
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-#ifndef __YUVSCALER_H
-#define __YUVSCALER_H
-
-#include <spu_control.h>
+#ifndef __YUV2RGB_H
+#define __YUV2RGB_H
 
 extern "C"
 
 
-struct yuvscaler_s;
-typedef struct yuvscaler_s yuvscaler_t;
+struct yuv2rgb_s;
+typedef struct yuv2rgb_s yuv2rgb_t;
 
 typedef void * ea_t;
 
 /**
-* init_yuvscaler 
-* initiates the spu yuvscaler.
+* init_yuv2rgb 
+* initiates the spu yuv2rgb.
 */ 
-yuvscaler_t * sws_init_yuvscaler(int srcW, int srcH, int dstW, int dstH,
-                                ea_t front_inBuffer, ea_t back_inBuffer,
+yuv2rgb_t * csc_init_yuv2rgb(int srcW, int srcH, int offset, int maxwidth,
+				ea_t front_inBuffer, ea_t back_inBuffer,
                                 ea_t front_outBuffer, ea_t back_outBuffer);
 
 /**
-*gets the spe context pointer from the initiated yuvscaler
+*gets the spe context pointer from the initiated yuv2rgb
 */
-spe_context_ptr_t sws_getCTX(yuvscaler_t*);
+spe_context_ptr_t csc_getCTX(yuv2rgb_t*);
 
 /**
 * recive_message waits for a interrupt message from the spu notifying a loop completion
 */
-unsigned int sws_receive_message(yuvscaler_t*);
+unsigned int csc_receive_message(yuv2rgb_t*);
 
 
 /**
 * sends a message to the spu telling it what to do options are RDY UPDATE and STOP defined in spu_control.h
 */
-void sws_send_message(yuvscaler_t*,unsigned int message);
+void csc_send_message(yuv2rgb_t*,unsigned int message);
 
 /**
 * destroys the spu scaler object and this object
 */
-void sws_yuvscaler_destroy(yuvscaler_t*);
+void csc_yuv2rgb_destroy(yuv2rgb_t*);
 
 /**
-* get functions for src and dst sizes
+* get functions for image sizes
 */
-unsigned int sws_get_dstW(const yuvscaler_t*);
-unsigned int sws_get_srcW(const yuvscaler_t*);
-unsigned int sws_get_dstH(const yuvscaler_t*);
-unsigned int sws_get_srcH(const yuvscaler_t*);
+unsigned int csc_get_srcW(const yuv2rgb_t*);
+unsigned int csc_get_srcH(const yuv2rgb_t*);
+unsigned int csc_get_offset(const yuv2rgb_t*);
+unsigned int csc_get_maxwidth(const yuv2rgb_t*);
 
 /**
-* set functions for src and dst sizes (only usable if followed by a update!)
+* set functions for image sizes (only takes effect if followed by an update!)
 */
-void sws_set_dstW(yuvscaler_t*,int dstw);
-void sws_set_srcW(yuvscaler_t*,int srcw);
-void sws_set_dstH(yuvscaler_t*,int dsth);
-void sws_set_srcH(yuvscaler_t*,int srch);
-
+void csc_set_srcW(yuv2rgb_t*,int dstw);
+void csc_set_srcH(yuv2rgb_t*,int srcw);
+void csc_set_offset(yuv2rgb_t*,int offset);
+void csc_set_maxwidth(yuv2rgb_t*,int maxwidth);
 
 #endif
+
