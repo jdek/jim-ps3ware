@@ -175,7 +175,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			dmaWaitTag(tgi[LineSelIn]);// we check that the second line is awailable before we start working on it
 			
 			
-			if (currentpos!=lasthfilterpos){ // no need to shuffle out a new line unless its actually a new line to shuffle
+			if ((currentpos!=lasthfilterpos) || (h==0)){ // no need to shuffle out a new line unless its actually a new line to shuffle
 				scalenewline(Input[LineSelIn],widthfilter0,widthfilter1,wfilterpos,fBuffer00,fBuffer01,fBuffer10,fBuffer11,weightHfilter0[hfilterpos[h]],weightHfilter1[hfilterpos[h]],weightWfilter0,weightWfilter1,Output[LineSelOut],iargs->dstW);
 			} else {
 				scaleline(wfilterpos,fBuffer00,fBuffer01,fBuffer10,fBuffer11,weightHfilter0[hfilterpos[h]],weightHfilter1[hfilterpos[h]],weightWfilter0,weightWfilter1,Output[LineSelOut],iargs->dstW);
@@ -250,7 +250,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			}
 		
 					
-			if (currentpos!=lasthfilterpos){// no need to shuffle out a new line unless its actually a new line to shuffle
+			if ((currentpos!=lasthfilterpos)|| (h==0)){// no need to shuffle out a new line unless its actually a new line to shuffle
 			
 				scalenewline(Input[LineSelIn],tmpfilter0,tmpfilter1,tmpfilterpos,fBuffer00,fBuffer01,fBuffer10,fBuffer11,weightHfilter0[hfilterpos[h]],weightHfilter1[hfilterpos[h]],weightWfilter0,weightWfilter1,Output[LineSelOut],crblockdst1);
 			} else {
@@ -350,7 +350,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			}
 		
 					
-			if (currentpos!=lasthfilterpos){// no need to shuffle out a new line unless its actually a new line to shuffle
+			if ((currentpos!=lasthfilterpos)|| (h==0)){// no need to shuffle out a new line unless its actually a new line to shuffle
 			
 				scalenewline(Input[LineSelIn],tmpfilter0,tmpfilter1,tmpfilterpos,fBuffer00,fBuffer01,fBuffer10,fBuffer11,weightHfilter0[hfilterpos[h]],weightHfilter1[hfilterpos[h]],weightWfilter0,weightWfilter1,Output[LineSelOut],crblockdst1);
 			} else {
