@@ -22,6 +22,7 @@
 #define VORBIS_H
 
 #include "avcodec.h"
+#include <inttypes.h>
 
 extern const float ff_vorbis_floor1_inverse_db_table[256];
 extern const float * ff_vorbis_vwin[8];
