@@ -25,6 +25,7 @@
  */
 
 #include "avcodec.h"
+#include <stddef.h>
 
 /*
  * Adapted to ffmpeg by Francois Revol <revol@free.fr>

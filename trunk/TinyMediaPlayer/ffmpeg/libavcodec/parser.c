@@ -21,6 +21,7 @@
  */
 
 #include "parser.h"
+#include <stddef.h>
 
 AVCodecParser *av_first_parser = NULL;
 

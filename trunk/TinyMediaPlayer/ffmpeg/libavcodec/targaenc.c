@@ -139,7 +139,7 @@ static int targa_encode_init(AVCodecContext *avctx)
     return 0;
 }
 
-static PixelFormats formats[] = {PIX_FMT_BGR24, PIX_FMT_RGB555, PIX_FMT_GRAY8, -1}
+static enum PixelFormats formats[] = {PIX_FMT_BGR24, PIX_FMT_RGB555, PIX_FMT_GRAY8, -1};
 
 AVCodec targa_encoder = {
     "targa",

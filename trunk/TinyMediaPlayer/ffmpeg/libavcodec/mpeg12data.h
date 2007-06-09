@@ -25,6 +25,9 @@
  * MPEG1/2 tables.
  */
 
+#ifndef MPEG12DATA_H
+#define MPEG12DATA_H
+
 #if defined(_MSC_VER)
 #pragma warning(disable : 4305) // 'initializing' : truncation from 'double' to 'const float
 #endif
@@ -477,6 +480,10 @@ static const uint8_t svcd_scan_offset_placeholder[14]={
     0xff, 0xff, 0xff,
 };
 
+#define TEX_VLC_BITS 9
+
 #if defined(_MSC_VER)
 #pragma warning(default : 4305) // 'initializing' : truncation from 'double' to 'const float
+#endif
+
 #endif

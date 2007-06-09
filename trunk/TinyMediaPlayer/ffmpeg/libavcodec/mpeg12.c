@@ -44,7 +44,6 @@
 #define MB_PAT_VLC_BITS 9
 #define MB_PTYPE_VLC_BITS 6
 #define MB_BTYPE_VLC_BITS 6
-#define TEX_VLC_BITS 9
 
 #ifdef CONFIG_ENCODERS
 static void mpeg1_encode_block(MpegEncContext *s,

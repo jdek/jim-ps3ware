@@ -26,8 +26,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#if defined(_GNUC_)
 #include <sys/time.h>
 #include <unistd.h>
+#endif
 
 #include "dsputil.h"
 
@@ -78,9 +80,13 @@ void help(void)
 
 int64_t gettime(void)
 {
-    struct timeval tv;
+#if defined(_GNU_)
+	struct timeval tv;
     gettimeofday(&tv,NULL);
     return (int64_t)tv.tv_sec * 1000000 + tv.tv_usec;
+#else
+	return 0;
+#endif
 }
 
 #define NB_ITS 500
@@ -112,7 +118,9 @@ void test_motion(const char *name,
             }
         }
     }
-    emms();
+#if defined(_GNUC_)
+	emms();
+#endif
 
     /* speed test */
     ti = gettime();
@@ -125,7 +133,9 @@ void test_motion(const char *name,
             }
         }
     }
+#if defined(_GNUC_)
     emms();
+#endif
     dummy = d1; /* avoid optimisation */
     ti = gettime() - ti;
 

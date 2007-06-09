@@ -26,6 +26,7 @@
  */
 
 #include "parser.h"
+#include <stddef.h>
 
 
 static int h261_find_frame_end(ParseContext *pc, AVCodecContext* avctx, const uint8_t *buf, int buf_size){

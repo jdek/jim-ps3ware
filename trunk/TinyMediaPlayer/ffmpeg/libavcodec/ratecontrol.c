@@ -30,6 +30,7 @@
 #include "ratecontrol.h"
 #include "mpegvideo.h"
 #include "eval.h"
+#include "internal.h"
 
 #undef NDEBUG // Always check asserts, the speed effect is far too small to disable them.
 #include <assert.h>
@@ -540,8 +541,8 @@ static void adaptive_quantization(MpegEncContext *s, double q){
     const float border_masking = s->avctx->border_masking;
     float bits_sum= 0.0;
     float cplx_sum= 0.0;
-    float cplx_tab[s->mb_num];
-    float bits_tab[s->mb_num];
+    float* cplx_tab = _alloca(s->mb_num * sizeof(float));
+    float* bits_tab = _alloca(s->mb_num * sizeof(float));
     const int qmin= s->avctx->mb_lmin;
     const int qmax= s->avctx->mb_lmax;
     Picture * const pic= &s->current_picture;

@@ -38,6 +38,7 @@
 #include "mjpeg.h"
 #include "mjpegdec.h"
 #include "jpeglsdec.h"
+#include "../config.h"
 
 
 static int build_vlc(VLC *vlc, const uint8_t *bits_table, const uint8_t *val_table,

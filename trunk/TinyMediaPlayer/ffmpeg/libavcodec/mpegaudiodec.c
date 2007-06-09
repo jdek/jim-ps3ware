@@ -28,6 +28,7 @@
 #include "avcodec.h"
 #include "bitstream.h"
 #include "dsputil.h"
+#include "internal.h"
 
 /*
  * TODO:
@@ -2300,8 +2301,10 @@ static int mp_decode_frame(MPADecodeContext *s,
     if (s->error_protection)
         get_bits(&s->gb, 16);
 
+#ifdef DEBUG
     dprintf(s->avctx, "frame %d:\n", s->frame_count);
-    switch(s->layer) {
+#endif
+	switch(s->layer) {
     case 1:
         nb_frames = mp_decode_layer1(s);
         break;

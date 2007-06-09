@@ -34,6 +34,9 @@
 #include "msmpeg4.h"
 #include "faandct.h"
 #include <limits.h>
+#include <inttypes.h>
+#include "../config.h"
+#include "internal.h"
 
 //#undef NDEBUG
 //#include <assert.h>
@@ -230,7 +233,7 @@ void ff_write_quant_matrix(PutBitContext *pb, uint16_t *matrix){
 }
 #endif //CONFIG_ENCODERS
 
-const uint8_t *ff_find_start_code(const uint8_t * restrict p, const uint8_t *end, uint32_t * restrict state){
+const uint8_t *ff_find_start_code(const uint8_t * __restrict p, const uint8_t *end, uint32_t * __restrict state){
     int i;
 
     assert(p<=end);
@@ -1246,7 +1249,7 @@ int MPV_encode_init(AVCodecContext *avctx)
         s->alt_inter_vlc= (avctx->flags & CODEC_FLAG_H263P_AIV) ? 1:0;
         s->obmc= (avctx->flags & CODEC_FLAG_OBMC) ? 1:0;
         s->loop_filter= (avctx->flags & CODEC_FLAG_LOOP_FILTER) ? 1:0;
-        s->unrestricted_mv= s->obmc || s->loop_filter || s->umvplus;
+        s->un__restricted_mv= s->obmc || s->loop_filter || s->umvplus;
         s->h263_slice_structured= (s->flags & CODEC_FLAG_H263P_SLICE_STRUCT) ? 1:0;
 
         /* /Fx */
@@ -1257,7 +1260,7 @@ int MPV_encode_init(AVCodecContext *avctx)
     case CODEC_ID_FLV1:
         s->out_format = FMT_H263;
         s->h263_flv = 2; /* format = 1; 11-bit codes */
-        s->unrestricted_mv = 1;
+        s->un__restricted_mv = 1;
         s->rtp_mode=0; /* don't allow GOB */
         avctx->delay=0;
         s->low_delay=1;
@@ -1275,12 +1278,12 @@ int MPV_encode_init(AVCodecContext *avctx)
         s->h263_aic=1;
         s->h263_plus=1;
         s->loop_filter=1;
-        s->unrestricted_mv= s->obmc || s->loop_filter || s->umvplus;
+        s->un__restricted_mv= s->obmc || s->loop_filter || s->umvplus;
         break;
     case CODEC_ID_MPEG4:
         s->out_format = FMT_H263;
         s->h263_pred = 1;
-        s->unrestricted_mv = 1;
+        s->un__restricted_mv = 1;
         s->low_delay= s->max_b_frames ? 0 : 1;
         avctx->delay= s->low_delay ? 0 : (s->max_b_frames + 1);
         break;
@@ -1288,7 +1291,7 @@ int MPV_encode_init(AVCodecContext *avctx)
         s->out_format = FMT_H263;
         s->h263_msmpeg4 = 1;
         s->h263_pred = 1;
-        s->unrestricted_mv = 1;
+        s->un__restricted_mv = 1;
         s->msmpeg4_version= 1;
         avctx->delay=0;
         s->low_delay=1;
@@ -1297,7 +1300,7 @@ int MPV_encode_init(AVCodecContext *avctx)
         s->out_format = FMT_H263;
         s->h263_msmpeg4 = 1;
         s->h263_pred = 1;
-        s->unrestricted_mv = 1;
+        s->un__restricted_mv = 1;
         s->msmpeg4_version= 2;
         avctx->delay=0;
         s->low_delay=1;
@@ -1306,7 +1309,7 @@ int MPV_encode_init(AVCodecContext *avctx)
         s->out_format = FMT_H263;
         s->h263_msmpeg4 = 1;
         s->h263_pred = 1;
-        s->unrestricted_mv = 1;
+        s->un__restricted_mv = 1;
         s->msmpeg4_version= 3;
         s->flipflop_rounding=1;
         avctx->delay=0;
@@ -1316,7 +1319,7 @@ int MPV_encode_init(AVCodecContext *avctx)
         s->out_format = FMT_H263;
         s->h263_msmpeg4 = 1;
         s->h263_pred = 1;
-        s->unrestricted_mv = 1;
+        s->un__restricted_mv = 1;
         s->msmpeg4_version= 4;
         s->flipflop_rounding=1;
         avctx->delay=0;
@@ -1326,7 +1329,7 @@ int MPV_encode_init(AVCodecContext *avctx)
         s->out_format = FMT_H263;
         s->h263_msmpeg4 = 1;
         s->h263_pred = 1;
-        s->unrestricted_mv = 1;
+        s->un__restricted_mv = 1;
         s->msmpeg4_version= 5;
         s->flipflop_rounding=1;
         avctx->delay=0;

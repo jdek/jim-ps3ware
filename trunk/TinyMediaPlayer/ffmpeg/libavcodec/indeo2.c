@@ -199,11 +199,11 @@ static int ir2_decode_init(AVCodecContext *avctx){
     if (!ir2_vlc.table)
         init_vlc(&ir2_vlc, CODE_VLC_BITS, IR2_CODES,
                  &ir2_codes[0][1], 4, 2,
-#ifdef ALT_BITSTREAM_READER_LE
+//#ifdef ALT_BITSTREAM_READER_LE
                  &ir2_codes[0][0], 4, 2, INIT_VLC_USE_STATIC | INIT_VLC_LE);
-#else
-                 &ir2_codes[0][0], 4, 2, INIT_VLC_USE_STATIC);
-#endif
+//#else
+                 //&ir2_codes[0][0], 4, 2, INIT_VLC_USE_STATIC);
+//#endif
 
     return 0;
 }

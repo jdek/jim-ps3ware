@@ -23,10 +23,10 @@
 
 #include "avcodec.h"
 #include "bytestream.h"
+#include <stddef.h>
 
 #define ROQ_FIRST_FRAME_SIZE     (735*8)
 #define ROQ_FRAME_SIZE           735
-
 
 #define MAX_DPCM (127*127)
 static unsigned char dpcmValues[MAX_DPCM];

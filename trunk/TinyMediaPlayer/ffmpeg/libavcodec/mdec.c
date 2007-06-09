@@ -30,6 +30,7 @@
 #include "avcodec.h"
 #include "dsputil.h"
 #include "mpegvideo.h"
+#include "mpeg12data.h"
 
 //#undef NDEBUG
 //#include <assert.h>

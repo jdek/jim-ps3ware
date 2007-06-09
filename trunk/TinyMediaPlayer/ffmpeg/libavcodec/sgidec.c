@@ -22,6 +22,7 @@
 #include "avcodec.h"
 #include "bytestream.h"
 #include "sgi.h"
+#include <stddef.h>
 
 typedef struct SgiState {
     AVFrame picture;

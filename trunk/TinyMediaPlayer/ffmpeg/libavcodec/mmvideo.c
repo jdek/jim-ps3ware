@@ -32,6 +32,7 @@
  */
 
 #include "avcodec.h"
+#include <stddef.h>
 
 #define MM_PREAMBLE_SIZE    6
 

@@ -350,5 +350,7 @@ AVCodec mpc7_decoder = {
     NULL,
     NULL,
     mpc7_decode_frame,
-    .flush = mpc7_decode_flush,
+	0,
+	0,
+    mpc7_decode_flush,
 };

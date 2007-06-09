@@ -24,7 +24,7 @@
  * @author Mark Hills <mark@pogo.org.uk>
  */
 
-#include <vorbis/vorbisenc.h>
+//#include <vorbis/vorbisenc.h>
 
 #include "avcodec.h"
 #include "bytestream.h"
@@ -48,6 +48,7 @@ typedef struct OggVorbisContext {
     ogg_packet op;
 } OggVorbisContext ;
 
+#if 0
 
 static int oggvorbis_init_encoder(vorbis_info *vi, AVCodecContext *avccontext) {
     double cfreq;
@@ -218,6 +219,8 @@ AVCodec libvorbis_encoder = {
     oggvorbis_encode_close,
     .capabilities= CODEC_CAP_DELAY,
 } ;
+
+#endif
 
 static int oggvorbis_decode_init(AVCodecContext *avccontext) {
     OggVorbisContext *context = avccontext->priv_data ;

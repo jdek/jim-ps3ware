@@ -29,6 +29,10 @@
 #include "avcodec.h"
 #include "opt.h"
 #include "eval.h"
+#include "internal.h"
+#include <stddef.h>
+#include <limits.h>
+#include <inttypes.h>
 
 //FIXME order them and do a bin search
 const AVOption *av_find_opt(void *v, const char *name, const char *unit, int mask, int flags){
@@ -68,9 +72,18 @@ static const AVOption *av_set_number(void *obj, const char *name, double num, in
     case FF_OPT_TYPE_FLOAT: *(float     *)dst= num*intnum/den;         break;
     case FF_OPT_TYPE_DOUBLE:*(double    *)dst= num*intnum/den;         break;
     case FF_OPT_TYPE_RATIONAL:
-        if((int)num == num) *(AVRational*)dst= (AVRational){num*intnum, den};
-        else                *(AVRational*)dst= av_d2q(num*intnum/den, 1<<24);
-    default:
+	{
+		if((int)num == num) 
+		{
+			(*(AVRational*)dst).num = num * intnum;
+			(*(AVRational*)dst).den = den;
+		}
+		else
+		{
+			*(AVRational*)dst= av_d2q(num*intnum/den, 1<<24);
+		}
+	}
+	default:
         return NULL;
     }
     return o;
@@ -93,6 +106,10 @@ static const AVOption *set_all_opt(void *v, const char *unit, double d){
     }
     return ret;
 }
+
+#ifndef M_E
+#define M_E 2.718281828
+#endif
 
 static double const_values[]={
     M_PI,
@@ -198,7 +215,7 @@ const char *av_get_string(void *obj, const char *name, const AVOption **o_out, c
     switch(o->type){
     case FF_OPT_TYPE_FLAGS:     snprintf(buf, buf_len, "0x%08X",*(int    *)dst);break;
     case FF_OPT_TYPE_INT:       snprintf(buf, buf_len, "%d" , *(int    *)dst);break;
-    case FF_OPT_TYPE_INT64:     snprintf(buf, buf_len, "%"PRId64, *(int64_t*)dst);break;
+    case FF_OPT_TYPE_INT64:     snprintf(buf, buf_len, "%lld", *(int64_t*)dst);break;
     case FF_OPT_TYPE_FLOAT:     snprintf(buf, buf_len, "%f" , *(float  *)dst);break;
     case FF_OPT_TYPE_DOUBLE:    snprintf(buf, buf_len, "%f" , *(double *)dst);break;
     case FF_OPT_TYPE_RATIONAL:  snprintf(buf, buf_len, "%d/%d", ((AVRational*)dst)->num, ((AVRational*)dst)->den);break;
@@ -248,9 +265,14 @@ AVRational av_get_q(void *obj, const char *name, const AVOption **o_out){
 
     av_get_number(obj, name, o_out, &num, &den, &intnum);
     if(num == 1.0 && (int)intnum == intnum)
-        return (AVRational){intnum, den};
-    else
-        return av_d2q(num*intnum/den, 1<<24);
+	{
+		AVRational temp = {intnum, den};
+		return temp;
+	}
+	else
+	{
+		return av_d2q(num*intnum/den, 1<<24);
+	}
 }
 
 int64_t av_get_int(void *obj, const char *name, const AVOption **o_out){
