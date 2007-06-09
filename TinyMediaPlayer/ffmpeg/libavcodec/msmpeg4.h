@@ -26,7 +26,7 @@
 #ifndef MSMPEG4_H
 #define MSMPEG4_H
 
-#include "config.h"
+#include "../config.h"
 
 #define ENABLE_MSMPEG4_DECODER (ENABLE_MSMPEG4V1_DECODER || \
                                 ENABLE_MSMPEG4V2_DECODER || \

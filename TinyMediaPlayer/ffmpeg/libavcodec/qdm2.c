@@ -39,6 +39,7 @@
 #include "avcodec.h"
 #include "bitstream.h"
 #include "dsputil.h"
+#include "internal.h"
 
 #ifdef CONFIG_MPEGAUDIO_HP
 #define USE_HIGHPRECISION
@@ -2032,11 +2033,12 @@ static int qdm2_decode_frame(AVCodecContext *avctx,
 
 AVCodec qdm2_decoder =
 {
-    .name = "qdm2",
-    .type = CODEC_TYPE_AUDIO,
-    .id = CODEC_ID_QDM2,
-    .priv_data_size = sizeof(QDM2Context),
-    .init = qdm2_decode_init,
-    .close = qdm2_decode_close,
-    .decode = qdm2_decode_frame,
+    "qdm2",
+    CODEC_TYPE_AUDIO,
+    CODEC_ID_QDM2,
+    sizeof(QDM2Context),
+    qdm2_decode_init,
+	0,
+	qdm2_decode_close,
+    qdm2_decode_frame,
 };

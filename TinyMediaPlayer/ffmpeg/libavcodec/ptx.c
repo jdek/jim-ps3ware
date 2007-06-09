@@ -21,6 +21,7 @@
  */
 
 #include "avcodec.h"
+#include <stddef.h>
 
 typedef struct PTXContext {
     AVFrame picture;

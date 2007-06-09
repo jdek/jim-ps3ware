@@ -21,6 +21,7 @@
 
 #include "avcodec.h"
 #include "ra288.h"
+#include <stddef.h>
 
 typedef struct {
         float   history[8];
@@ -53,7 +54,7 @@ static void unpack(unsigned short *tgt, unsigned char *src, unsigned int len)
 {
   int x,y,z;
   int n,temp;
-  int buffer[len];
+  int* buffer = _alloca(len * sizeof(int));
 
   for (x=0;x<len;tgt[x++]=0)
     buffer[x]=9+(x&1);
@@ -212,7 +213,7 @@ static void * decode_block(AVCodecContext * avctx, unsigned char *in, signed sho
 {
   int x,y;
   Real288_internal *glob=avctx->priv_data;
-  unsigned short int buffer[len];
+  unsigned short int* buffer = _alloca(len * sizeof(short int));
 
   unpack(buffer,in,len);
   for (x=0;x<32;x++)

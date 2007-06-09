@@ -28,6 +28,8 @@
 
 #include "avcodec.h"
 #include "dsputil.h"
+#include "internal.h"
+#include <math.h>
 
 #ifndef CONFIG_RESAMPLE_HP
 #define FILTER_SHIFT 15
@@ -95,8 +97,9 @@ static double bessel(double x){
  */
 void av_build_filter(FELEM *filter, double factor, int tap_count, int phase_count, int scale, int type){
     int ph, i;
-    double x, y, w, tab[tap_count];
-    const int center= (tap_count-1)/2;
+    double x, y, w;
+	double* tab = _alloca(tap_count * sizeof(double));
+	const int center= (tap_count-1)/2;
 
     /* if upsampling, only need to interpolate, no filter */
     if (factor > 1.0)

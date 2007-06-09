@@ -22,6 +22,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  */
+#if defined(_GNUC_)
 #include <pthread.h>
 
 #include "avcodec.h"
@@ -167,3 +168,5 @@ int avcodec_thread_init(AVCodecContext *avctx, int thread_count)
     avctx->execute = avcodec_thread_execute;
     return 0;
 }
+
+#endif

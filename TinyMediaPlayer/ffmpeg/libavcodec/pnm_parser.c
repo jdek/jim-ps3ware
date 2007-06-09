@@ -21,7 +21,7 @@
 
 #include "parser.h" //for ParseContext
 #include "pnm.h"
-
+#include <stddef.h>
 
 static int pnm_parse(AVCodecParserContext *s,
                            AVCodecContext *avctx,

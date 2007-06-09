@@ -21,6 +21,7 @@
 
 #include "avcodec.h"
 #include "ra144.h"
+#include <stddef.h>
 
 #define DATABLOCK1      20      /* size of 14.4 input block in bytes */
 #define DATACHUNK1      1440    /* size of 14.4 input chunk in bytes */

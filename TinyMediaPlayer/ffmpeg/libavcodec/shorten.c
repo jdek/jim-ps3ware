@@ -252,7 +252,7 @@ static int16_t * interleave_buffer(int16_t *samples, int nchan, int blocksize, i
 static void decode_subframe_lpc(ShortenContext *s, int channel, int residual_size, int pred_order)
 {
     int sum, i, j;
-    int coeffs[pred_order];
+    int* coeffs = _alloca(pred_order * sizeof(int));
 
     for (i=0; i<pred_order; i++)
         coeffs[i] = get_sr_golomb_shorten(&s->gb, LPCQUANT);
@@ -531,5 +531,7 @@ AVCodec shorten_decoder = {
     NULL,
     shorten_decode_close,
     shorten_decode_frame,
-    .flush= shorten_flush,
+	0,
+	0,
+    shorten_flush,
 };

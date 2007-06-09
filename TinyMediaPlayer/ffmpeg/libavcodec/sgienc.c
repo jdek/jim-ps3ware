@@ -144,6 +144,8 @@ static int encode_frame(AVCodecContext *avctx, unsigned char *buf,
     return buf - orig_buf;
 }
 
+static enum PixelFormats formats[] = {PIX_FMT_RGB24, PIX_FMT_RGBA, PIX_FMT_PAL8, PIX_FMT_GRAY8, -1};
+
 AVCodec sgi_encoder = {
     "sgi",
     CODEC_TYPE_VIDEO,
@@ -152,6 +154,11 @@ AVCodec sgi_encoder = {
     encode_init,
     encode_frame,
     NULL,
-    .pix_fmts= (enum PixelFormat[]){PIX_FMT_RGB24, PIX_FMT_RGBA, PIX_FMT_PAL8, PIX_FMT_GRAY8, -1},
+	0,
+	0,
+	0,
+	0,
+	0,
+	formats,
 };
 

@@ -852,6 +852,14 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\imgresample.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\imx_dump_header_bsf.c"
@@ -888,6 +896,13 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\jpegls.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\jpegls.h"
@@ -904,6 +919,14 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\jpeglsenc.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\jrevdct.c"
@@ -920,14 +943,38 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\libgsm.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\libtheoraenc.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\ljpegenc.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\loco.c"
@@ -1016,6 +1063,14 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\motion_est_template.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\mp3_header_compress_bsf.c"
@@ -1028,6 +1083,14 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\mp3lameaudio.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\mpc.c"
@@ -1152,6 +1215,14 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\oggvorbis.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\opt.c"
@@ -1159,10 +1230,6 @@
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\opt.h"
-				>
-			</File>
-			<File
-				RelativePath="..\ffmpeg\libavcodec\os2thread.c"
 				>
 			</File>
 			<File
@@ -1180,6 +1247,14 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\png.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\pnm.c"
@@ -1360,6 +1435,14 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\snow.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\snow.h"

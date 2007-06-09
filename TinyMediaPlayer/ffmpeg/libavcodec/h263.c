@@ -39,6 +39,7 @@
 #include "mpegvideo.h"
 #include "h263data.h"
 #include "mpeg4data.h"
+#include "internal.h"
 
 //#undef NDEBUG
 //#include <assert.h>
@@ -5126,8 +5127,11 @@ int h263_decode_picture_header(MpegEncContext *s)
 
         s->width = width;
         s->height = height;
-        s->avctx->sample_aspect_ratio= (AVRational){12,11};
-        s->avctx->time_base= (AVRational){1001, 30000};
+		s->avctx->sample_aspect_ratio.num = 12;
+		s->avctx->sample_aspect_ratio.den = 11;
+
+		s->avctx->time_base.num = 1001;
+		s->avctx->time_base.den = 30000;
     } else {
         int ufep;
 
@@ -5213,7 +5217,8 @@ int h263_decode_picture_header(MpegEncContext *s)
             } else {
                 width = h263_format[format][0];
                 height = h263_format[format][1];
-                s->avctx->sample_aspect_ratio= (AVRational){12,11};
+				s->avctx->sample_aspect_ratio.num = 12;
+				s->avctx->sample_aspect_ratio.den = 11;
             }
             if ((width == 0) || (height == 0))
                 return -1;
@@ -5234,8 +5239,9 @@ int h263_decode_picture_header(MpegEncContext *s)
                 s->avctx->time_base.num /= gcd;
 //                av_log(s->avctx, AV_LOG_DEBUG, "%d/%d\n", s->avctx->time_base.den, s->avctx->time_base.num);
             }else{
-                s->avctx->time_base= (AVRational){1001, 30000};
-            }
+				s->avctx->time_base.num = 1001;
+				s->avctx->time_base.num = 30000;
+			}
         }
 
         if(s->custom_pcf){
@@ -5943,7 +5949,7 @@ static int decode_vop_header(MpegEncContext *s, GetBitContext *gb){
     else
         s->current_picture_ptr->pts= AV_NOPTS_VALUE;
     if(s->avctx->debug&FF_DEBUG_PTS)
-        av_log(s->avctx, AV_LOG_DEBUG, "MPEG4 PTS: %"PRId64"\n", s->current_picture_ptr->pts);
+        av_log(s->avctx, AV_LOG_DEBUG, "MPEG4 PTS: %lld\n", s->current_picture_ptr->pts);
 
     check_marker(gb, "before vop_coded");
 

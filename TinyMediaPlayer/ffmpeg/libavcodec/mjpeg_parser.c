@@ -27,6 +27,7 @@
  */
 
 #include "parser.h"
+#include <stddef.h>
 
 
 /**

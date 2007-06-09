@@ -25,6 +25,7 @@
  */
 
 #include "avcodec.h"
+#include "../config.h"
 
 #define REGISTER_ENCODER(X,x) \
           if(ENABLE_##X##_ENCODER)  register_avcodec(&x##_encoder)
@@ -156,10 +157,10 @@ void avcodec_register_all(void)
     REGISTER_ENCDEC (WMV2, wmv2);
     REGISTER_DECODER(WMV3, wmv3);
     REGISTER_DECODER(WNV1, wnv1);
-    REGISTER_ENCODER(X264, x264);
+    //REGISTER_ENCODER(X264, x264);
     REGISTER_DECODER(XAN_WC3, xan_wc3);
     REGISTER_DECODER(XL, xl);
-    REGISTER_ENCODER(XVID, xvid);
+    //REGISTER_ENCODER(XVID, xvid);
     REGISTER_ENCDEC (ZLIB, zlib);
     REGISTER_ENCDEC (ZMBV, zmbv);
 
@@ -188,7 +189,7 @@ void avcodec_register_all(void)
     REGISTER_ENCDEC (MP2, mp2);
     REGISTER_DECODER(MP3, mp3);
     REGISTER_DECODER(MP3ADU, mp3adu);
-    REGISTER_ENCODER(MP3LAME, mp3lame);
+    //REGISTER_ENCODER(MP3LAME, mp3lame);
     REGISTER_DECODER(MP3ON4, mp3on4);
     REGISTER_DECODER(MPC7, mpc7);
     REGISTER_DECODER(QDM2, qdm2);

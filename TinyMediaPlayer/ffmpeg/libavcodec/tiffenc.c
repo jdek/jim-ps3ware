@@ -33,6 +33,7 @@
 #include "tiff.h"
 #include "rle.h"
 #include "lzw.h"
+#include "avutil.h"
 
 #define TIFF_MAX_ENTRY 32
 
@@ -440,7 +441,7 @@ fail:
     return ret;
 }
 
-static PixelFormats formats[] = {PIX_FMT_RGB24, PIX_FMT_PAL8, PIX_FMT_GRAY8
+static enum PixelFormat formats[] = {PIX_FMT_RGB24, PIX_FMT_PAL8, PIX_FMT_GRAY8,
 								 PIX_FMT_MONOBLACK, PIX_FMT_MONOWHITE,
 								 PIX_FMT_YUV420P, PIX_FMT_YUV422P,
 								 PIX_FMT_YUV444P, PIX_FMT_YUV410P,

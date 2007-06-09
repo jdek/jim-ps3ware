@@ -20,6 +20,7 @@
  */
 #include "avcodec.h"
 #include "pnm.h"
+#include <stddef.h>
 
 static inline int pnm_space(int c)
 {

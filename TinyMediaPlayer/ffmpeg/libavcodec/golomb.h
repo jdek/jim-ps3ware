@@ -28,6 +28,9 @@
  * @author Michael Niedermayer <michaelni@gmx.at> and Alex Beregszaszi
  */
 
+#ifndef _GOLOMB_H
+#define _GOLOMB_H
+
 #define INVALID_VLC           0x80000000
 
 extern const uint8_t ff_golomb_vlc_len[512];
@@ -477,3 +480,5 @@ static inline void set_sr_golomb_flac(PutBitContext *pb, int i, int k, int limit
 
     set_ur_golomb_jpegls(pb, v, k, limit, esc_len);
 }
+
+#endif
