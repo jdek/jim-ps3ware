@@ -23,6 +23,7 @@
 
 #include "avcodec.h"
 #include "s3tc.h"
+#include <stddef.h>
 
 typedef struct TXDContext {
     AVFrame picture;

@@ -20,6 +20,7 @@
  *
  */
 #include "avcodec.h"
+#include <stddef.h>
 
 enum TargaCompr{
     TGA_NODATA = 0, // no image data

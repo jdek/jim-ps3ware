@@ -28,7 +28,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if defined(_GNUC_)
 #include <unistd.h>
+#endif
 
 #include "avcodec.h"
 #include "bytestream.h"

@@ -440,6 +440,13 @@ fail:
     return ret;
 }
 
+static PixelFormats formats[] = {PIX_FMT_RGB24, PIX_FMT_PAL8, PIX_FMT_GRAY8
+								 PIX_FMT_MONOBLACK, PIX_FMT_MONOWHITE,
+								 PIX_FMT_YUV420P, PIX_FMT_YUV422P,
+								 PIX_FMT_YUV444P, PIX_FMT_YUV410P,
+								 PIX_FMT_YUV411P
+								 -1};
+
 AVCodec tiff_encoder = {
     "tiff",
     CODEC_TYPE_VIDEO,
@@ -451,12 +458,5 @@ AVCodec tiff_encoder = {
     NULL,
     0,
     NULL,
-    .pix_fmts =
-        (enum PixelFormat[]) {PIX_FMT_RGB24, PIX_FMT_PAL8, PIX_FMT_GRAY8,
-                              PIX_FMT_MONOBLACK, PIX_FMT_MONOWHITE,
-                              PIX_FMT_YUV420P, PIX_FMT_YUV422P,
-                              PIX_FMT_YUV444P, PIX_FMT_YUV410P,
-                              PIX_FMT_YUV411P
-                              -1}
-
+	formats                             
 };
