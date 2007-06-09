@@ -41,6 +41,7 @@
 #include "bytestream.h"
 
 #include "atrac3data.h"
+#include "internal.h"
 
 #define JOINT_STEREO    0x12
 #define STEREO          0x2

@@ -1455,5 +1455,8 @@ AVCodec cavs_decoder = {
     cavs_decode_end,
     cavs_decode_frame,
     CODEC_CAP_DR1 | CODEC_CAP_DELAY,
-    .flush= cavs_flush,
+	0,
+	cavs_flush,
+	0,
+	0,
 };

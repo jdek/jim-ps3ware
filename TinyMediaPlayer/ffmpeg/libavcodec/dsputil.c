@@ -33,6 +33,7 @@
 #include "simple_idct.h"
 #include "faandct.h"
 #include "snow.h"
+#include <inttypes.h>
 
 /* snow.c */
 void ff_spatial_dwt(int *buffer, int width, int height, int stride, int type, int decomposition_count);
@@ -392,7 +393,7 @@ int w97_32_c(void *v, uint8_t * pix1, uint8_t * pix2, int line_size, int h){
 }
 #endif
 
-static void get_pixels_c(DCTELEM *restrict block, const uint8_t *pixels, int line_size)
+static void get_pixels_c(DCTELEM* __restrict block, const uint8_t *pixels, int line_size)
 {
     int i;
 
@@ -411,7 +412,7 @@ static void get_pixels_c(DCTELEM *restrict block, const uint8_t *pixels, int lin
     }
 }
 
-static void diff_pixels_c(DCTELEM *restrict block, const uint8_t *s1,
+static void diff_pixels_c(DCTELEM* __restrict block, const uint8_t *s1,
                           const uint8_t *s2, int stride){
     int i;
 
@@ -432,7 +433,7 @@ static void diff_pixels_c(DCTELEM *restrict block, const uint8_t *s1,
 }
 
 
-static void put_pixels_clamped_c(const DCTELEM *block, uint8_t *restrict pixels,
+static void put_pixels_clamped_c(const DCTELEM *block, uint8_t *__restrict pixels,
                                  int line_size)
 {
     int i;
@@ -454,7 +455,7 @@ static void put_pixels_clamped_c(const DCTELEM *block, uint8_t *restrict pixels,
     }
 }
 
-static void put_pixels_clamped4_c(const DCTELEM *block, uint8_t *restrict pixels,
+static void put_pixels_clamped4_c(const DCTELEM *block, uint8_t *__restrict pixels,
                                  int line_size)
 {
     int i;
@@ -472,7 +473,7 @@ static void put_pixels_clamped4_c(const DCTELEM *block, uint8_t *restrict pixels
     }
 }
 
-static void put_pixels_clamped2_c(const DCTELEM *block, uint8_t *restrict pixels,
+static void put_pixels_clamped2_c(const DCTELEM *block, uint8_t *__restrict pixels,
                                  int line_size)
 {
     int i;
@@ -489,7 +490,7 @@ static void put_pixels_clamped2_c(const DCTELEM *block, uint8_t *restrict pixels
 }
 
 static void put_signed_pixels_clamped_c(const DCTELEM *block,
-                                        uint8_t *restrict pixels,
+                                        uint8_t *__restrict pixels,
                                         int line_size)
 {
     int i, j;
@@ -509,7 +510,7 @@ static void put_signed_pixels_clamped_c(const DCTELEM *block,
     }
 }
 
-static void add_pixels_clamped_c(const DCTELEM *block, uint8_t *restrict pixels,
+static void add_pixels_clamped_c(const DCTELEM *block, uint8_t *__restrict pixels,
                           int line_size)
 {
     int i;
@@ -530,7 +531,7 @@ static void add_pixels_clamped_c(const DCTELEM *block, uint8_t *restrict pixels,
     }
 }
 
-static void add_pixels_clamped4_c(const DCTELEM *block, uint8_t *restrict pixels,
+static void add_pixels_clamped4_c(const DCTELEM *block, uint8_t *__restrict pixels,
                           int line_size)
 {
     int i;
@@ -547,7 +548,7 @@ static void add_pixels_clamped4_c(const DCTELEM *block, uint8_t *restrict pixels
     }
 }
 
-static void add_pixels_clamped2_c(const DCTELEM *block, uint8_t *restrict pixels,
+static void add_pixels_clamped2_c(const DCTELEM *block, uint8_t *__restrict pixels,
                           int line_size)
 {
     int i;
@@ -562,7 +563,7 @@ static void add_pixels_clamped2_c(const DCTELEM *block, uint8_t *restrict pixels
     }
 }
 
-static void add_pixels8_c(uint8_t *restrict pixels, DCTELEM *block, int line_size)
+static void add_pixels8_c(uint8_t *__restrict pixels, DCTELEM *block, int line_size)
 {
     int i;
     for(i=0;i<8;i++) {
@@ -579,7 +580,7 @@ static void add_pixels8_c(uint8_t *restrict pixels, DCTELEM *block, int line_siz
     }
 }
 
-static void add_pixels4_c(uint8_t *restrict pixels, DCTELEM *block, int line_size)
+static void add_pixels4_c(uint8_t *__restrict pixels, DCTELEM *block, int line_size)
 {
     int i;
     for(i=0;i<4;i++) {
@@ -3501,8 +3502,12 @@ static int rd8x8_c(/*MpegEncContext*/ void *c, uint8_t *src1, uint8_t *src2, int
     MpegEncContext * const s= (MpegEncContext *)c;
     const uint8_t *scantable= s->intra_scantable.permutated;
     DECLARE_ALIGNED_8 (uint64_t, aligned_temp[sizeof(DCTELEM)*64/8]);
-    DECLARE_ALIGNED_8 (uint64_t, aligned_bak[stride]);
-    DCTELEM * const temp= (DCTELEM*)aligned_temp;
+#if defined(_GNUC_)
+	DECLARE_ALIGNED_8 (uint64_t, aligned_bak[stride]);
+#else
+	uint64_t* aligned_bak = alloca(stride * sizeof(uint64_t));
+#endif
+	DCTELEM * const temp= (DCTELEM*)aligned_temp;
     uint8_t * const bak= (uint8_t*)aligned_bak;
     int i, last, run, bits, level, distoration, start_i;
     const int esc_length= s->ac_esc_length;

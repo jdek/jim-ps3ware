@@ -28,6 +28,7 @@
 
 #include "parser.h"
 #include "dca.h"
+#include <stddef.h>
 
 typedef struct DCAParseContext {
     ParseContext pc;

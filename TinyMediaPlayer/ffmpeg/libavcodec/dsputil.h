@@ -31,6 +31,7 @@
 #define DSPUTIL_H
 
 #include "avcodec.h"
+#include "intreadwrite.h"
 
 
 //#define DEBUG

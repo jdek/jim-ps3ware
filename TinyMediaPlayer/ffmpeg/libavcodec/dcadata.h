@@ -26,6 +26,10 @@
 
 /* Generic tables */
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 4305) // 'initializing' : truncation from 'double' to 'const float
+#endif
+
 static const uint32_t dca_sample_rates[16] =
 {
     0, 8000, 16000, 32000, 0, 0, 11025, 22050, 44100, 0, 0,
@@ -8360,6 +8364,10 @@ static const float dca_downmix_coeffs[65] = {
   0.009440608762859, 0.007943282347243, 0.005623413251903, 0.003981071705535, 0.002818382931264, 0.001995262314969,
   0.001412537544623, 0.001000000000000, 0.000501187233627, 0.000251188643151, 0.000000000000000,
 };
+
+#if defined(_MSC_VER)
+#pragma warning(default : 4305) // 'initializing' : truncation from 'double' to 'const float
+#endif
 
 static const uint8_t dca_default_coeffs[16][5][2] = {
     { { 13, 13 },                                                 },

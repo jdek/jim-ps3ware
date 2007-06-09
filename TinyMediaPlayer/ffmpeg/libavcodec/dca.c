@@ -36,6 +36,7 @@
 #include "dcadata.h"
 #include "dcahuff.h"
 #include "dca.h"
+#include "internal.h"
 
 //#define TRACE
 
@@ -1244,10 +1245,17 @@ static int dca_decode_init(AVCodecContext * avctx)
 
 
 AVCodec dca_decoder = {
-    .name = "dca",
-    .type = CODEC_TYPE_AUDIO,
-    .id = CODEC_ID_DTS,
-    .priv_data_size = sizeof(DCAContext),
-    .init = dca_decode_init,
-    .decode = dca_decode_frame,
+	"dca",
+	CODEC_TYPE_AUDIO,
+	CODEC_ID_DTS,
+	sizeof(DCAContext),
+	dca_decode_init,
+	0,
+	0,
+	dca_decode_frame,
+	0,
+	0,
+	0,
+	0,
+	0,
 };

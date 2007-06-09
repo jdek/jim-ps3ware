@@ -27,7 +27,7 @@
 
 #include "parser.h"
 #include "cavs.h"
-
+#include <stddef.h>
 
 /**
  * finds the end of the current frame in the bitstream.

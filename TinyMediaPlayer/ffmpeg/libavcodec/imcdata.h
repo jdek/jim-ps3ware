@@ -22,6 +22,10 @@
  *
  */
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 4305) // 'initializing' : truncation from 'double' to 'const float
+#endif
+
 static const uint16_t band_tab[33] = {
       0,   3,   6,   9,  12,  16,  20,  24,  29,  34,  40,
      46,  53,  60,  68,  76,  84,  93, 102, 111, 121, 131,
@@ -162,3 +166,6 @@ static const uint16_t imc_huffman_bits[4][4][18] = {
     }
 };
 
+#if defined(_MSC_VER)
+#pragma warning(default : 4305) // 'initializing' : truncation from 'double' to 'const float
+#endif

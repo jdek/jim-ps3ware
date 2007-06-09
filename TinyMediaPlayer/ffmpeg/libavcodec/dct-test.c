@@ -28,13 +28,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#if defined(_GNUC_)
 #include <sys/time.h>
 #include <unistd.h>
+#endif
 
 #include "dsputil.h"
+#include "internal.h"
 
 #include "simple_idct.h"
 #include "faandct.h"
+
+#include <math.h>
 
 #ifndef MAX
 #define MAX(a, b)  (((a) > (b)) ? (a) : (b))
@@ -131,9 +136,14 @@ uint8_t cropTbl[256 + 2 * MAX_NEG_CROP];
 
 int64_t gettime(void)
 {
-    struct timeval tv;
+#if defined(_GNUC_)
+	struct timeval tv;
     gettimeofday(&tv,NULL);
     return (int64_t)tv.tv_sec * 1000000 + tv.tv_usec;
+#else
+	assert(0);
+	return 0;
+#endif
 }
 
 #define NB_ITS 20000
@@ -163,9 +173,17 @@ void idct_mmx_init(void)
     }
 }
 
+#if defined(_GNUC_)
 static DCTELEM block[64] __attribute__ ((aligned (8)));
 static DCTELEM block1[64] __attribute__ ((aligned (8)));
 static DCTELEM block_org[64] __attribute__ ((aligned (8)));
+#elif defined(_MSC_VER)
+static __declspec(align(8)) DCTELEM block[64];
+static __declspec(align(8)) DCTELEM block1[64];
+static __declspec(align(8)) DCTELEM block_org[64];
+#else
+#pragma error("not supported")
+#endif
 
 void dct_error(const char *name, int is_idct,
                void (*fdct_func)(DCTELEM *block),
@@ -346,8 +364,15 @@ void dct_error(const char *name, int is_idct,
 #endif
 }
 
+#if defined(_GNUC_)
 static uint8_t img_dest[64] __attribute__ ((aligned (8)));
 static uint8_t img_dest1[64] __attribute__ ((aligned (8)));
+#elif defined(_MSC_VER)
+static __declspec(align(8)) uint8_t img_dest[64];
+static __declspec(align(8)) uint8_t img_dest1[64];
+#else
+#pragma error("not supported")
+#endif
 
 void idct248_ref(uint8_t *dest, int linesize, int16_t *block)
 {
@@ -548,7 +573,9 @@ int main(int argc, char **argv)
         }
     }
 
+#if defined(_GNUC_)
     if(optind <argc) test= atoi(argv[optind]);
+#endif
 
     printf("ffmpeg DCT/IDCT test\n");
 

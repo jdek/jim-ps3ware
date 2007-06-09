@@ -54,6 +54,7 @@
 #include "random.h"
 
 #include "cookdata.h"
+#include "internal.h"
 
 /* the different Cook versions */
 #define MONO            0x1000001
@@ -1104,14 +1105,14 @@ static int cook_decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-
 AVCodec cook_decoder =
 {
-    .name = "cook",
-    .type = CODEC_TYPE_AUDIO,
-    .id = CODEC_ID_COOK,
-    .priv_data_size = sizeof(COOKContext),
-    .init = cook_decode_init,
-    .close = cook_decode_close,
-    .decode = cook_decode_frame,
+	"cook",
+	CODEC_TYPE_AUDIO,
+	CODEC_ID_COOK,
+	sizeof(COOKContext),
+	cook_decode_init,
+	0,
+	cook_decode_close,
+	cook_decode_frame,
 };
