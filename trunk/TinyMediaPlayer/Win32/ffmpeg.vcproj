@@ -270,6 +270,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ffmpeg\libavutil\nan.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ffmpeg\libavutil\random.c"
 				>
 			</File>
@@ -560,6 +564,14 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\dv.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\dvbsub.c"
@@ -592,6 +604,14 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\dxa.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\error_resilience.c"
@@ -608,10 +628,26 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\faac.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\faad.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\faandct.c"
@@ -636,6 +672,14 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\ffv1.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\flac.c"
@@ -644,14 +688,38 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\flacenc.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\flashsv.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\flashsvenc.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\flicvideo.c"
@@ -1452,6 +1520,14 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\vorbis_enc.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\vorbis_enc_data.h"
@@ -1548,6 +1624,14 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\x264.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\xan.c"
@@ -1572,10 +1656,26 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\xvid_rc.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\xvidff.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\xvmc_render.h"
@@ -1592,6 +1692,14 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\zmbvenc.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 	</Files>

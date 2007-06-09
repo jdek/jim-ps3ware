@@ -25,6 +25,9 @@
  */
 
 #include "simple_idct.h"
+#include "mpegvideo.h"
+#include "msmpeg4tab.h"
+#include <inttypes.h>
 
 #define SKIP_TYPE_NONE 0
 #define SKIP_TYPE_MPEG 1
@@ -626,7 +629,8 @@ void ff_wmv2_add_mb(MpegEncContext *s, DCTELEM block1[6][64], uint8_t *dest_y, u
 
 void ff_mspel_motion(MpegEncContext *s,
                                uint8_t *dest_y, uint8_t *dest_cb, uint8_t *dest_cr,
-                               uint8_t **ref_picture, op_pixels_func (*pix_op)[4],
+                               uint8_t **ref_picture, 
+							   op_pixels_func (*pix_op)[4],
                                int motion_x, int motion_y, int h)
 {
     Wmv2Context * const w= (Wmv2Context*)s;
@@ -712,6 +716,20 @@ void ff_mspel_motion(MpegEncContext *s,
     pix_op[1][dxy](dest_cr, ptr, uvlinesize, h >> 1);
 }
 
+extern VLC mb_non_intra_vlc[4];
+extern VLC v2_dc_lum_vlc;
+extern VLC v2_dc_chroma_vlc;
+extern VLC cbpy_vlc;
+extern VLC v2_intra_cbpc_vlc;
+extern VLC v2_mb_type_vlc;
+extern VLC v2_mv_vlc;
+extern VLC v1_intra_cbpc_vlc;
+extern VLC v1_inter_cbpc_vlc;
+extern VLC inter_intra_vlc;
+
+extern VLC ff_msmp4_mb_i_vlc;
+extern VLC ff_msmp4_dc_luma_vlc[2];
+extern VLC ff_msmp4_dc_chroma_vlc[2];
 
 static int wmv2_decode_mb(MpegEncContext *s, DCTELEM block[6][64])
 {

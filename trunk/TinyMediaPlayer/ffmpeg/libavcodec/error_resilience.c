@@ -312,7 +312,7 @@ static void v_block_filter(MpegEncContext *s, uint8_t *dst, int w, int h, int st
 }
 
 static void guess_mv(MpegEncContext *s){
-    uint8_t fixed[s->mb_stride * s->mb_height];
+    uint8_t* fixed = _alloca(s->mb_stride * s->mb_height * sizeof(uint8_t));
 #define MV_FROZEN    3
 #define MV_CHANGED   2
 #define MV_UNCHANGED 1

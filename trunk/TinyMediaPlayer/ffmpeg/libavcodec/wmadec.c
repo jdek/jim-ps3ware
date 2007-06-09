@@ -35,6 +35,7 @@
 
 #include "avcodec.h"
 #include "wma.h"
+#include "internal.h"
 
 #undef NDEBUG
 #include <assert.h>

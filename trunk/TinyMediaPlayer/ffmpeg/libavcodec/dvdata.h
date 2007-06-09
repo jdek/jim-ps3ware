@@ -30,6 +30,10 @@
  * 525/60 and 625/50, but the plans are to use it for various
  * DV specs as well (e.g. SMPTE314M vs. IEC 61834).
  */
+
+#ifndef _DVDATA_H
+#define _DVDATA_H
+
 typedef struct DVprofile {
     int              dsf;                 /* value of the dsf in the DV header */
     int              frame_size;          /* total size of one frame in bytes */
@@ -2538,6 +2542,7 @@ static const av_unused int dv_audio_frequency[3] = {
     48000, 44100, 32000,
 };
 
+#if 0
 typedef struct DVprofile {
     int              dsf;                 /* value of the dsf in the DV header */
     int              frame_size;          /* total size of one frame in bytes */
@@ -2559,7 +2564,9 @@ typedef struct DVprofile {
                                          /* in each frame in a 5 frames window */
     const uint8_t  (*audio_shuffle)[9];  /* PCM shuffling table */
 } DVprofile;
+#endif
 
+AVRational
 
 static const DVprofile dv_profiles[] = {
     { 0,
@@ -2572,7 +2579,7 @@ static const DVprofile dv_profiles[] = {
 	  0, /* ltc_divisor */
       480,
       720,
-      {{10, 11}, {40, 33}},
+	  {{10, 11}, {40, 33}},
       dv_place_411,
       PIX_FMT_YUV411P,
       90,
@@ -2746,3 +2753,5 @@ static inline int dv_write_ssyb_id(uint8_t syb_num, uint8_t fr, uint8_t* buf)
     buf[2] = 0xff;             /* reserved -- always 1 */
     return 3;
 }
+
+#endif

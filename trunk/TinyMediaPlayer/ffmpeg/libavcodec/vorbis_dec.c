@@ -26,6 +26,7 @@
 //#define AV_DEBUG(...) av_log(NULL, AV_LOG_INFO, __VA_ARGS__)
 
 #include <math.h>
+#include "internal.h"
 
 #define ALT_BITSTREAM_READER_LE
 #include "avcodec.h"
@@ -334,7 +335,7 @@ static int vorbis_parse_setup_hdr_codebooks(vorbis_context *vc) {
         if (codebook_setup->lookup_type==1) {
             uint_fast16_t i, j, k;
             uint_fast16_t codebook_lookup_values=ff_vorbis_nth_root(entries, codebook_setup->dimensions);
-            uint_fast16_t codebook_multiplicands[codebook_lookup_values];
+            uint_fast16_t* codebook_multiplicands = _alloca(codebook_lookup_values * sizeof(uint_fast16_t));
 
             float codebook_minimum_value=vorbisfloat2float(get_bits_long(gb, 32));
             float codebook_delta_value=vorbisfloat2float(get_bits_long(gb, 32));
@@ -1105,9 +1106,9 @@ static uint_fast8_t vorbis_floor1_decode(vorbis_context *vc, vorbis_floor_data *
     GetBitContext *gb=&vc->gb;
     uint_fast16_t range_v[4]={ 256, 128, 86, 64 };
     uint_fast16_t range=range_v[vf->multiplier-1];
-    uint_fast16_t floor1_Y[vf->x_list_dim];
-    uint_fast16_t floor1_Y_final[vf->x_list_dim];
-    int floor1_flag[vf->x_list_dim];
+    uint_fast16_t* floor1_Y = _alloca(vf->x_list_dim * sizeof(uint_fast16_t));
+    uint_fast16_t* floor1_Y_final = _alloca(vf->x_list_dim * sizeof(uint_fast16_t));
+    int* floor1_flag = _alloca(vf->x_list_dim * sizeof(int));
     uint_fast8_t class_;
     uint_fast8_t cdim;
     uint_fast8_t cbits;
@@ -1236,7 +1237,7 @@ static int vorbis_residue_decode(vorbis_context *vc, vorbis_residue *vr, uint_fa
     uint_fast8_t c_p_c=vc->codebooks[vr->classbook].dimensions;
     uint_fast16_t n_to_read=vr->end-vr->begin;
     uint_fast16_t ptns_to_read=n_to_read/vr->partition_size;
-    uint_fast8_t classifs[ptns_to_read*vc->audio_channels];
+    uint_fast8_t* classifs = _alloca(ptns_to_read*vc->audio_channels * sizeof(uint_fast8_t));
     uint_fast8_t pass;
     uint_fast8_t ch_used;
     uint_fast8_t i,j,l;
@@ -1402,12 +1403,12 @@ static int vorbis_parse_audio_packet(vorbis_context *vc) {
     uint_fast8_t mode_number;
     uint_fast16_t blocksize;
     int_fast32_t i,j;
-    uint_fast8_t no_residue[vc->audio_channels];
-    uint_fast8_t do_not_decode[vc->audio_channels];
+    uint_fast8_t* no_residue = _alloca(vc->audio_channels * sizeof(uint_fast8_t));
+    uint_fast8_t* do_not_decode = _alloca(vc->audio_channels * sizeof(uint_fast8_t));
     vorbis_mapping *mapping;
     float *ch_res_ptr=vc->channel_residues;
     float *ch_floor_ptr=vc->channel_floors;
-    uint_fast8_t res_chan[vc->audio_channels];
+    uint_fast8_t* res_chan = _alloca(vc->audio_channels * sizeof(uint_fast8_t));
     uint_fast8_t res_num=0;
     int_fast16_t retlen=0;
     uint_fast16_t saved_start=0;

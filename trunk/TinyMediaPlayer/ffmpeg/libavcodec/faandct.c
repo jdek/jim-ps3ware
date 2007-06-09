@@ -31,6 +31,10 @@
 #include "dsputil.h"
 #include "faandct.h"
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 4305) // 'initializing' : truncation from 'double' to 'const float
+#endif
+
 #define FLOAT float
 #ifdef FAAN_POSTSCALE
 #    define SCALE(x) postscale[x]
@@ -218,3 +222,7 @@ void ff_faandct248(DCTELEM * data)
         data[8*7 + i] = lrintf(SCALE(8*6 + i) * (tmp13 - z1));
     }
 }
+
+#if defined(_MSC_VER)
+#pragma warning(default : 4305) // 'initializing' : truncation from 'double' to 'const float
+#endif

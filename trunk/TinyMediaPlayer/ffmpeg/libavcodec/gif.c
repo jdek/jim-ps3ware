@@ -332,6 +332,8 @@ static int gif_encode_frame(AVCodecContext *avctx, unsigned char *outbuf, int bu
     return outbuf_ptr - outbuf;
 }
 
+static enum PixelFormat formats[] = {PIX_FMT_PAL8, -1};
+
 AVCodec gif_encoder = {
     "gif",
     CODEC_TYPE_VIDEO,
@@ -340,5 +342,9 @@ AVCodec gif_encoder = {
     gif_encode_init,
     gif_encode_frame,
     NULL, //encode_end,
-    .pix_fmts= (enum PixelFormat[]){PIX_FMT_PAL8, -1},
+	0,
+	0,
+	0,
+	0,
+	formats,
 };

@@ -23,6 +23,7 @@
 #include "bytestream.h"
 #include "sgi.h"
 #include "rle.h"
+#include <stddef.h>
 
 #define SGI_SINGLE_CHAN 2
 #define SGI_MULTI_CHAN 3

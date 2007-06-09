@@ -21,6 +21,11 @@
 #ifndef AVCODEC_H
 #define AVCODEC_H
 
+#if defined(_MSC_VER)
+#include <malloc.h>
+#include <errno.h>
+#endif
+
 /**
  * @file avcodec.h
  * external API header

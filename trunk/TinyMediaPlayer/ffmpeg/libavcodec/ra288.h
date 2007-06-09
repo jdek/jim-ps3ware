@@ -22,6 +22,10 @@
 #ifndef RA288TABLES_H
 #define RA288TABLES_H
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 4305) // 'initializing' : truncation from 'double' to 'const float
+#endif
+
 static const float amptable[8]={ 0.515625, 0.90234375, 1.57910156, 2.76342773,
                          -0.515625,-0.90234375,-1.57910156,-2.76342773 };
 
@@ -201,5 +205,9 @@ static const float table2a[10]={
         0.90625,        0.821289063,        0.74432373,        0.674499512,        0.61126709,
         0.553955078,        0.50201416,        0.454956055,        0.41229248,        0.373657227
 };
+
+#if defined(_MSC_VER)
+#pragma warning(default : 4305) // 'initializing' : truncation from 'double' to 'const float
+#endif
 
 #endif /* RA288TABLES_H */

@@ -905,5 +905,10 @@ void ff_wmv2_encode_mb(MpegEncContext * s,
                        DCTELEM block[6][64],
                        int motion_x, int motion_y);
 
+
+#define MB_NON_INTRA_VLC_BITS 9
+#define MB_INTRA_VLC_BITS 9
+#define INTER_INTRA_VLC_BITS 3
+
 #endif /* AVCODEC_MPEGVIDEO_H */
 

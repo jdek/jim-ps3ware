@@ -29,6 +29,7 @@
 #include "avcodec.h"
 #include "dsputil.h"
 #include "mpegvideo.h"
+#include "internal.h"
 
 #include "mpeg12data.h"
 #include "bytestream.h"
@@ -2174,16 +2175,18 @@ static int mpeg_decode_postinit(AVCodecContext *avctx){
         //mpeg2 aspect
             if(s->aspect_ratio_info > 1){
                 if( (s1->pan_scan.width == 0 )||(s1->pan_scan.height == 0) ){
-                    s->avctx->sample_aspect_ratio=
+					AVRational temp = {s->width, s->height};
+					s->avctx->sample_aspect_ratio=
                         av_div_q(
                          mpeg2_aspect[s->aspect_ratio_info],
-                         (AVRational){s->width, s->height}
+                         temp
                          );
                 }else{
+                    AVRational temp = {s1->pan_scan.width, s1->pan_scan.height};
                     s->avctx->sample_aspect_ratio=
                         av_div_q(
                          mpeg2_aspect[s->aspect_ratio_info],
-                         (AVRational){s1->pan_scan.width, s1->pan_scan.height}
+                         temp
                         );
                 }
             }else{
@@ -3260,7 +3263,8 @@ AVCodec mpeg1video_decoder = {
     mpeg_decode_end,
     mpeg_decode_frame,
     CODEC_CAP_DRAW_HORIZ_BAND | CODEC_CAP_DR1 | CODEC_CAP_TRUNCATED | CODEC_CAP_DELAY,
-    .flush= ff_mpeg_flush,
+    0,
+	ff_mpeg_flush,
 };
 
 AVCodec mpeg2video_decoder = {
@@ -3273,7 +3277,8 @@ AVCodec mpeg2video_decoder = {
     mpeg_decode_end,
     mpeg_decode_frame,
     CODEC_CAP_DRAW_HORIZ_BAND | CODEC_CAP_DR1 | CODEC_CAP_TRUNCATED | CODEC_CAP_DELAY,
-    .flush= ff_mpeg_flush,
+	0,
+	ff_mpeg_flush,
 };
 
 //legacy decoder
@@ -3287,7 +3292,8 @@ AVCodec mpegvideo_decoder = {
     mpeg_decode_end,
     mpeg_decode_frame,
     CODEC_CAP_DRAW_HORIZ_BAND | CODEC_CAP_DR1 | CODEC_CAP_TRUNCATED | CODEC_CAP_DELAY,
-    .flush= ff_mpeg_flush,
+	0,
+	ff_mpeg_flush,
 };
 
 #ifdef CONFIG_ENCODERS

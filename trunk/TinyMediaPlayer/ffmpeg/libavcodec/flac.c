@@ -313,7 +313,7 @@ static int decode_subframe_lpc(FLACContext *s, int channel, int pred_order)
 {
     int i, j;
     int coeff_prec, qlevel;
-    int coeffs[pred_order];
+    int* coeffs = _alloca(pred_order * sizeof(int));
 
 //    av_log(s->avctx, AV_LOG_DEBUG, "  SUBFRAME LPC\n");
 
@@ -758,5 +758,7 @@ AVCodec flac_decoder = {
     NULL,
     flac_decode_close,
     flac_decode_frame,
-    .flush= flac_flush,
+	0,
+	0,
+	flac_flush,
 };

@@ -25,6 +25,10 @@
 #include "avcodec.h"
 #include "bitstream.h"
 
+#if defined(_MSC_VER)
+#include <malloc.h>
+#endif
+
 /**
  * G.726 11bit float.
  * G.726 Standard uses rather odd 11bit floating point arithmentic for
@@ -340,7 +344,7 @@ static int g726_init(AVCodecContext * avctx)
 
     avctx->coded_frame = avcodec_alloc_frame();
     if (!avctx->coded_frame)
-        return AVERROR(ENOMEM);
+        return AVERROR_NOMEM;
     avctx->coded_frame->key_frame = 1;
 
     return 0;

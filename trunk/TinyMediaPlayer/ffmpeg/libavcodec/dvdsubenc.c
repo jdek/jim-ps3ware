@@ -20,6 +20,7 @@
  */
 #include "avcodec.h"
 #include "bytestream.h"
+#include <stddef.h>
 
 #undef NDEBUG
 #include <assert.h>
