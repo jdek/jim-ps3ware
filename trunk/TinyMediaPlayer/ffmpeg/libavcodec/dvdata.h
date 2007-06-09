@@ -2538,23 +2538,47 @@ static const av_unused int dv_audio_frequency[3] = {
     48000, 44100, 32000,
 };
 
+typedef struct DVprofile {
+    int              dsf;                 /* value of the dsf in the DV header */
+    int              frame_size;          /* total size of one frame in bytes */
+    int              difseg_size;         /* number of DIF segments per DIF channel */
+    int              n_difchan;           /* number of DIF channels per frame */
+    int              frame_rate;
+    int              frame_rate_base;
+    int              ltc_divisor;         /* FPS from the LTS standpoint */
+    int              height;              /* picture height in pixels */
+    int              width;               /* picture width in pixels */
+    AVRational       sar[2];              /* sample aspect ratios for 4:3 and 16:9 */
+    const uint16_t  *video_place;         /* positions of all DV macro blocks */
+    enum PixelFormat pix_fmt;             /* picture pixel format */
+
+    int              audio_stride;        /* size of audio_shuffle table */
+    int              audio_min_samples[3];/* min ammount of audio samples */
+                                          /* for 48Khz, 44.1Khz and 32Khz */
+    int              audio_samples_dist[5];/* how many samples are supposed to be */
+                                         /* in each frame in a 5 frames window */
+    const uint8_t  (*audio_shuffle)[9];  /* PCM shuffling table */
+} DVprofile;
+
+
 static const DVprofile dv_profiles[] = {
-    { .dsf = 0,
-      .frame_size = 120000,        /* IEC 61834, SMPTE-314M - 525/60 (NTSC) */
-      .difseg_size = 10,
-      .n_difchan = 1,
-      .frame_rate = 30000,
-      .ltc_divisor = 30,
-      .frame_rate_base = 1001,
-      .height = 480,
-      .width = 720,
-      .sar = {{10, 11}, {40, 33}},
-      .video_place = dv_place_411,
-      .pix_fmt = PIX_FMT_YUV411P,
-      .audio_stride = 90,
-      .audio_min_samples = { 1580, 1452, 1053 }, /* for 48, 44.1 and 32Khz */
-      .audio_samples_dist = { 1600, 1602, 1602, 1602, 1602 }, /* per SMPTE-314M */
-      .audio_shuffle = dv_audio_shuffle525,
+    { 0,
+      120000,        /* IEC 61834, SMPTE-314M - 525/60 (NTSC) */
+      10,
+      1,
+      30000,
+      30,
+      1001,
+	  0, /* ltc_divisor */
+      480,
+      720,
+      {{10, 11}, {40, 33}},
+      dv_place_411,
+      PIX_FMT_YUV411P,
+      90,
+      { 1580, 1452, 1053 }, /* for 48, 44.1 and 32Khz */
+      { 1600, 1602, 1602, 1602, 1602 }, /* per SMPTE-314M */
+      dv_audio_shuffle525,
     },
     { .dsf = 1,
       .frame_size = 144000,        /* IEC 61834 - 625/50 (PAL) */

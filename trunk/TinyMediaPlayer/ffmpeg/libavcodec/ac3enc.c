@@ -29,6 +29,7 @@
 #include "bitstream.h"
 #include "crc.h"
 #include "ac3.h"
+#include "internal.h"
 
 typedef struct AC3EncodeContext {
     PutBitContext pb;

@@ -38,6 +38,7 @@
  */
 
 #include "avcodec.h"
+#include <stddef.h>
 
 typedef struct DPCMContext {
     int channels;

@@ -41,6 +41,7 @@
 #include "dsputil.h"
 
 #include "imcdata.h"
+#include "internal.h"
 
 #define IMC_FRAME_ID 0x21
 #define BANDS 32
@@ -803,11 +804,12 @@ static int imc_decode_close(AVCodecContext * avctx)
 
 
 AVCodec imc_decoder = {
-    .name = "imc",
-    .type = CODEC_TYPE_AUDIO,
-    .id = CODEC_ID_IMC,
-    .priv_data_size = sizeof(IMCContext),
-    .init = imc_decode_init,
-    .close = imc_decode_close,
-    .decode = imc_decode_frame,
+    "imc",
+    CODEC_TYPE_AUDIO,
+    CODEC_ID_IMC,
+    sizeof(IMCContext),
+    imc_decode_init,
+	0,
+	imc_decode_close,
+    imc_decode_frame,
 };

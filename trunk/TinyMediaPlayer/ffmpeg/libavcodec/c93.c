@@ -22,6 +22,7 @@
 
 #include "avcodec.h"
 #include "bytestream.h"
+#include <stddef.h>
 
 typedef struct {
     AVFrame pictures[2];

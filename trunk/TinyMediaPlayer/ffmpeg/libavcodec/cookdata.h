@@ -28,6 +28,10 @@
 
 /* various data tables */
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 4305) // 'initializing' : truncation from 'double' to 'const float
+#endif
+
 static const int expbits_tab[8] = {
     52,47,43,37,29,22,16,0,
 };
@@ -557,3 +561,8 @@ static const float cplscale6[63] = {
 static const float* cplscales[5] = {
     cplscale2, cplscale3, cplscale4, cplscale5, cplscale6,
 };
+
+
+#if defined(_MSC_VER)
+#pragma warning(default : 4305) // 'initializing' : truncation from 'double' to 'const float
+#endif
