@@ -29,6 +29,12 @@
 #ifndef RATIONAL_H
 #define RATIONAL_H
 
+#include <inttypes.h>
+
+#if defined(_MSC_VER)
+#define inline __forceinline
+#endif
+
 /**
  * Rational number num/den.
  */

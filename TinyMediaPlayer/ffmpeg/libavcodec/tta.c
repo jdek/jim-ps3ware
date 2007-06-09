@@ -294,9 +294,9 @@ static int tta_decode_frame(AVCodecContext *avctx,
 
     init_get_bits(&s->gb, buf, buf_size*8);
     {
-        int32_t predictors[s->channels];
-        TTAFilter filters[s->channels];
-        TTARice rices[s->channels];
+        int32_t* predictors = _alloca(s->channels * sizeof(int32_t));
+        TTAFilter* filters = _alloca(s->channels * sizeof(TTAFilter));
+        TTARice* rices = _alloca(s->channels * sizeof(TTARice));
         int cur_chan = 0, framelen = s->frame_length;
         int32_t *p;
 

@@ -27,6 +27,12 @@
  * @author Michael Niedermayer <michaelni@gmx.at>
  */
 
+#ifndef _H264DATA_H
+#define _H264DATA_H
+
+#include "rational.h"
+#include "mpegvideo.h"
+
 #define VERT_PRED             0
 #define HOR_PRED              1
 #define DC_PRED               2
@@ -1321,3 +1327,5 @@ static const int cabac_context_init_PB[3][460][2] =
         {  31,  12 }, {  37,  23 }, {  31,  38 }, {  20,  64 },
     }
 };
+
+#endif

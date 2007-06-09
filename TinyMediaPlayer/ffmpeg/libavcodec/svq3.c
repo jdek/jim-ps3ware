@@ -45,6 +45,13 @@
  * svq3 decoder.
  */
 
+#include "h264data.h"
+#include "avcodec.h"
+#include "dsputil.h"
+#include "bitstream.h"
+#include "golomb.h"
+#include "h264.h"
+
 #define FULLPEL_MODE  1
 #define HALFPEL_MODE  2
 #define THIRDPEL_MODE 3
@@ -179,6 +186,18 @@ static void svq3_add_idct_c (uint8_t *dst, DCTELEM *block, int stride, int qp, i
         dst[i + stride*3]= cm[ dst[i + stride*3] + (((z0 - z3)*qmul + rr) >> 20) ];
     }
 }
+
+#define LOAD_LEFT_EDGE\
+    const int av_unused l0= src[-1+0*stride];\
+    const int av_unused l1= src[-1+1*stride];\
+    const int av_unused l2= src[-1+2*stride];\
+    const int av_unused l3= src[-1+3*stride];\
+
+#define LOAD_TOP_EDGE\
+    const int av_unused t0= src[ 0-1*stride];\
+    const int av_unused t1= src[ 1-1*stride];\
+    const int av_unused t2= src[ 2-1*stride];\
+    const int av_unused t3= src[ 3-1*stride];\
 
 static void pred4x4_down_left_svq3_c(uint8_t *src, uint8_t *topright, int stride){
     LOAD_TOP_EDGE
@@ -1000,6 +1019,9 @@ static int svq3_decode_frame (AVCodecContext *avctx,
 
   return buf_size;
 }
+
+extern int decode_init(AVCodecContext *avctx);
+extern int decode_end(AVCodecContext *avctx);
 
 
 AVCodec svq3_decoder = {

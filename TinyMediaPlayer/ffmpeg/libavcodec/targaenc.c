@@ -139,12 +139,20 @@ static int targa_encode_init(AVCodecContext *avctx)
     return 0;
 }
 
+static PixelFormats formats[] = {PIX_FMT_BGR24, PIX_FMT_RGB555, PIX_FMT_GRAY8, -1}
+
 AVCodec targa_encoder = {
-    .name = "targa",
-    .type = CODEC_TYPE_VIDEO,
-    .id = CODEC_ID_TARGA,
-    .priv_data_size = 0,
-    .init = targa_encode_init,
-    .encode = targa_encode_frame,
-    .pix_fmts= (enum PixelFormat[]){PIX_FMT_BGR24, PIX_FMT_RGB555, PIX_FMT_GRAY8, -1},
+    "targa",
+    CODEC_TYPE_VIDEO,
+    CODEC_ID_TARGA,
+    0,
+    targa_encode_init,
+    targa_encode_frame,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	formats
 };

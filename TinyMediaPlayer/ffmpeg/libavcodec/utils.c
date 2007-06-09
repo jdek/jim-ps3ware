@@ -115,7 +115,11 @@ void av_free_static(void)
  * Call av_free_static automatically before it's too late
  */
 
+#if defined(_GNUC_)
 static void do_free(void) __attribute__ ((destructor));
+#else
+static void do_free(void);
+#endif
 
 static void do_free(void)
 {
@@ -756,12 +760,14 @@ void avcodec_get_context_defaults2(AVCodecContext *s, enum CodecType codec_type)
     av_opt_set_defaults2(s, flags, flags);
 
     s->rc_eq= "tex^qComp";
-    s->time_base= (AVRational){0,1};
+	s->time_base.num = 0;
+	s->time_base.den = 1;
     s->get_buffer= avcodec_default_get_buffer;
     s->release_buffer= avcodec_default_release_buffer;
     s->get_format= avcodec_default_get_format;
     s->execute= avcodec_default_execute;
-    s->sample_aspect_ratio= (AVRational){0,1};
+    s->sample_aspect_ratio.num = 0;
+    s->sample_aspect_ratio.den = 1;
     s->pix_fmt= PIX_FMT_NONE;
     s->sample_fmt= SAMPLE_FMT_S16; // FIXME: set to NONE
 
