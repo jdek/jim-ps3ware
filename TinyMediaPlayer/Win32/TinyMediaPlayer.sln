@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual C++ Express 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TinyMediaPlayer", "TinyMediaPlayer.vcproj", "{EBA4EDCA-9D01-4319-B0B9-D9D1C3EDD128}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ffmpeg", "ffmpeg.vcproj", "{F77200F0-AC67-44EA-9108-C27A66EA05DB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EBA4EDCA-9D01-4319-B0B9-D9D1C3EDD128}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EBA4EDCA-9D01-4319-B0B9-D9D1C3EDD128}.Debug|Win32.Build.0 = Debug|Win32
+		{EBA4EDCA-9D01-4319-B0B9-D9D1C3EDD128}.Release|Win32.ActiveCfg = Release|Win32
+		{EBA4EDCA-9D01-4319-B0B9-D9D1C3EDD128}.Release|Win32.Build.0 = Release|Win32
+		{F77200F0-AC67-44EA-9108-C27A66EA05DB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F77200F0-AC67-44EA-9108-C27A66EA05DB}.Debug|Win32.Build.0 = Debug|Win32
+		{F77200F0-AC67-44EA-9108-C27A66EA05DB}.Release|Win32.ActiveCfg = Release|Win32
+		{F77200F0-AC67-44EA-9108-C27A66EA05DB}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
