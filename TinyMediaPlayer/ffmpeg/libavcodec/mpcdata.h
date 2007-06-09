@@ -20,6 +20,10 @@
  *
  */
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 4305) // 'initializing' : truncation from 'double' to 'const float
+#endif
+
 static const int8_t mpc_idx30[] = { -1, 0, 1,-1, 0, 1,-1, 0, 1,-1, 0, 1,-1, 0, 1,-1, 0, 1,-1, 0, 1,-1, 0, 1,-1, 0, 1};
 static const int8_t mpc_idx31[] = { -1,-1,-1, 0, 0, 0, 1, 1, 1,-1,-1,-1, 0, 0, 0, 1, 1, 1,-1,-1,-1, 0, 0, 0, 1, 1, 1};
 static const int8_t mpc_idx32[] = { -1,-1,-1,-1,-1,-1,-1,-1,-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1};
@@ -204,3 +208,7 @@ static const float mpc7_SCF[128] = {
     0.000000092001613439, 0.000000076635565449, 0.000000063835940978, 0.000000053174105119,
     0.000000044293003043, 0.000000036895215771, 0.000000030733001921, 0.000000025599996789
 };
+
+#if defined(_MSC_VER)
+#pragma warning(default : 4305) // 'initializing' : truncation from 'double' to 'const float
+#endif

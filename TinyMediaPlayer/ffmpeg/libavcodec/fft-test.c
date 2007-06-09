@@ -24,9 +24,13 @@
  */
 
 #include "dsputil.h"
+#include "internal.h"
 #include <math.h>
+#include <stdio.h>
+#if defined(_GNUC_C)
 #include <unistd.h>
 #include <sys/time.h>
+#endif
 
 #undef exit
 
@@ -133,9 +137,13 @@ float frandom(void)
 
 int64_t gettime(void)
 {
-    struct timeval tv;
+#if defined(_GNUC_)
+	struct timeval tv;
     gettimeofday(&tv,NULL);
     return (int64_t)tv.tv_sec * 1000000 + tv.tv_usec;
+#else
+	return 0;
+#endif
 }
 
 void check_diff(float *tab1, float *tab2, int n)
@@ -197,7 +205,7 @@ int main(int argc, char **argv)
             do_mdct = 1;
             break;
         case 'n':
-            fft_nbits = atoi(optarg);
+            //fft_nbits = atoi(optarg);
             break;
         }
     }

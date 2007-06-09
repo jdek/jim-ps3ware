@@ -25,6 +25,9 @@
  */
 
 #include "dsputil.h"
+#include "internal.h"
+#include <stddef.h>
+#include <math.h>
 
 /**
  * The size of the FFT is 2^nbits. If inverse is TRUE, inverse FFT is
@@ -46,7 +49,7 @@ int ff_fft_init(FFTContext *s, int nbits, int inverse)
         goto fail;
     s->inverse = inverse;
 
-    s2 = inverse ? 1.0 : -1.0;
+    s2 = inverse ? 1.0f : -1.0f;
 
     for(i=0;i<(n/2);i++) {
         alpha = 2 * M_PI * (float)i / (float)n;

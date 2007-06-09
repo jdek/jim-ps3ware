@@ -25,6 +25,10 @@
  * MPEG1/2 tables.
  */
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 4305) // 'initializing' : truncation from 'double' to 'const float
+#endif
+
 const uint16_t ff_mpeg1_default_intra_matrix[64] = {
         8, 16, 19, 22, 26, 27, 29, 34,
         16, 16, 22, 24, 27, 29, 34, 37,
@@ -472,3 +476,7 @@ static const uint8_t svcd_scan_offset_placeholder[14]={
     0xff, 0xff, 0xff,
     0xff, 0xff, 0xff,
 };
+
+#if defined(_MSC_VER)
+#pragma warning(default : 4305) // 'initializing' : truncation from 'double' to 'const float
+#endif

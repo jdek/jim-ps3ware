@@ -767,8 +767,12 @@ static inline void decode_line(FFV1Context *s, int w, int_fast16_t *sample[2], i
 
 static void decode_plane(FFV1Context *s, uint8_t *src, int w, int h, int stride, int plane_index){
     int x, y;
-    int_fast16_t sample_buffer[2][w+6];
-    int_fast16_t *sample[2]= {sample_buffer[0]+3, sample_buffer[1]+3};
+    int_fast16_t* sample_buffer[2]; //[w+6];
+	int_fast16_t *sample[2];
+	sample_buffer[0] = _alloca((w+6) * sizeof(int_fast16_t));
+	sample_buffer[1] = _alloca((w+6) * sizeof(int_fast16_t));
+	sample[0] = sample_buffer[0]+3; 
+	sample[1] = sample_buffer[1]+3;
 
     s->run_index=0;
 

@@ -29,6 +29,7 @@
 #include <stdlib.h>
 
 #include "avcodec.h"
+#include "intreadwrite.h"
 
 #ifdef CONFIG_ZLIB
 #include <zlib.h>

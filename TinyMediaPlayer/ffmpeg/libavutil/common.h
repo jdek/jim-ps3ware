@@ -41,12 +41,14 @@
 #    include <math.h>
 #endif /* HAVE_AV_CONFIG_H */
 
+#undef av_always_inline
+
 #ifndef av_always_inline
 #if defined(__GNUC__) && (__GNUC__ > 3 || __GNUC__ == 3 && __GNUC_MINOR__ > 0)
 #    define av_always_inline __attribute__((always_inline)) inline
 #    define av_noinline __attribute__((noinline))
 #else
-#    define av_always_inline inline
+#    define av_always_inline __forceinline
 #    define av_noinline
 #endif
 #endif

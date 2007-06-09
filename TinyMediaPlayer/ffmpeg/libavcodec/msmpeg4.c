@@ -42,7 +42,6 @@
 
 #define DC_VLC_BITS 9
 #define CBPY_VLC_BITS 6
-#define INTER_INTRA_VLC_BITS 3
 #define V1_INTRA_CBPC_VLC_BITS 6
 #define V1_INTER_CBPC_VLC_BITS 6
 #define V2_INTRA_CBPC_VLC_BITS 3
@@ -50,8 +49,6 @@
 #define MV_VLC_BITS 9
 #define V2_MV_VLC_BITS 9
 #define TEX_VLC_BITS 9
-#define MB_NON_INTRA_VLC_BITS 9
-#define MB_INTRA_VLC_BITS 9
 
 #define II_BITRATE 128*1024
 #define MBAC_BITRATE 50*1024

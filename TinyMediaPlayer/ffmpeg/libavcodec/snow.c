@@ -383,12 +383,12 @@ typedef struct BlockNode{
 }BlockNode;
 
 static const BlockNode null_block= { //FIXME add border maybe
-    .color= {128,128,128},
-    .mx= 0,
-    .my= 0,
-    .ref= 0,
-    .type= 0,
-    .level= 0,
+    0,
+    0,
+    0,
+    {128,128,128},
+    0,
+    0,
 };
 
 #define LOG2_MB_SIZE 4
@@ -848,10 +848,10 @@ static void inplace_liftV(DWTELEM *dst, int width, int height, int stride, int *
 #elif 1 // 13/7 CRF
 #define N1 4
 #define SHIFT1 4
-#define COEFFS1 (int[]){1,-9,-9,1}
+#define COEFFS1 {1,-9,-9,1}
 #define N2 4
 #define SHIFT2 4
-#define COEFFS2 (int[]){-1,5,5,-1}
+#define COEFFS2 {-1,5,5,-1}
 #define N3 0
 #define SHIFT3 1
 #define COEFFS3 NULL
@@ -943,13 +943,16 @@ static void inplace_liftV(DWTELEM *dst, int width, int height, int stride, int *
 #define COEFFS4 NULL
 #endif
 static void horizontal_decomposeX(DWTELEM *b, int width){
-    DWTELEM temp[width];
+    DWTELEM* temp = _alloca(width * sizeof(DWTELEM));
     const int width2= width>>1;
     const int w2= (width+1)>>1;
     int x;
 
-    inplace_lift(b, width, COEFFS1, N1, SHIFT1, LX1, 0);
-    inplace_lift(b, width, COEFFS2, N2, SHIFT2, LX0, 0);
+	static int coeffs1[] = COEFFS1;
+	static int coeffs2[] = COEFFS2;
+
+    inplace_lift(b, width, coeffs1, N1, SHIFT1, LX1, 0);
+    inplace_lift(b, width, coeffs2, N2, SHIFT2, LX0, 0);
     inplace_lift(b, width, COEFFS3, N3, SHIFT3, LX1, 0);
     inplace_lift(b, width, COEFFS4, N4, SHIFT4, LX0, 0);
 
@@ -963,7 +966,9 @@ static void horizontal_decomposeX(DWTELEM *b, int width){
 }
 
 static void horizontal_composeX(DWTELEM *b, int width){
-    DWTELEM temp[width];
+    DWTELEM* temp = _alloca(width * sizeof(DWTELEM));
+	static int coeffs1[] = COEFFS1;
+	static int coeffs2[] = COEFFS2;
     const int width2= width>>1;
     int x;
     const int w2= (width+1)>>1;
@@ -976,14 +981,17 @@ static void horizontal_composeX(DWTELEM *b, int width){
     if(width&1)
         b[2*x    ]= temp[x   ];
 
+
     inplace_lift(b, width, COEFFS4, N4, SHIFT4, LX0, 1);
     inplace_lift(b, width, COEFFS3, N3, SHIFT3, LX1, 1);
-    inplace_lift(b, width, COEFFS2, N2, SHIFT2, LX0, 1);
-    inplace_lift(b, width, COEFFS1, N1, SHIFT1, LX1, 1);
+    inplace_lift(b, width, coeffs2, N2, SHIFT2, LX0, 1);
+    inplace_lift(b, width, coeffs1, N1, SHIFT1, LX1, 1);
 }
 
 static void spatial_decomposeX(DWTELEM *buffer, int width, int height, int stride){
     int x, y;
+	static int coeffs1[] = COEFFS1;
+	static int coeffs2[] = COEFFS2;
 
     for(y=0; y<height; y++){
         for(x=0; x<width; x++){
@@ -995,8 +1003,9 @@ static void spatial_decomposeX(DWTELEM *buffer, int width, int height, int strid
         horizontal_decomposeX(buffer + y*stride, width);
     }
 
-    inplace_liftV(buffer, width, height, stride, COEFFS1, N1, SHIFT1, LX1, 0);
-    inplace_liftV(buffer, width, height, stride, COEFFS2, N2, SHIFT2, LX0, 0);
+
+    inplace_liftV(buffer, width, height, stride, coeffs1, N1, SHIFT1, LX1, 0);
+    inplace_liftV(buffer, width, height, stride, coeffs2, N2, SHIFT2, LX0, 0);
     inplace_liftV(buffer, width, height, stride, COEFFS3, N3, SHIFT3, LX1, 0);
     inplace_liftV(buffer, width, height, stride, COEFFS4, N4, SHIFT4, LX0, 0);
 }
@@ -1004,10 +1013,13 @@ static void spatial_decomposeX(DWTELEM *buffer, int width, int height, int strid
 static void spatial_composeX(DWTELEM *buffer, int width, int height, int stride){
     int x, y;
 
+	static int coeffs1[] = COEFFS1;
+	static int coeffs2[] = COEFFS2;
+
     inplace_liftV(buffer, width, height, stride, COEFFS4, N4, SHIFT4, LX0, 1);
     inplace_liftV(buffer, width, height, stride, COEFFS3, N3, SHIFT3, LX1, 1);
-    inplace_liftV(buffer, width, height, stride, COEFFS2, N2, SHIFT2, LX0, 1);
-    inplace_liftV(buffer, width, height, stride, COEFFS1, N1, SHIFT1, LX1, 1);
+    inplace_liftV(buffer, width, height, stride, coeffs2, N2, SHIFT2, LX0, 1);
+    inplace_liftV(buffer, width, height, stride, coeffs1, N1, SHIFT1, LX1, 1);
 
     for(y=0; y<height; y++){
         horizontal_composeX(buffer + y*stride, width);
@@ -1021,7 +1033,7 @@ static void spatial_composeX(DWTELEM *buffer, int width, int height, int stride)
 }
 
 static void horizontal_decompose53i(DWTELEM *b, int width){
-    DWTELEM temp[width];
+    DWTELEM* temp = _alloca(width * sizeof(DWTELEM));
     const int width2= width>>1;
     int x;
     const int w2= (width+1)>>1;
@@ -1110,7 +1122,7 @@ STOP_TIMER("vertical_decompose53i*")}
 }
 
 static void horizontal_decompose97i(DWTELEM *b, int width){
-    DWTELEM temp[width];
+    DWTELEM* temp = _alloca(width * sizeof(DWTELEM));
     const int w2= (width+1)>>1;
 
     lift (temp+w2, b    +1, b      , 1, 2, 2, width, -W_AM, W_AO, W_AS, 1, 0);
@@ -1211,7 +1223,7 @@ void ff_spatial_dwt(DWTELEM *buffer, int width, int height, int stride, int type
 }
 
 static void horizontal_compose53i(DWTELEM *b, int width){
-    DWTELEM temp[width];
+    DWTELEM* temp = _alloca(width * sizeof(DWTELEM));
     const int width2= width>>1;
     const int w2= (width+1)>>1;
     int x;
@@ -1339,7 +1351,7 @@ static void spatial_compose53i(DWTELEM *buffer, int width, int height, int strid
 
 
 void ff_snow_horizontal_compose97i(DWTELEM *b, int width){
-    DWTELEM temp[width];
+    DWTELEM* temp = _alloca(width * sizeof(DWTELEM));
     const int w2= (width+1)>>1;
 
     lift (temp   , b      , b   +w2, 1, 1, 1, width,  W_DM, W_DO, W_DS, 0, 1);
@@ -1586,7 +1598,7 @@ static int encode_subband_c0run(SnowContext *s, SubBand *b, DWTELEM *src, DWTELE
 
     if(1){
         int run=0;
-        int runs[w*h];
+        int* runs = alloca(w * h * sizeof(int));
         int run_index=0;
         int max_index;
 
@@ -2421,7 +2433,7 @@ STOP_TIMER("mc_block")
 
 #define mca(dx,dy,b_w)\
 static void mc_block_hpel ## dx ## dy ## b_w(uint8_t *dst, uint8_t *src, int stride, int h){\
-    uint8_t tmp[stride*(b_w+5)];\
+    uint8_t* tmp = alloca(stride*(b_w+5) * sizeof(int));\
     assert(h==b_w);\
     mc_block(dst, src-2-2*stride, tmp, stride, b_w, b_w, dx, dy);\
 }
@@ -2560,7 +2572,7 @@ static av_always_inline void add_yblock(SnowContext *s, int sliced, slice_buffer
     BlockNode *rb= lb+1;
     uint8_t *block[4];
     int tmp_step= src_stride >= 7*MB_SIZE ? MB_SIZE : MB_SIZE*src_stride;
-    uint8_t tmp[src_stride*7*MB_SIZE]; //FIXME align
+    uint8_t* tmp = alloca(src_stride*7*MB_SIZE * sizeof(uint8_t)); //FIXME align
     uint8_t *ptmp;
     int x,y;
 
@@ -2942,8 +2954,8 @@ static int get_block_rd(SnowContext *s, int mb_x, int mb_y, int plane_index, con
     uint8_t *dst= s->current_picture.data[plane_index];
     uint8_t *src= s->  input_picture.data[plane_index];
     DWTELEM *pred= (DWTELEM*)s->m.obmc_scratchpad + plane_index*block_size*block_size*4;
-    uint8_t cur[ref_stride*2*MB_SIZE]; //FIXME alignment
-    uint8_t tmp[ref_stride*(2*MB_SIZE+5)];
+    uint8_t* cur = alloca(ref_stride*2*MB_SIZE * sizeof(uint8_t)); //FIXME alignment
+    uint8_t* tmp = alocca(ref_stride*(2*MB_SIZE+5) * sizeof(uint8_t));
     const int b_stride = s->b_width << s->block_max_depth;
     const int b_height = s->b_height<< s->block_max_depth;
     const int w= p->width;
@@ -3138,8 +3150,13 @@ static av_always_inline int check_block_inter(SnowContext *s, int mb_x, int mb_y
 static av_always_inline int check_4block_inter(SnowContext *s, int mb_x, int mb_y, int p0, int p1, int ref, int *best_rd){
     const int b_stride= s->b_width << s->block_max_depth;
     BlockNode *block= &s->block[mb_x + mb_y * b_stride];
-    BlockNode backup[4]= {block[0], block[1], block[b_stride], block[b_stride+1]};
+    BlockNode backup[4];// = {block[0], block[1], block[b_stride], block[b_stride+1]};
     int rd, index, value;
+
+	backup[0] = block[0];
+	backup[1] = block[1];
+	backup[2] = block[b_stride];
+	backup[3] = block[b_stride+1];
 
     assert(mb_x>=0 && mb_y>=0);
     assert(mb_x<b_stride);
@@ -3209,7 +3226,11 @@ static void iterative_me(SnowContext *s){
                 BlockNode *blb= mb_x           && mb_y+1<b_height ? &s->block[index+b_stride-1] : NULL;
                 BlockNode *brb= mb_x+1<b_width && mb_y+1<b_height ? &s->block[index+b_stride+1] : NULL;
                 const int b_w= (MB_SIZE >> s->block_max_depth);
-                uint8_t obmc_edged[b_w*2][b_w*2];
+				uint8_t** obmc_edged = _alloca(b_w * 2 * sizeof(uint8_t));
+
+				/* ugly as shit but what can you do */
+				for (i = 0; i < b_w * 2; ++i)
+					obmc_edged[i] = _alloca(b_w * 2 * sizeof(uint8_t));
 
                 if(pass && (block->type & BLOCK_OPT))
                     continue;

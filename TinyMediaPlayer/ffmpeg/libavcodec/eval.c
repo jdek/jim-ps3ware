@@ -32,6 +32,7 @@
 #include "avcodec.h"
 #include "mpegvideo.h"
 #include "eval.h"
+#include "nan.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,7 +40,7 @@
 #include <math.h>
 
 #ifndef NAN
-  #define NAN 0.0/0.0
+  #define NAN getNan();
 #endif
 
 #ifndef M_PI
@@ -61,7 +62,7 @@ typedef struct Parser{
     double var[VARS];
 } Parser;
 
-static int8_t si_prefixes['z' - 'E' + 1]={
+static int8_t si_prefixes['z' - 'E' + 1]; /*={
     ['y'-'E']= -24,
     ['z'-'E']= -21,
     ['a'-'E']= -18,
@@ -83,7 +84,7 @@ static int8_t si_prefixes['z' - 'E' + 1]={
     ['Z'-'E']=  21,
     ['Y'-'E']=  24,
 };
-
+*/
 /** strtod() function extended with 'k', 'M', 'G', 'ki', 'Mi', 'Gi' and 'B'
  * postfixes.  This allows using f.e. kB, MiB, G and B as a postfix. This
  * function assumes that the unit of numbers is bits not bytes.
@@ -91,6 +92,33 @@ static int8_t si_prefixes['z' - 'E' + 1]={
 static double av_strtod(const char *name, char **tail) {
     double d;
     char *next;
+	static int inited = 0;
+
+	if (inited == 0)
+	{
+		si_prefixes['y'-'E']= -24;
+   		si_prefixes['z'-'E']= -21;
+		si_prefixes['a'-'E']= -18;
+		si_prefixes['f'-'E']= -15;
+		si_prefixes['p'-'E']= -12;
+		si_prefixes['n'-'E']= - 9;
+		si_prefixes['u'-'E']= - 6;
+		si_prefixes['m'-'E']= - 3;
+		si_prefixes['c'-'E']= - 2;
+		si_prefixes['d'-'E']= - 1;
+		si_prefixes['h'-'E']=   2;
+		si_prefixes['k'-'E']=   3;
+		si_prefixes['K'-'E']=   3;
+		si_prefixes['M'-'E']=   6;
+		si_prefixes['G'-'E']=   9;
+		si_prefixes['T'-'E']=  12;
+		si_prefixes['P'-'E']=  15;
+		si_prefixes['E'-'E']=  18;
+		si_prefixes['Z'-'E']=  21;
+		si_prefixes['Y'-'E']=  24;
+		inited = 1;
+	}
+
     d = strtod(name, &next);
     /* if parsing succeeded, check for and interpret postfixes */
     if (next!=name) {
@@ -383,7 +411,7 @@ AVEvalExpr * ff_parse(char *s, const char **const_name,
                char **error){
     Parser p;
     AVEvalExpr * e;
-    char w[strlen(s) + 1], * wp = w;
+    char* w = _alloc(strlen(s) + 1 * sizeof(char)), * wp = w;
 
     while (*s)
         if (!isspace(*s++)) *wp++ = s[-1];

@@ -24,6 +24,10 @@
  * Various WMA tables.
  */
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 4305) // 'initializing' : truncation from 'double' to 'const float
+#endif
+
 static const uint16_t wma_critical_freqs[25] = {
     100,   200,  300, 400,   510,  630,  770,    920,
     1080, 1270, 1480, 1720, 2000, 2320, 2700,   3150,
@@ -1431,3 +1435,7 @@ static const CoefVLCTable coef_vlcs[6] = {
         sizeof(coef5_huffbits), sizeof(levels5)/2, coef5_huffcodes, coef5_huffbits, levels5,
     },
 };
+
+#if defined(_MSC_VER)
+#pragma warning(default : 4305) // 'initializing' : truncation from 'double' to 'const float
+#endif
