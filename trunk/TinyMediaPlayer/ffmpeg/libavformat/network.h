@@ -21,7 +21,7 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #include <winsock2.h>
 #include <ws2tcpip.h>
 

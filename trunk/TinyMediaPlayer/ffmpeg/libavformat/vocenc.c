@@ -88,6 +88,8 @@ static int voc_write_trailer(AVFormatContext *s)
     return 0;
 }
 
+static const AVCodecTag* codecTag[] = {voc_codec_tags, 0};
+
 AVOutputFormat voc_muxer = {
     "voc",
     "Creative Voice File format",
@@ -99,5 +101,8 @@ AVOutputFormat voc_muxer = {
     voc_write_header,
     voc_write_packet,
     voc_write_trailer,
-    .codec_tag=(const AVCodecTag*[]){voc_codec_tags, 0},
+	0,
+	0,
+	0,
+	codecTag,
 };

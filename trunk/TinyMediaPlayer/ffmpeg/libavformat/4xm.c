@@ -28,6 +28,7 @@
  */
 
 #include "avformat.h"
+#include <limits.h>
 
 #define  RIFF_TAG MKTAG('R', 'I', 'F', 'F')
 #define _4XMV_TAG MKTAG('4', 'X', 'M', 'V')

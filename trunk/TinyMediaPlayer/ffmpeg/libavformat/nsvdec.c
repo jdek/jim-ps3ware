@@ -20,6 +20,7 @@
  */
 #include "avformat.h"
 #include "riff.h"
+#include <limits.h>
 
 //#define DEBUG
 //#define DEBUG_DUMP_INDEX // XXX dumbdriving-271.nsv breaks with it commented!!
@@ -358,8 +359,10 @@ static int nsv_parse_NSVf_header(AVFormatContext *s, AVFormatParameters *ap)
         if((unsigned)table_entries >= UINT_MAX / sizeof(uint32_t))
             return -1;
         nsv->nsvf_index_data = av_malloc(table_entries * sizeof(uint32_t));
+#if defined(_GNUC_)
 #warning "FIXME: Byteswap buffer as needed"
-        get_buffer(pb, (unsigned char *)nsv->nsvf_index_data, table_entries * sizeof(uint32_t));
+#endif
+		get_buffer(pb, (unsigned char *)nsv->nsvf_index_data, table_entries * sizeof(uint32_t));
     }
 
     PRINT(("NSV got index; filepos %"PRId64"\n", url_ftell(pb)));
@@ -412,8 +415,16 @@ static int nsv_parse_NSVs_header(AVFormatContext *s, AVFormatParameters *ap)
     PRINT(("NSV NSVs framerate code %2x\n", i));
     if(i&0x80) { /* odd way of giving native framerates from docs */
         int t=(i & 0x7F)>>2;
-        if(t<16) framerate = (AVRational){1, t+1};
-        else     framerate = (AVRational){t-15, 1};
+        if(t<16) 
+		{
+			framerate.num = 1;
+			framerate.den = t+1;
+		}
+		else
+		{
+			framerate.num = t-15;
+			framerate.den = 1;
+		}
 
         if(i&1){
             framerate.num *= 1000;
@@ -425,7 +436,10 @@ static int nsv_parse_NSVs_header(AVFormatContext *s, AVFormatParameters *ap)
         else              framerate.num *= 30;
     }
     else
-        framerate= (AVRational){i, 1};
+	{
+		framerate.num = 1;
+		framerate.den = 1;
+	}
 
     nsv->avsync = get_le16(pb);
 #ifdef DEBUG

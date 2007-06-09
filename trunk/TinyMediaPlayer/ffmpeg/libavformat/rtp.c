@@ -22,7 +22,10 @@
 #include "mpegts.h"
 #include "bitstream.h"
 
+#if defined(_GNUC_)
 #include <unistd.h>
+#endif
+
 #include "network.h"
 
 #include "rtp_internal.h"

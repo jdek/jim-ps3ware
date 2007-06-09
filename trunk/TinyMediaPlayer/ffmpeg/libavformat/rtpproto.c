@@ -20,7 +20,10 @@
  */
 #include "avformat.h"
 
+#if defined(_GNUC_)
 #include <unistd.h>
+#endif
+
 #include <stdarg.h>
 #include "network.h"
 #include <fcntl.h>

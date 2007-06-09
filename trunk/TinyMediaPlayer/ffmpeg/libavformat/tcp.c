@@ -19,9 +19,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 #include "avformat.h"
+#if defined(_GNUC_)
 #include <unistd.h>
-#include "network.h"
 #include <sys/time.h>
+#endif
+#include "network.h"
 
 typedef struct TCPContext {
     int fd;

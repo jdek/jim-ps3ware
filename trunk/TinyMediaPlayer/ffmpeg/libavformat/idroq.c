@@ -28,6 +28,7 @@
  */
 
 #include "avformat.h"
+#include <limits.h>
 
 #define RoQ_MAGIC_NUMBER 0x1084
 #define RoQ_CHUNK_PREAMBLE_SIZE 8

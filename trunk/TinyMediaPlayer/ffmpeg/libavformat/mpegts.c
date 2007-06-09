@@ -232,7 +232,7 @@ static void mpegts_close_filter(MpegTSContext *ts, MpegTSFilter *filter)
 }
 
 static int analyze(const uint8_t *buf, int size, int packet_size, int *index){
-    int stat[packet_size];
+    int* stat = _alloca(packet_size * sizeof(int));
     int i;
     int x=0;
     int best_score=0;
@@ -1522,7 +1522,7 @@ AVInputFormat mpegts_demuxer = {
     mpegts_read_close,
     read_seek,
     mpegts_get_pcr,
-    .flags = AVFMT_SHOW_IDS,
+    AVFMT_SHOW_IDS,
 };
 
 AVInputFormat mpegtsraw_demuxer = {
@@ -1535,5 +1535,5 @@ AVInputFormat mpegtsraw_demuxer = {
     mpegts_read_close,
     read_seek,
     mpegts_get_pcr,
-    .flags = AVFMT_SHOW_IDS,
+    AVFMT_SHOW_IDS,
 };

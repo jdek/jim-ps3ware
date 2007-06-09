@@ -225,5 +225,7 @@ AVInputFormat mpc_demuxer = {
     mpc_read_packet,
     mpc_read_close,
     mpc_read_seek,
-    .extensions = "mpc",
+	0,
+	0,
+	"mpc",
 };

@@ -19,7 +19,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 #include "avformat.h"
+#if defined(_GNUC_)
 #include <unistd.h>
+#endif
+
 #include "network.h"
 
 #ifndef IPV6_ADD_MEMBERSHIP

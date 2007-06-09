@@ -85,8 +85,10 @@ static int read_header(AVFormatContext *s,
     video->codec->width = 320;
     video->codec->height = 192;
     /* 4:3 320x200 with 8 empty lines */
-    video->codec->sample_aspect_ratio = (AVRational) { 5, 6 };
-    video->time_base = (AVRational) { 2, 25 };
+	video->codec->sample_aspect_ratio.num = 5;
+    video->codec->sample_aspect_ratio.den = 6;
+	video->time_base.num = 2;
+	video->time_base.den = 25;
     video->nb_frames = framecount;
     video->duration = framecount;
     video->start_time = 0;

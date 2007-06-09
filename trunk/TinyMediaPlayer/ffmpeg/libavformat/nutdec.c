@@ -26,6 +26,8 @@
 
 #undef NDEBUG
 #include <assert.h>
+#include <limits.h>
+#include <inttypes.h>
 
 static uint64_t get_v(ByteIOContext *bc){
     uint64_t val = 0;
@@ -173,7 +175,7 @@ static int nut_probe(AVProbeData *p){
 #define GET_V(dst, check) \
     tmp= get_v(bc);\
     if(!(check)){\
-        av_log(s, AV_LOG_ERROR, "Error " #dst " is (%"PRId64")\n", tmp);\
+        av_log(s, AV_LOG_ERROR, "Error " #dst " is (%ld)\n", tmp);\
         return -1;\
     }\
     dst= tmp;
@@ -808,8 +810,8 @@ assert(0);
 static int read_seek(AVFormatContext *s, int stream_index, int64_t pts, int flags){
     NUTContext *nut = s->priv_data;
     AVStream *st= s->streams[stream_index];
-    syncpoint_t dummy={.ts= pts*av_q2d(st->time_base)*AV_TIME_BASE};
-    syncpoint_t nopts_sp= {.ts= AV_NOPTS_VALUE, .back_ptr= AV_NOPTS_VALUE};
+    syncpoint_t dummy={0, 0, pts*av_q2d(st->time_base)*AV_TIME_BASE};
+    syncpoint_t nopts_sp= {0, AV_NOPTS_VALUE, AV_NOPTS_VALUE };
     syncpoint_t *sp, *next_node[2]= {&nopts_sp, &nopts_sp};
     int64_t pos, pos2, ts;
     int i;

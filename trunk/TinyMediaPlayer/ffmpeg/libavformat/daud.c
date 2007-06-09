@@ -54,5 +54,7 @@ AVInputFormat daud_demuxer = {
     daud_packet,
     NULL,
     NULL,
-    .extensions = "302",
+	0,
+	0,
+    "302",
 };
