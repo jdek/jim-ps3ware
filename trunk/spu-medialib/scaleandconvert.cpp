@@ -72,7 +72,7 @@ int main (int nArg, char* cArg[]) {
 	char *filename="default", *inBuf[2];
 	char *RAMBufferA[2], *Ypointer, *Upointer, *Vpointer;
 	unsigned int msg;
-
+	int SelIn=0;
 	ifstream Source;
 	ofstream Destination;
 
@@ -101,7 +101,7 @@ int main (int nArg, char* cArg[]) {
 	Source.seekg((srcW*srcH+srcW*srcH/2)*frame);
 
 	Source.read(inBuf[0],(srcW*srcH+(srcW*srcH)/2));
-	Source.read(inBuf[1],(srcW*srcH+(srcW*srcH)/2));
+	//Source.read(inBuf[1],(srcW*srcH+(srcW*srcH)/2));
 
 	Ypointer=inBuf[curBuf];
 	Upointer=Ypointer+srcW*srcH;
@@ -111,13 +111,13 @@ int main (int nArg, char* cArg[]) {
 	RAMBufferA[1]=(char*)memalign(128,dstW*dstH+((dstW*dstH)/2));	
 
 	
-	yuvscaler_t *yuvs = sws_init_yuvscaler(srcW, srcH, dstW, dstH, (ea_t)inBuf[0], (ea_t)inBuf[0], (ea_t)RAMBufferA[0],(ea_t)RAMBufferA[1]);
+	yuvscaler_t *yuvs = sws_init_yuvscaler(srcW, srcH, dstW, dstH, (ea_t)inBuf[0], (ea_t)inBuf[1], (ea_t)RAMBufferA[0],(ea_t)RAMBufferA[1]);
 	printf("spu_yuv2rgb_initialised\n");
 	printf("spu_yuvscaler_initialised\n");
 	//we swap rambuffer so that they dont work on the same frame at the same time!
 	yuv2rgb_t *yuvc = csc_init_yuv2rgb(dstW, dstH, offset,maxwidth, (ea_t)RAMBufferA[0], (ea_t)RAMBufferA[1], fbuf0, fbuf1);
 	
-	
+	SelIn=1;
 
 	sws_send_message(yuvs,RUN);
 	csc_send_message(yuvc,RUN);
@@ -125,7 +125,7 @@ int main (int nArg, char* cArg[]) {
 	while (msg != STOP)
 	{
 		counter++;
-		
+	//	Source.read(inBuf[SelIn],(srcW*srcH+(srcW*srcH)/2)); requires ultra fast hard drives/network for HD!
 		msg=sws_receive_message(yuvs);	
 		msg=csc_receive_message(yuvc);
 
@@ -141,12 +141,15 @@ int main (int nArg, char* cArg[]) {
 			printf("width : %d, height : %d , FPS : %f\n",srcW,srcH,fcount/time_elapsed);
 		}
 		if (msg ==RDY ) {
-			fb_swap();
+			fb_swapVsync();
+			//fb_swap(); no sync!
 			fcount++;
 			
 			sws_send_message(yuvs,RUN);
 			csc_send_message(yuvc,RUN);
+			SelIn=SelIn^1;
 		}
+		
 	}
 	Destination.write(RAMBufferA[0],dstW*dstH + ((dstW*dstH)/2)); // writes your new scaled YUV to a file!
 	Destination.close();
