@@ -19,7 +19,9 @@
  * License along with FFmpeg; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-#include "config.h"
+
+#undef restrict
+#include "../config.h"
 #include "avformat.h"
 #if defined(__MINGW32__)
 #include <sys/types.h>
@@ -27,6 +29,7 @@
 #elif defined(CONFIG_OS2)
 #include <string.h>
 #include <sys/time.h>
+#elif defined(_MSC_VER)
 #else
 #include <unistd.h>
 #include <fcntl.h>
@@ -35,7 +38,7 @@
 #include <time.h>
 
 #ifndef HAVE_SYS_POLL_H
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #include <winsock2.h>
 #else
 #include <sys/select.h>

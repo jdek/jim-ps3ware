@@ -76,7 +76,8 @@ flac_header (AVFormatContext * s, int idx)
 }
 
 ogg_codec_t flac_codec = {
-    .magic = "\177FLAC",
-    .magicsize = 5,
-    .header = flac_header
+    "\177FLAC",
+    5,
+	0,
+	flac_header
 };

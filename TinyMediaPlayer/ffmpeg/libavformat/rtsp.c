@@ -20,8 +20,11 @@
  */
 #include "avformat.h"
 
+#if defined(_GNUC_)
 #include <sys/time.h>
 #include <unistd.h> /* for select() prototype */
+#endif
+
 #include "network.h"
 
 #include "rtp_internal.h"

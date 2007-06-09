@@ -25,6 +25,9 @@
 
 #undef NDEBUG
 #include <assert.h>
+#include "../config.h"
+#include "internal.h"
+#include <limits.h>
 
 //#define DEBUG
 //#define DEBUG_SEEK

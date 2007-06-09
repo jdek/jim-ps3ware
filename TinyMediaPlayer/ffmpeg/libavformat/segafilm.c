@@ -28,6 +28,7 @@
  */
 
 #include "avformat.h"
+#include <limits.h>
 
 #define FILM_TAG MKBETAG('F', 'I', 'L', 'M')
 #define FDSC_TAG MKBETAG('F', 'D', 'S', 'C')

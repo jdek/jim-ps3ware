@@ -693,6 +693,7 @@ AVInputFormat ogg_demuxer = {
     ogg_read_packet,
     ogg_read_close,
     ogg_read_seek,
-// ogg_read_timestamp,
-    .extensions = "ogg",
+	0,
+	0,
+	"ogg",
 };

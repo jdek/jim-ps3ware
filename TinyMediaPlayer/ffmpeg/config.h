@@ -7,7 +7,7 @@
 #define HAVE_ARPA_INET_H 1
 //#define HAVE_BYTESWAP_H 1
 #define HAVE_DCBZL 1
-#define HAVE_DLFCN_H 1
+//#define HAVE_DLFCN_H 1
 //#define HAVE_DLOPEN 1
 //#define HAVE_FAST_64BIT 1
 //#define HAVE_FREETYPE2 1
@@ -27,10 +27,10 @@
 #define CONFIG_AUDIO_OSS 1
 #define CONFIG_DV1394 1
 #define CONFIG_FFMPEG 1
-#define CONFIG_FFSERVER 1
+//#define CONFIG_FFSERVER 1
 #define CONFIG_IPV6 1
 #define CONFIG_MPEGAUDIO_HP 1
-#define CONFIG_NETWORK 1
+//#define CONFIG_NETWORK 1
 #define CONFIG_PROTOCOLS 1
 #define CONFIG_VHOOK 1
 #define CONFIG_V4L 1
@@ -957,5 +957,7 @@
 #define ENABLE_RTP_PROTOCOL 1
 #define ENABLE_TCP_PROTOCOL 1
 #define ENABLE_UDP_PROTOCOL 1
-#define restrict __restrict__
+#ifndef restrict
+#define restrict
+#endif
 #define ASMALIGN(ZEROBITS) ".align " #ZEROBITS "\n\t"

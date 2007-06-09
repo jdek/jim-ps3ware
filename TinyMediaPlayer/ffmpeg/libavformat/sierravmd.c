@@ -28,6 +28,7 @@
  */
 
 #include "avformat.h"
+#include <limits.h>
 
 #define VMD_HEADER_SIZE 0x0330
 #define BYTES_PER_FRAME_RECORD 16

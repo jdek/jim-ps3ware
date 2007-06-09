@@ -317,6 +317,9 @@ static int flv_write_packet(AVFormatContext *s, AVPacket *pkt)
     return 0;
 }
 
+static const AVCodecTag* codecTag[] = {flv_video_codec_ids, flv_audio_codec_ids, 0};
+
+
 AVOutputFormat flv_muxer = {
     "flv",
     "flv format",
@@ -332,5 +335,8 @@ AVOutputFormat flv_muxer = {
     flv_write_header,
     flv_write_packet,
     flv_write_trailer,
-    .codec_tag= (const AVCodecTag*[]){flv_video_codec_ids, flv_audio_codec_ids, 0},
+	0,
+	0,
+	0,
+	codecTag
 };

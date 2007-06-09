@@ -76,8 +76,8 @@ vorbis_comment (AVFormatContext * as, uint8_t *buf, int size)
         v++;
 
         if (tl && vl){
-            char tt[tl + 1];
-            char ct[vl + 1];
+            char* tt = _alloc(tl + 1 * sizeof(char));
+            char* ct = _alloca(vl + 1 * sizeof(char));
 
             for (j = 0; j < tl; j++)
                 tt[j] = toupper (t[j]);
@@ -199,7 +199,8 @@ vorbis_header (AVFormatContext * s, int idx)
 }
 
 ogg_codec_t vorbis_codec = {
-    .magic = "\001vorbis",
-    .magicsize = 7,
-    .header = vorbis_header
+    "\001vorbis",
+    7,
+	0,
+    vorbis_header
 };

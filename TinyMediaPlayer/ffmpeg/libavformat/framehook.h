@@ -22,7 +22,9 @@
 #ifndef _FRAMEHOOK_H
 #define _FRAMEHOOK_H
 
+#if defined(_GNUC_)
 #warning VHOOK is deprecated. Please help porting libmpcodecs or a better filter system to FFmpeg instead of wasting your time writing new filters for this crappy one.
+#endif
 
 /*
  * Prototypes for interface to .so that implement a video processing hook

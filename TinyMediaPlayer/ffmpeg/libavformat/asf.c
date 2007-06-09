@@ -568,7 +568,7 @@ static int asf_get_packet(AVFormatContext *s)
 
     if (c != 0x82) {
         if (!url_feof(pb))
-            av_log(s, AV_LOG_ERROR, "ff asf bad header %x  at:%"PRId64"\n", c, url_ftell(pb));
+            av_log(s, AV_LOG_ERROR, "ff asf bad header %x  at:%lld\n", c, url_ftell(pb));
     }
     if ((c & 0x8f) == 0x82) {
         if (d || e) {
@@ -592,11 +592,11 @@ static int asf_get_packet(AVFormatContext *s)
 
     //the following checks prevent overflows and infinite loops
     if(packet_length >= (1U<<29)){
-        av_log(s, AV_LOG_ERROR, "invalid packet_length %d at:%"PRId64"\n", packet_length, url_ftell(pb));
+        av_log(s, AV_LOG_ERROR, "invalid packet_length %d at:%lld\n", packet_length, url_ftell(pb));
         return -1;
     }
     if(padsize >= packet_length){
-        av_log(s, AV_LOG_ERROR, "invalid padsize %d at:%"PRId64"\n", padsize, url_ftell(pb));
+        av_log(s, AV_LOG_ERROR, "invalid padsize %d at:%lld\n", padsize, url_ftell(pb));
         return -1;
     }
 
@@ -903,7 +903,7 @@ static int64_t asf_read_pts(AVFormatContext *s, int stream_index, int64_t *ppos,
     int64_t pts;
     int64_t pos= *ppos;
     int i;
-    int64_t start_pos[s->nb_streams];
+    int64_t* start_pos = _alloca(s->nb_streams * sizeof(int64_t));
 
     for(i=0; i<s->nb_streams; i++){
         start_pos[i]= pos;
@@ -965,7 +965,7 @@ static void asf_build_simple_index(AVFormatContext *s, int stream_index)
         itime=get_le64(&s->pb);
         pct=get_le32(&s->pb);
         ict=get_le32(&s->pb);
-        av_log(NULL, AV_LOG_DEBUG, "itime:0x%"PRIx64", pct:%d, ict:%d\n",itime,pct,ict);
+        av_log(NULL, AV_LOG_DEBUG, "itime:0x%llx, pct:%d, ict:%d\n",itime,pct,ict);
 
         for (i=0;i<ict;i++){
             int pktnum=get_le32(&s->pb);
@@ -1029,7 +1029,7 @@ static int asf_read_seek(AVFormatContext *s, int stream_index, int64_t pts, int 
     //     }
 
         /* do the seek */
-        av_log(NULL, AV_LOG_DEBUG, "SEEKTO: %"PRId64"\n", pos);
+        av_log(NULL, AV_LOG_DEBUG, "SEEKTO: %lld\n", pos);
         url_fseek(&s->pb, pos, SEEK_SET);
     }
     asf_reset_header(s);

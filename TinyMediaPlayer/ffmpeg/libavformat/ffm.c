@@ -19,7 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 #include "avformat.h"
+#if defined(_GNUC_)
 #include <unistd.h>
+#endif
 
 /* The FFM file is made of blocks of fixed size */
 #define FFM_HEADER_SIZE 14

@@ -26,6 +26,7 @@
 #include "avformat.h"
 #include "riff.h"
 #include "bswap.h"
+#include <limits.h>
 
 #define SMACKER_PAL 0x01
 

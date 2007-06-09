@@ -47,6 +47,7 @@
 
 #include "avformat.h"
 #include "aes.h"
+#include <limits.h>
 
 typedef uint8_t UID[16];
 

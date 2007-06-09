@@ -28,6 +28,7 @@
  */
 
 #include "avformat.h"
+#include <limits.h>
 
 #define WC3_PREAMBLE_SIZE 8
 

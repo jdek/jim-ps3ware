@@ -20,9 +20,10 @@
  */
 #include "avformat.h"
 #include <fcntl.h>
+#if defined(_GNUC_)
 #include <unistd.h>
 #include <sys/time.h>
-
+#endif
 
 /* standard file protocol */
 

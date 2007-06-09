@@ -230,7 +230,8 @@ static AVRational fps_umf2avr(uint32_t flags) {
  * \param si struct to store collected information into
  */
 static void gxf_track_tags(ByteIOContext *pb, int *len, st_info_t *si) {
-    si->frames_per_second = (AVRational){0, 0};
+	si->frames_per_second.num = 0;
+	si->frames_per_second.den = 0;
     si->fields_per_frame = 0;
     while (*len >= 2) {
         track_tag_t tag = get_byte(pb);
@@ -375,7 +376,8 @@ static int gxf_header(AVFormatContext *s, AVFormatParameters *ap) {
         av_log(s, AV_LOG_INFO, "GXF: UMF packet missing\n");
     url_fskip(pb, len);
     if (!main_timebase.num || !main_timebase.den)
-        main_timebase = (AVRational){1, 50}; // set some arbitrary fallback
+		main_timebase.num = 1; // set some arbitrary fallback
+		main_timebase.den = 50; // set some arbitrary fallback
     for (i = 0; i < s->nb_streams; i++) {
         AVStream *st = s->streams[i];
         av_set_pts_info(st, 32, main_timebase.num, main_timebase.den);

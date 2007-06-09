@@ -2566,8 +2566,7 @@ typedef struct DVprofile {
 } DVprofile;
 #endif
 
-AVRational
-
+#if 0
 static const DVprofile dv_profiles[] = {
     { 0,
       120000,        /* IEC 61834, SMPTE-314M - 525/60 (NTSC) */
@@ -2656,6 +2655,7 @@ static const DVprofile dv_profiles[] = {
       .audio_shuffle = dv_audio_shuffle625,
     }
 };
+#endif
 
 enum dv_section_type {
      dv_sect_header  = 0x1f,

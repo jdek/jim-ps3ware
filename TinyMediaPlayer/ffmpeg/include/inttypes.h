@@ -116,7 +116,12 @@
 #define 	SCNoPTR   SCNo16
 #define 	SCNuPTR   SCNu16
 #define 	SCNxPTR   SCNx16
-
+#define		PRId64 "lld"
+#define		PRIx64 "x"
+#define		PRIX64 "X"
+#ifndef		PRIu64
+#define		PRIu64 "llu"
+#endif
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
 

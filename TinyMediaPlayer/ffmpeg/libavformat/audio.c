@@ -26,7 +26,7 @@
 #ifdef HAVE_SOUNDCARD_H
 #include <soundcard.h>
 #else
-#include <sys/soundcard.h>
+//#include <sys/soundcard.h>
 #endif
 #include <unistd.h>
 #include <fcntl.h>

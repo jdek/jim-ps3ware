@@ -336,7 +336,8 @@ static int yuv4_read_header(AVFormatContext *s, AVFormatParameters *ap)
     st->codec->pix_fmt = pix_fmt;
     st->codec->codec_type = CODEC_TYPE_VIDEO;
     st->codec->codec_id = CODEC_ID_RAWVIDEO;
-    st->codec->sample_aspect_ratio= (AVRational){aspectn, aspectd};
+	st->codec->sample_aspect_ratio.num = aspectn;
+	st->codec->sample_aspect_ratio.den = aspectd;
 
     return 0;
 }

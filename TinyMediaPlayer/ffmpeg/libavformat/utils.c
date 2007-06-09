@@ -24,6 +24,8 @@
 
 #undef NDEBUG
 #include <assert.h>
+#include <stddef.h>
+#include <limits.h>
 
 /**
  * @file libavformat/utils.c
@@ -37,6 +39,7 @@ static void av_frac_add(AVFrac *f, int64_t incr);
 AVInputFormat *first_iformat = NULL;
 /** head of registered output format linked list. */
 AVOutputFormat *first_oformat = NULL;
+static AVRational avTimeBaseQ = {1, AV_TIME_BASE};
 
 void av_register_input_format(AVInputFormat *format)
 {
@@ -1395,12 +1398,12 @@ static void av_update_stream_timings(AVFormatContext *ic)
     for(i = 0;i < ic->nb_streams; i++) {
         st = ic->streams[i];
         if (st->start_time != AV_NOPTS_VALUE) {
-            start_time1= av_rescale_q(st->start_time, st->time_base, AV_TIME_BASE_Q);
+			start_time1= av_rescale_q(st->start_time, st->time_base, avTimeBaseQ);
             if (start_time1 < start_time)
                 start_time = start_time1;
             if (st->duration != AV_NOPTS_VALUE) {
                 end_time1 = start_time1
-                          + av_rescale_q(st->duration, st->time_base, AV_TIME_BASE_Q);
+                          + av_rescale_q(st->duration, st->time_base, avTimeBaseQ);
                 if (end_time1 > end_time)
                     end_time = end_time1;
             }
@@ -1430,9 +1433,9 @@ static void fill_all_stream_timings(AVFormatContext *ic)
         st = ic->streams[i];
         if (st->start_time == AV_NOPTS_VALUE) {
             if(ic->start_time != AV_NOPTS_VALUE)
-                st->start_time = av_rescale_q(ic->start_time, AV_TIME_BASE_Q, st->time_base);
+                st->start_time = av_rescale_q(ic->start_time, avTimeBaseQ, st->time_base);
             if(ic->duration != AV_NOPTS_VALUE)
-                st->duration = av_rescale_q(ic->duration, AV_TIME_BASE_Q, st->time_base);
+                st->duration = av_rescale_q(ic->duration, avTimeBaseQ, st->time_base);
         }
     }
 }
@@ -1693,7 +1696,11 @@ static int set_codec_from_probe_data(AVStream *st, AVProbeData *pd, int score)
 #define MAX_STD_TIMEBASES (60*12+5)
 static int get_std_framerate(int i){
     if(i<60*12) return i*1001;
-    else        return ((int[]){24,30,60,12,15})[i-60*12]*1000*12;
+    else        
+	{
+		int lut[] = {24, 30, 60, 12, 15};
+		return lut[i-60*12] * 1000 * 12;
+	}
 }
 
 int av_find_stream_info(AVFormatContext *ic)
@@ -1878,7 +1885,7 @@ int av_find_stream_info(AVFormatContext *ic)
              (st->codec->codec_id == CODEC_ID_MPEG4 && !st->need_parsing))*/)
             try_decode_frame(st, pkt->data, pkt->size);
 
-        if (av_rescale_q(codec_info_duration[st->index], st->time_base, AV_TIME_BASE_Q) >= ic->max_analyze_duration) {
+        if (av_rescale_q(codec_info_duration[st->index], st->time_base, avTimeBaseQ) >= ic->max_analyze_duration) {
             break;
         }
         count++;

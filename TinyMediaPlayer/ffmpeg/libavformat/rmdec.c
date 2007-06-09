@@ -20,6 +20,7 @@
  */
 #include "avformat.h"
 #include "rm.h"
+#include <limits.h>
 
 
 static void get_str(ByteIOContext *pb, char *buf, int buf_size)

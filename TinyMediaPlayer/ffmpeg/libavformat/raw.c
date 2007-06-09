@@ -369,18 +369,31 @@ static int mpeg4video_probe(AVProbeData *probe_packet)
     int VO=0, VOL=0, VOP = 0, VISO = 0, res=0;
     int i;
 
-    for(i=0; i<probe_packet->buf_size; i++){
+    for(i=0; i<probe_packet->buf_size; i++)
+	{
         temp_buffer = (temp_buffer<<8) + probe_packet->buf[i];
-        if ((temp_buffer & 0xffffff00) == 0x100) {
-            switch(temp_buffer){
-            case VOP_START_CODE:             VOP++; break;
-            case VISUAL_OBJECT_START_CODE:  VISO++; break;
-            case 0x100 ... 0x11F:             VO++; break;
-            case 0x120 ... 0x12F:            VOL++; break;
-            case 0x130 ... 0x1AF:
-            case 0x1B7 ... 0x1B9:
-            case 0x1C4 ... 0x1FF:            res++; break;
-            }
+        if ((temp_buffer & 0xffffff00) == 0x100) 
+		{
+			if (temp_buffer >= 0x100 && temp_buffer <= 0x11f)
+			{		
+				VO++;
+			}
+			else if(temp_buffer >= 0x120 && temp_buffer <= 0x12F)
+			{
+				VOL++;
+			}
+			else if(temp_buffer >= 0x130 && temp_buffer <= 0x1FF)
+			{
+				res++;
+			}
+			else
+			{
+				switch(temp_buffer)
+				{
+					case VOP_START_CODE:             VOP++; break;
+					case VISUAL_OBJECT_START_CODE:  VISO++; break;
+				}
+			}
         }
     }
 
@@ -454,8 +467,10 @@ AVInputFormat shorten_demuxer = {
     shorten_read_header,
     raw_read_partial_packet,
     raw_read_close,
-    .flags= AVFMT_GENERIC_INDEX,
-    .extensions = "shn",
+	0,
+	0,
+	AVFMT_GENERIC_INDEX,
+    "shn",
 };
 
 AVInputFormat flac_demuxer = {
@@ -466,8 +481,10 @@ AVInputFormat flac_demuxer = {
     flac_read_header,
     raw_read_partial_packet,
     raw_read_close,
-    .flags= AVFMT_GENERIC_INDEX,
-    .extensions = "flac",
+	0,
+	0,
+    AVFMT_GENERIC_INDEX,
+    "flac",
 };
 
 #ifdef CONFIG_MUXERS
@@ -524,8 +541,10 @@ AVInputFormat dts_demuxer = {
     dts_read_header,
     raw_read_partial_packet,
     raw_read_close,
-    .flags= AVFMT_GENERIC_INDEX,
-    .extensions = "dts",
+	0,
+	0,
+    AVFMT_GENERIC_INDEX,
+    "dts",
 };
 
 AVInputFormat aac_demuxer = {
@@ -536,8 +555,10 @@ AVInputFormat aac_demuxer = {
     aac_read_header,
     raw_read_partial_packet,
     raw_read_close,
-    .flags= AVFMT_GENERIC_INDEX,
-    .extensions = "aac",
+	0,
+	0,
+    AVFMT_GENERIC_INDEX,
+    "aac",
 };
 
 #ifdef CONFIG_ROQ_MUXER
@@ -564,9 +585,11 @@ AVInputFormat h261_demuxer = {
     video_read_header,
     raw_read_partial_packet,
     raw_read_close,
-    .flags= AVFMT_GENERIC_INDEX,
-    .extensions = "h261",
-    .value = CODEC_ID_H261,
+	0,
+	0,
+	AVFMT_GENERIC_INDEX,
+    "h261",
+    CODEC_ID_H261,
 };
 
 #ifdef CONFIG_MUXERS
@@ -593,9 +616,12 @@ AVInputFormat h263_demuxer = {
     video_read_header,
     raw_read_partial_packet,
     raw_read_close,
-    .flags= AVFMT_GENERIC_INDEX,
-//    .extensions = "h263", //FIXME remove after writing mpeg4_probe
-    .value = CODEC_ID_H263,
+	0,
+	0,
+    AVFMT_GENERIC_INDEX,
+	0,
+	//    .extensions = "h263", //FIXME remove after writing mpeg4_probe
+    CODEC_ID_H263,
 };
 
 #ifdef CONFIG_MUXERS
@@ -622,9 +648,11 @@ AVInputFormat m4v_demuxer = {
     video_read_header,
     raw_read_partial_packet,
     raw_read_close,
-    .flags= AVFMT_GENERIC_INDEX,
-    .extensions = "m4v", //FIXME remove after writing mpeg4_probe
-    .value = CODEC_ID_MPEG4,
+    0,
+	0,
+	AVFMT_GENERIC_INDEX,
+    "m4v", //FIXME remove after writing mpeg4_probe
+    CODEC_ID_MPEG4,
 };
 
 #ifdef CONFIG_MUXERS
@@ -651,9 +679,11 @@ AVInputFormat h264_demuxer = {
     video_read_header,
     raw_read_partial_packet,
     raw_read_close,
-    .flags= AVFMT_GENERIC_INDEX,
-    .extensions = "h26l,h264,264", //FIXME remove after writing mpeg4_probe
-    .value = CODEC_ID_H264,
+	0,
+	0,
+	AVFMT_GENERIC_INDEX,
+    "h26l,h264,264", //FIXME remove after writing mpeg4_probe
+    CODEC_ID_H264,
 };
 
 #ifdef CONFIG_MUXERS
@@ -680,8 +710,11 @@ AVInputFormat mpegvideo_demuxer = {
     video_read_header,
     raw_read_partial_packet,
     raw_read_close,
-    .flags= AVFMT_GENERIC_INDEX,
-    .value = CODEC_ID_MPEG1VIDEO,
+	0,
+	0,
+	AVFMT_GENERIC_INDEX,
+	0,
+    CODEC_ID_MPEG1VIDEO,
 };
 
 #ifdef CONFIG_MUXERS
@@ -724,9 +757,11 @@ AVInputFormat mjpeg_demuxer = {
     video_read_header,
     raw_read_partial_packet,
     raw_read_close,
-    .flags= AVFMT_GENERIC_INDEX,
-    .extensions = "mjpg,mjpeg",
-    .value = CODEC_ID_MJPEG,
+	0,
+	0,
+	AVFMT_GENERIC_INDEX,
+    "mjpg,mjpeg",
+    CODEC_ID_MJPEG,
 };
 
 AVInputFormat ingenient_demuxer = {
@@ -737,9 +772,11 @@ AVInputFormat ingenient_demuxer = {
     video_read_header,
     ingenient_read_packet,
     raw_read_close,
-    .flags= AVFMT_GENERIC_INDEX,
-    .extensions = "cgi", // FIXME
-    .value = CODEC_ID_MJPEG,
+	0,
+	0,
+	AVFMT_GENERIC_INDEX,
+    "cgi", // FIXME
+    CODEC_ID_MJPEG,
 };
 
 #ifdef CONFIG_MUXERS
@@ -766,8 +803,11 @@ AVInputFormat vc1_demuxer = {
     video_read_header,
     raw_read_partial_packet,
     raw_read_close,
-    .extensions = "vc1",
-    .value = CODEC_ID_VC1,
+	0,
+	0,
+	0,
+	"vc1",
+	CODEC_ID_VC1,
 };
 
 /* pcm formats */
@@ -880,9 +920,11 @@ AVInputFormat rawvideo_demuxer = {
     raw_read_header,
     rawvideo_read_packet,
     raw_read_close,
-    .flags= AVFMT_GENERIC_INDEX,
-    .extensions = "yuv,cif,qcif,rgb",
-    .value = CODEC_ID_RAWVIDEO,
+	0,
+	0,
+	AVFMT_GENERIC_INDEX,
+    "yuv,cif,qcif,rgb",
+    CODEC_ID_RAWVIDEO,
 };
 
 #ifdef CONFIG_MUXERS

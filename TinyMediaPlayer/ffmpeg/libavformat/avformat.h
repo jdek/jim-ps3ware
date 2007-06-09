@@ -32,6 +32,7 @@
 #include "avcodec.h"
 
 #include "avio.h"
+#include "internal.h"
 
 /* packet functions */
 

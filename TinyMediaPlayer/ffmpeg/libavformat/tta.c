@@ -143,5 +143,7 @@ AVInputFormat tta_demuxer = {
     tta_read_packet,
     NULL,
     tta_read_seek,
-    .extensions = "tta",
+	0,
+	0,
+	"tta",
 };
