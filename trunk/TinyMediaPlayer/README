@@ -1,6 +1,8 @@
 TinyMediaPlayer
 ---------------
 
+Notice: That this project has been put on hold due to various reasons.
+
 This project aims to do a very slim native mediaplayer running as an "OtherOS" on Playstation(r) 3
 It will be based on the ffmpeg project and thus be under the GPL license due to various parts of ffmpeg
 is under that license. 
