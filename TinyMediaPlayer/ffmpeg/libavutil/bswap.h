@@ -94,6 +94,10 @@ static av_always_inline uint32_t bswap_32(uint32_t x)
     return x;
 }
 
+#if defined(_MSC_VER)
+#define inline __forceinline
+#endif
+
 static inline uint64_t bswap_64(uint64_t x)
 {
 #if 0
