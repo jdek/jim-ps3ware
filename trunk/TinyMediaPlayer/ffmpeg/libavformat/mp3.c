@@ -26,6 +26,10 @@
 
 #define ID3v1_GENRE_MAX 125
 
+#if defined(_MSC_VER)
+#define strcasecmp stricmp
+#endif
+
 static const char *id3v1_genre_str[ID3v1_GENRE_MAX + 1] = {
 	{ "Blues" },
 	{ "Classic Rock" },
@@ -590,8 +594,9 @@ AVInputFormat mp3_demuxer = {
     mp3_read_header,
     mp3_read_packet,
     mp3_read_close,
-    .flags= AVFMT_GENERIC_INDEX,
-    .extensions = "mp2,mp3,m2a", /* XXX: use probe */
+	0,
+    AVFMT_GENERIC_INDEX,
+	"mp2,mp3,m2a", /* XXX: use probe */
 };
 #endif
 #ifdef CONFIG_MP2_MUXER

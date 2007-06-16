@@ -115,7 +115,7 @@ static const uint32_t svq3_dequant_coeff[32] = {
 };
 
 
-static void svq3_luma_dc_dequant_idct_c(DCTELEM *block, int qp){
+void svq3_luma_dc_dequant_idct_c(DCTELEM *block, int qp){
     const int qmul= svq3_dequant_coeff[qp];
 #define stride 16
     int i;
@@ -151,7 +151,7 @@ static void svq3_luma_dc_dequant_idct_c(DCTELEM *block, int qp){
 }
 #undef stride
 
-static void svq3_add_idct_c (uint8_t *dst, DCTELEM *block, int stride, int qp, int dc){
+void svq3_add_idct_c (uint8_t *dst, DCTELEM *block, int stride, int qp, int dc){
     const int qmul= svq3_dequant_coeff[qp];
     int i;
     uint8_t *cm = ff_cropTbl + MAX_NEG_CROP;

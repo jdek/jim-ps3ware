@@ -19,10 +19,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 #define HAVE_AV_CONFIG_H
-#include "avformat.h"
-#include "swscale.h"
+#include <math.h>
+#include "libavformat/avformat.h"
+#include "libswscale/swscale.h"
 
-#include "version.h"
+//#include "ffmpeg\version.h"
 #include "cmdutils.h"
 
 #include <SDL.h>
@@ -1898,7 +1899,8 @@ static int decode_thread(void *arg)
 
     ap->width = frame_width;
     ap->height= frame_height;
-    ap->time_base= (AVRational){1, 25};
+    ap->time_base.num = 1;
+    ap->time_base.den = 25;
     ap->pix_fmt = frame_pix_fmt;
 
     err = av_open_input_file(&ic, is->filename, is->iformat, 0, ap);
@@ -2019,7 +2021,8 @@ static int decode_thread(void *arg)
             else if(is->subtitle_stream >= 0) stream_index= is->subtitle_stream;
 
             if(stream_index>=0){
-                seek_target= av_rescale_q(seek_target, AV_TIME_BASE_Q, ic->streams[stream_index]->time_base);
+				static AVRational temp = {1, AV_TIME_BASE};
+				seek_target= av_rescale_q(seek_target, temp, ic->streams[stream_index]->time_base);
             }
 
             ret = av_seek_frame(is->ic, stream_index, seek_target, is->seek_flags);
@@ -2492,7 +2495,7 @@ const OptionDef options[] = {
 
 void show_help(void)
 {
-    printf("ffplay version " FFMPEG_VERSION ", Copyright (c) 2003-2006 Fabrice Bellard, et al.\n"
+    printf("ffplay Copyright (c) 2003-2006 Fabrice Bellard, et al.\n"
            "usage: ffplay [options] input_file\n"
            "Simple media player\n");
     printf("\n");

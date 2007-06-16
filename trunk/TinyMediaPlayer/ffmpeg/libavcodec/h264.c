@@ -36,9 +36,15 @@
 #include "internal.h"
 
 #include "cabac.h"
+#include <math.h> 
 
 //#undef NDEBUG
 #include <assert.h>
+
+#if defined(_MSC_VER)
+#undef inline
+#define inline __forceinline
+#endif
 
 static VLC coeff_token_vlc[4];
 static VLC chroma_dc_coeff_token_vlc;
@@ -49,8 +55,8 @@ static VLC chroma_dc_total_zeros_vlc[3];
 static VLC run_vlc[6];
 static VLC run7_vlc;
 
-static void svq3_luma_dc_dequant_idct_c(DCTELEM *block, int qp);
-static void svq3_add_idct_c(uint8_t *dst, DCTELEM *block, int stride, int qp, int dc);
+void svq3_luma_dc_dequant_idct_c(DCTELEM *block, int qp);
+void svq3_add_idct_c(uint8_t *dst, DCTELEM *block, int stride, int qp, int dc);
 static void filter_mb( H264Context *h, int mb_x, int mb_y, uint8_t *img_y, uint8_t *img_cb, uint8_t *img_cr, unsigned int linesize, unsigned int uvlinesize);
 static void filter_mb_fast( H264Context *h, int mb_x, int mb_y, uint8_t *img_y, uint8_t *img_cb, uint8_t *img_cr, unsigned int linesize, unsigned int uvlinesize);
 

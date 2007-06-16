@@ -24,14 +24,23 @@
 #if defined(_MSC_VER)
 #include <malloc.h>
 #include <errno.h>
+#include <stdio.h>
+#include <string.h>
 #endif
+
+#include "../config.h"
+#include <assert.h>
 
 /**
  * @file avcodec.h
  * external API header
  */
 
+#if defined(_MSC_VER)
+#define snprintf sprintf_s
+#endif
 
+#include "intreadwrite.h"
 #include "avutil.h"
 #include <sys/types.h> /* size_t */
 
@@ -45,6 +54,7 @@
 #define LIBAVCODEC_IDENT        "Lavc" AV_STRINGIFY(LIBAVCODEC_VERSION)
 
 #define INT64_C(x) x ## I64
+#define UINT64_C(c)  c ## ULL
 
 #define AV_NOPTS_VALUE          INT64_C(0x8000000000000000)
 #define AV_TIME_BASE            1000000

@@ -21,6 +21,7 @@
 #include "avformat.h"
 #include "avio.h"
 #include <stdarg.h>
+#include <limits.h>
 
 #define IO_BUFFER_SIZE 32768
 

@@ -34,6 +34,13 @@
 #include <limits.h>
 #include <inttypes.h>
 
+#include "nan.h"
+#include <math.h>
+
+#if defined(_MSC_VER)
+#include <windows.h>
+#endif
+
 //FIXME order them and do a bin search
 const AVOption *av_find_opt(void *v, const char *name, const char *unit, int mask, int flags){
     AVClass *c= *(AVClass**)v; //FIXME silly way of storing AVClass
@@ -149,8 +156,8 @@ const AVOption *av_set_string(void *obj, const char *name, const char *val){
             val+= i;
 
             d = ff_eval2(buf, const_values, const_names, NULL, NULL, NULL, NULL, NULL, &error);
-            if(isnan(d)) {
-                const AVOption *o_named= av_find_opt(obj, buf, o->unit, 0, 0);
+			if(getNan() == (d)) {
+				const AVOption *o_named= av_find_opt(obj, buf, o->unit, 0, 0);
                 if(o_named && o_named->type == FF_OPT_TYPE_CONST)
                     d= o_named->default_val;
                 else if(!strcmp(buf, "default")) d= o->default_val;

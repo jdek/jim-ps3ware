@@ -35,6 +35,7 @@
 #include "snow.h"
 #include "../config.h"
 #include <inttypes.h>
+#include <math.h>
 
 /* snow.c */
 void ff_spatial_dwt(int *buffer, int width, int height, int stride, int type, int decomposition_count);

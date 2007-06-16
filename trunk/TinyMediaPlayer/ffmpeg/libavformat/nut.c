@@ -1431,7 +1431,8 @@ AVInputFormat nut_demuxer = {
     nut_read_close,
     nut_read_seek,
     nut_read_timestamp,
-    .extensions = "nut",
+	0,
+    "nut",
 };
 #endif
 #ifdef CONFIG_NUT_MUXER

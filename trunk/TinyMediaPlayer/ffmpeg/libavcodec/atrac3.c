@@ -43,9 +43,15 @@
 #include "atrac3data.h"
 #include "internal.h"
 
+#include "bswap.h"
+
 #define JOINT_STEREO    0x12
 #define STEREO          0x2
 
+float round(float f)
+{
+	return 0.0f;
+}
 
 /* These structures are needed to store the parsed gain control data. */
 typedef struct {

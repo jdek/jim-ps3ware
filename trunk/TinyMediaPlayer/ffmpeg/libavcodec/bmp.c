@@ -23,6 +23,7 @@
 #include "bytestream.h"
 #include "bmp.h"
 #include <stddef.h>
+#include "bswap.h"
 
 static int bmp_decode_init(AVCodecContext *avctx){
     BMPContext *s = avctx->priv_data;

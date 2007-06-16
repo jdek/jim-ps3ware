@@ -879,6 +879,7 @@ AVInputFormat nut_demuxer = {
     nut_read_packet,
     nut_read_close,
     read_seek,
-    .extensions = "nut",
+	0, 0,
+    "nut",
 };
 #endif

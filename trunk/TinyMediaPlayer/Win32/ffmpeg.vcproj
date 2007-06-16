@@ -49,6 +49,7 @@
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4244;4018;4305"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -392,6 +393,14 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\apiexample.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\asv1.c"
@@ -532,6 +541,14 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\dct-test.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\dnxhddata.h"
@@ -566,7 +583,6 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -904,13 +920,6 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\jpegls.c"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\jpegls.h"
@@ -1019,6 +1028,14 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\mdec.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\mjpeg.c"
@@ -1063,6 +1080,14 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\motion-test.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\motion_est.c"
@@ -1445,7 +1470,6 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1483,6 +1507,14 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\svq3.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\targa.c"
@@ -1703,6 +1735,14 @@
 			<File
 				RelativePath="..\ffmpeg\libavcodec\wmv2.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavcodec\wnv1.c"
@@ -2013,7 +2053,6 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2056,7 +2095,6 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2338,6 +2376,14 @@
 			<File
 				RelativePath="..\ffmpeg\libavformat\nut.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavformat\nut.h"
@@ -2677,6 +2723,30 @@
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavformat\yuv4mpeg.c"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="libswscale"
+			>
+			<File
+				RelativePath="..\ffmpeg\libswscale\rgb2rgb.c"
+				>
+			</File>
+			<File
+				RelativePath="..\ffmpeg\libswscale\rgb2rgb.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ffmpeg\libswscale\swscale.c"
+				>
+			</File>
+			<File
+				RelativePath="..\ffmpeg\libswscale\swscale.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ffmpeg\libswscale\yuv2rgb.c"
 				>
 			</File>
 		</Filter>

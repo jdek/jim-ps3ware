@@ -36,7 +36,7 @@
 #include <stdlib.h>
 
 #include "avcodec.h"
-
+#include "bswap.h"
 
 static const enum PixelFormat pixfmt_rgb24[] = {PIX_FMT_BGR24, PIX_FMT_RGB32, -1};
 

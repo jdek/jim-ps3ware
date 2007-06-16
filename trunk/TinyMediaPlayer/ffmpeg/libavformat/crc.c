@@ -20,6 +20,7 @@
  */
 #include "avformat.h"
 #include "adler32.h"
+#include "bswap.h"
 
 #ifdef CONFIG_CRC_MUXER
 typedef struct CRCState {

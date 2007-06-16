@@ -37,6 +37,7 @@
 #include <inttypes.h>
 #include "../config.h"
 #include "internal.h"
+#include <math.h>
 
 //#undef NDEBUG
 //#include <assert.h>

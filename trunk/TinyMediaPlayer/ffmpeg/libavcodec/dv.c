@@ -1230,7 +1230,7 @@ static int dvvideo_close(AVCodecContext *c)
     return 0;
 }
 
-
+/*
 #ifdef CONFIG_DVVIDEO_ENCODER
 AVCodec dvvideo_encoder = {
     "dvvideo",
@@ -1242,6 +1242,7 @@ AVCodec dvvideo_encoder = {
     .pix_fmts = (enum PixelFormat[]) {PIX_FMT_YUV411P, PIX_FMT_YUV422P, PIX_FMT_YUV420P, -1},
 };
 #endif // CONFIG_DVVIDEO_ENCODER
+*/
 
 #ifdef CONFIG_DVVIDEO_DECODER
 AVCodec dvvideo_decoder = {

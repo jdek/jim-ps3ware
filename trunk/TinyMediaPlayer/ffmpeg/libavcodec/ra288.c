@@ -22,6 +22,7 @@
 #include "avcodec.h"
 #include "ra288.h"
 #include <stddef.h>
+#include <math.h>
 
 typedef struct {
         float   history[8];

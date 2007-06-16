@@ -447,6 +447,7 @@ AVInputFormat dv_demuxer = {
     dv_read_packet,
     dv_read_close,
     dv_read_seek,
-    .extensions = "dv,dif",
+	0, 0,
+    "dv,dif",
 };
 #endif

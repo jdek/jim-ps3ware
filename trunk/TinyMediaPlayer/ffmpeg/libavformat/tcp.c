@@ -32,7 +32,11 @@ typedef struct TCPContext {
 /* return non zero if error */
 static int tcp_open(URLContext *h, const char *uri, int flags)
 {
-    struct sockaddr_in dest_addr;
+	volatile int* breakpoint = 0;
+	*breakpoint = 0;
+
+#if 0
+	struct sockaddr_in dest_addr;
     char hostname[1024], *q;
     int port, fd = -1;
     TCPContext *s = NULL;
@@ -106,6 +110,11 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
         closesocket(fd);
     av_free(s);
     return ret;
+#endif
+
+	
+
+	return 0;
 }
 
 static int tcp_read(URLContext *h, uint8_t *buf, int size)

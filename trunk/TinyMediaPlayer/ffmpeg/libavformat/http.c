@@ -189,15 +189,15 @@ static int process_line(URLContext *h, char *line, int line_count,
             strcpy(s->location, p);
             *new_location = 1;
         } else if (!strcmp (tag, "Content-Length") && s->filesize == -1) {
-            s->filesize = atoll(p);
+            s->filesize = atol(p);
         } else if (!strcmp (tag, "Content-Range")) {
             /* "bytes $from-$to/$document_size" */
             const char *slash;
             if (!strncmp (p, "bytes ", 6)) {
                 p += 6;
-                s->off = atoll(p);
+                s->off = atol(p);
                 if ((slash = strchr(p, '/')) && strlen(slash) > 0)
-                    s->filesize = atoll(slash+1);
+                    s->filesize = atol(slash+1);
             }
             h->is_streamed = 0; /* we _can_ in fact seek */
         }
@@ -247,8 +247,12 @@ static int http_connect(URLContext *h, const char *path, const char *hoststr,
     s->off = 0;
     s->filesize = -1;
     if (post) {
-        usleep(1000*1000);
-        return 0;
+#if defined(_MSC_VER)
+		Sleep(1000);
+#else
+		usleep(1000*1000);
+#endif
+		return 0;
     }
 
     /* wait for header */

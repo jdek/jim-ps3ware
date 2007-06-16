@@ -27,6 +27,7 @@
 #include "common.h"
 #include <limits.h>
 #include <stddef.h>
+#include <malloc.h>
 
 /* here we can use OS dependent allocation functions */
 #undef malloc

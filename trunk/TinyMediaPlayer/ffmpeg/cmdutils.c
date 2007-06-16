@@ -19,8 +19,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 #define HAVE_AV_CONFIG_H
-#include "avformat.h"
+#include "../libavformat/avformat.h"
 #include "common.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "cmdutils.h"
 
@@ -99,7 +101,7 @@ unknown_opt:
             } else if (po->flags & OPT_INT) {
                 *po->u.int_arg = atoi(arg);
             } else if (po->flags & OPT_INT64) {
-                *po->u.int64_arg = strtoll(arg, (char **)NULL, 10);
+                *po->u.int64_arg = strtol(arg, (char **)NULL, 10);
             } else if (po->flags & OPT_FLOAT) {
                 *po->u.float_arg = atof(arg);
             } else if (po->flags & OPT_FUNC2) {

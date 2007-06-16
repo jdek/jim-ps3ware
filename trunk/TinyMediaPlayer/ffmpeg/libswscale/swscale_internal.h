@@ -26,12 +26,13 @@
 #endif
 
 #include "avutil.h"
-
+/*
 #ifdef CONFIG_DARWIN
 #define AVV(x...) (x)
 #else
 #define AVV(x...) {x}
 #endif
+*/
 
 #define MAX_FILTER_SIZE 256
 
@@ -129,6 +130,7 @@ typedef struct SwsContext{
 #define U_TEMP                "11*8+4*4*256*2+24"
 #define V_TEMP                "11*8+4*4*256*2+32"
 
+#if defined(_GNU_C)
     uint64_t redDither   __attribute__((aligned(8)));
     uint64_t greenDither __attribute__((aligned(8)));
     uint64_t blueDither  __attribute__((aligned(8)));
@@ -148,6 +150,27 @@ typedef struct SwsContext{
     uint64_t vRounder     __attribute__((aligned(8)));
     uint64_t u_temp       __attribute__((aligned(8)));
     uint64_t v_temp       __attribute__((aligned(8)));
+#else
+    uint64_t __declspec(align(8)) redDither;
+    uint64_t __declspec(align(8)) greenDither;
+    uint64_t __declspec(align(8)) blueDither;
+
+    uint64_t __declspec(align(8)) yCoeff;
+    uint64_t __declspec(align(8)) vrCoeff;
+    uint64_t __declspec(align(8)) ubCoeff;
+    uint64_t __declspec(align(8)) vgCoeff;
+    uint64_t __declspec(align(8)) ugCoeff;
+    uint64_t __declspec(align(8)) yOffset;
+    uint64_t __declspec(align(8)) uOffset;
+    uint64_t __declspec(align(8)) vOffset;
+    int32_t  lumMmxFilter[4*MAX_FILTER_SIZE];
+    int32_t  chrMmxFilter[4*MAX_FILTER_SIZE];
+    int dstW;
+    uint64_t __declspec(align(8)) esp;
+    uint64_t __declspec(align(8)) vRounder;
+    uint64_t __declspec(align(8)) u_temp;
+    uint64_t __declspec(align(8)) v_temp;
+#endif
 
 #ifdef HAVE_ALTIVEC
 

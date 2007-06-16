@@ -45,6 +45,10 @@
 #endif
 #endif
 
+#if defined(_MSC_VER)
+#include <windows.h>
+#endif
+
 /**
  * gets the current time in micro seconds.
  */
@@ -54,8 +58,12 @@ int64_t av_gettime(void)
     struct timeb tb;
     _ftime(&tb);
     return ((int64_t)tb.time * INT64_C(1000) + (int64_t)tb.millitm) * INT64_C(1000);
+#elif defined(_MSC_VER)
+	LARGE_INTEGER largeInteger;
+	QueryPerformanceCounter(&largeInteger);
+	return largeInteger.QuadPart;
 #else
-    struct timeval tv;
+	struct timeval tv;
     gettimeofday(&tv,NULL);
     return (int64_t)tv.tv_sec * 1000000 + tv.tv_usec;
 #endif

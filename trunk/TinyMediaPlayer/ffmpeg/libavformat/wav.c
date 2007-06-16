@@ -254,6 +254,8 @@ static int wav_read_seek(AVFormatContext *s,
     return pcm_read_seek(s, stream_index, timestamp, flags);
 }
 
+static const AVCodecTag* codecTag[] = {codec_wav_tags, 0};
+
 #ifdef CONFIG_WAV_DEMUXER
 AVInputFormat wav_demuxer = {
     "wav",
@@ -264,8 +266,9 @@ AVInputFormat wav_demuxer = {
     wav_read_packet,
     wav_read_close,
     wav_read_seek,
-    .flags= AVFMT_GENERIC_INDEX,
-    .codec_tag= (const AVCodecTag*[]){codec_wav_tags, 0},
+	0,
+    AVFMT_GENERIC_INDEX,
+    codecTag,
 };
 #endif
 #ifdef CONFIG_WAV_MUXER
@@ -280,6 +283,7 @@ AVOutputFormat wav_muxer = {
     wav_write_header,
     wav_write_packet,
     wav_write_trailer,
-    .codec_tag= (const AVCodecTag*[]){codec_wav_tags, 0},
+	0, 0, 0,
+	codecTag,
 };
 #endif

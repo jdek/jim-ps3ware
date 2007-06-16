@@ -30,6 +30,8 @@
 #include "avcodec.h"
 #include "dsputil.h"
 #include "mpegvideo.h"
+#include "internal.h"
+#include <math.h>
 
 /*
  * You can also call this codec : MPEG4 with a twist !

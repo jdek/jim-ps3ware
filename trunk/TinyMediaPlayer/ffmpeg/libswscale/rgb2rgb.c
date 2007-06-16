@@ -26,7 +26,7 @@
  * under the LGPL license too
  */
 #include <inttypes.h>
-#include "config.h"
+#include "../config.h"
 #include "rgb2rgb.h"
 #include "swscale.h"
 #include "swscale_internal.h"

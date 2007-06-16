@@ -31,6 +31,8 @@
 #include "mpegvideo.h"
 #include "eval.h"
 #include "internal.h"
+#include "nan.h"
+#include <math.h>
 
 #undef NDEBUG // Always check asserts, the speed effect is far too small to disable them.
 #include <assert.h>
@@ -343,7 +345,7 @@ static double get_qscale(MpegEncContext *s, RateControlEntry *rce, double rate_f
     };
 
     bits= ff_parse_eval(rcc->rc_eq_eval, const_values, rce);
-    if (isnan(bits)) {
+    if (getNan() == bits) {
         av_log(s->avctx, AV_LOG_ERROR, "Error evaluating rc_eq \"%s\"\n", s->avctx->rc_eq);
         return -1;
     }

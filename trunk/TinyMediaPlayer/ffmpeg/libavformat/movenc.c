@@ -1637,7 +1637,7 @@ AVOutputFormat mov_muxer = {
     mov_write_header,
     mov_write_packet,
     mov_write_trailer,
-    .flags = AVFMT_GLOBALHEADER,
+    AVFMT_GLOBALHEADER,
 };
 #endif
 #ifdef CONFIG_TGP_MUXER
@@ -1652,7 +1652,7 @@ AVOutputFormat tgp_muxer = {
     mov_write_header,
     mov_write_packet,
     mov_write_trailer,
-    .flags = AVFMT_GLOBALHEADER,
+    AVFMT_GLOBALHEADER,
 };
 #endif
 #ifdef CONFIG_MP4_MUXER
@@ -1667,7 +1667,7 @@ AVOutputFormat mp4_muxer = {
     mov_write_header,
     mov_write_packet,
     mov_write_trailer,
-    .flags = AVFMT_GLOBALHEADER,
+    AVFMT_GLOBALHEADER,
 };
 #endif
 #ifdef CONFIG_PSP_MUXER
@@ -1682,7 +1682,7 @@ AVOutputFormat psp_muxer = {
     mov_write_header,
     mov_write_packet,
     mov_write_trailer,
-    .flags = AVFMT_GLOBALHEADER,
+    AVFMT_GLOBALHEADER,
 };
 #endif
 #ifdef CONFIG_TG2_MUXER
@@ -1697,6 +1697,6 @@ AVOutputFormat tg2_muxer = {
     mov_write_header,
     mov_write_packet,
     mov_write_trailer,
-    .flags = AVFMT_GLOBALHEADER,
+    AVFMT_GLOBALHEADER,
 };
 #endif

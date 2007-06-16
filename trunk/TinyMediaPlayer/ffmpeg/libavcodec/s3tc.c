@@ -23,6 +23,7 @@
 
 #include "avcodec.h"
 #include "s3tc.h"
+#include "bswap.h"
 
 static inline void dxt1_decode_pixels(const uint8_t *s, uint32_t *d,
                                       unsigned int qstride, unsigned int flag,

@@ -32,6 +32,7 @@
 #include "common.h"
 #include "mathematics.h"
 #include "rational.h"
+#include <assert.h>
 
 int av_reduce(int *dst_nom, int *dst_den, int64_t nom, int64_t den, int64_t max){
     AVRational a0={0,1}, a1={1,0};

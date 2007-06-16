@@ -21,6 +21,8 @@
 #include "avcodec.h"
 #include "bytestream.h"
 #include "pnm.h"
+#include "bswap.h"
+#include <stddef.h>
 
 
 static int common_init(AVCodecContext *avctx){
@@ -353,6 +355,7 @@ static int pam_probe(AVProbeData *pd)
 }
 #endif
 
+static enum PixelFormat pgmFormats[] = {PIX_FMT_GRAY8, PIX_FMT_GRAY16BE, -1};
 
 #ifdef CONFIG_PGM_ENCODER
 AVCodec pgm_encoder = {
@@ -364,9 +367,15 @@ AVCodec pgm_encoder = {
     pnm_encode_frame,
     NULL, //encode_end,
     pnm_decode_frame,
-    .pix_fmts= (enum PixelFormat[]){PIX_FMT_GRAY8, PIX_FMT_GRAY16BE, -1},
+	0,
+	0,
+	0,
+	0,
+    pgmFormats,
 };
 #endif // CONFIG_PGM_ENCODER
+
+static enum PixelFormat pgmYuvFormats[] = {PIX_FMT_YUV420P, -1};
 
 #ifdef CONFIG_PGMYUV_ENCODER
 AVCodec pgmyuv_encoder = {
@@ -378,7 +387,11 @@ AVCodec pgmyuv_encoder = {
     pnm_encode_frame,
     NULL, //encode_end,
     pnm_decode_frame,
-    .pix_fmts= (enum PixelFormat[]){PIX_FMT_YUV420P, -1},
+	0,
+	0,
+	0,
+	0,
+	pgmYuvFormats,
 };
 #endif // CONFIG_PGMYUV_ENCODER
 

@@ -1849,6 +1849,6 @@ AVInputFormat mpegps_demuxer = {
     mpegps_read_close,
     NULL, //mpegps_read_seek,
     mpegps_read_dts,
-    .flags = AVFMT_SHOW_IDS,
+    AVFMT_SHOW_IDS,
 };
 #endif
