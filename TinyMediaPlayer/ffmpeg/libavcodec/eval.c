@@ -38,6 +38,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <ctype.h>
 
 #ifndef NAN
   #define NAN getNan();
@@ -411,7 +412,7 @@ AVEvalExpr * ff_parse(char *s, const char **const_name,
                char **error){
     Parser p;
     AVEvalExpr * e;
-    char* w = _alloc(strlen(s) + 1 * sizeof(char)), * wp = w;
+    char* w = _alloca(strlen(s) + 1 * sizeof(char)), * wp = w;
 
     while (*s)
         if (!isspace(*s++)) *wp++ = s[-1];

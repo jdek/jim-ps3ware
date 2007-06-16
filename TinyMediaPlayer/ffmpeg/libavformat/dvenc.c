@@ -34,6 +34,8 @@
 #include "dv.h"
 #include "fifo.h"
 
+struct tm *brktimegm(time_t secs, struct tm *tm);
+
 struct DVMuxContext {
     const DVprofile*  sys;    /* Current DV profile. E.g.: 525/60, 625/50 */
     int         n_ast;        /* Number of stereo audio streams (up to 2) */
@@ -397,7 +399,7 @@ static int dv_write_trailer(struct AVFormatContext *s)
 }
 #endif /* CONFIG_MUXERS */
 
-#ifdef CONFIG_DV_MUXER
+//#ifdef CONFIG_DV_MUXER
 AVOutputFormat dv_muxer = {
     "dv",
     "DV video format",
@@ -410,4 +412,4 @@ AVOutputFormat dv_muxer = {
     dv_write_packet,
     dv_write_trailer,
 };
-#endif
+//#endif

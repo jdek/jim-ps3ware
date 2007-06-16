@@ -25,6 +25,7 @@
  */
 
 #include "avcodec.h"
+#include <stddef.h>
 
 typedef struct RawVideoContext {
     unsigned char * buffer;  /* block of memory for holding one frame */

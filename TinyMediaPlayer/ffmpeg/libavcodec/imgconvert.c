@@ -31,6 +31,7 @@
  */
 
 #include "avcodec.h"
+#include "bswap.h"
 #include "dsputil.h"
 #include <stddef.h>
 

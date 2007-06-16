@@ -22,10 +22,16 @@
 #include "allformats.h"
 #include "opt.h"
 
+#include <math.h>
+
 #undef NDEBUG
 #include <assert.h>
 #include <stddef.h>
 #include <limits.h>
+
+#if defined(_MSC_VER)
+#define strcasecmp stricmp
+#endif
 
 /**
  * @file libavformat/utils.c

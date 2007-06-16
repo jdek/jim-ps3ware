@@ -27,6 +27,7 @@
 #include "avutil.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 int av_log_level = AV_LOG_INFO;
 

@@ -21,6 +21,7 @@
 #include "avcodec.h"
 #include "pnm.h"
 #include <stddef.h>
+#include <stdlib.h>
 
 static inline int pnm_space(int c)
 {

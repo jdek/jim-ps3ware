@@ -19,6 +19,7 @@
  */
 
 #include "avcodec.h"
+#include <stdlib.h>
 
 
 static int noise(AVBitStreamFilterContext *bsfc, AVCodecContext *avctx, const char *args,

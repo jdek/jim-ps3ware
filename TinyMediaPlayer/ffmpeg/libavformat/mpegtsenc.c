@@ -336,7 +336,10 @@ static MpegTSService *mpegts_add_service(MpegTSWrite *ts,
                                          const char *provider_name,
                                          const char *name)
 {
-    MpegTSService *service;
+	MpegTSService *service;
+
+	volatile int* breakpoint = 0;
+	*breakpoint = 0;
 
     service = av_mallocz(sizeof(MpegTSService));
     if (!service)
@@ -346,7 +349,7 @@ static MpegTSService *mpegts_add_service(MpegTSWrite *ts,
     service->provider_name = av_strdup(provider_name);
     service->name = av_strdup(name);
     service->pcr_pid = 0x1fff;
-    dynarray_add(&ts->services, &ts->nb_services, service);
+    //dynarray_add(&ts->services, &ts->nb_services, service);
     return service;
 }
 

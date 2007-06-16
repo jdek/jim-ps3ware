@@ -2566,8 +2566,10 @@ typedef struct DVprofile {
 } DVprofile;
 #endif
 
+
+static DVprofile dv_profiles[4];
 #if 0
-static const DVprofile dv_profiles[] = {
+= {
     { 0,
       120000,        /* IEC 61834, SMPTE-314M - 525/60 (NTSC) */
       10,
@@ -2655,6 +2657,7 @@ static const DVprofile dv_profiles[] = {
       .audio_shuffle = dv_audio_shuffle625,
     }
 };
+
 #endif
 
 enum dv_section_type {
@@ -2688,7 +2691,156 @@ enum dv_pack_type {
 
 static inline const DVprofile* dv_frame_profile(uint8_t* frame)
 {
-    if ((frame[3] & 0x80) == 0) {      /* DSF flag */
+	static int initedProfiles = 0;
+
+	if (initedProfiles == 0)
+	{
+		dv_profiles[0].dsf = 0;
+		dv_profiles[0].frame_size = 120000;        /* IEC 61834; SMPTE-314M - 525/60 (NTSC) */
+		dv_profiles[0].difseg_size = 10;
+		dv_profiles[0].n_difchan = 1;
+		dv_profiles[0].frame_rate = 30000;
+		dv_profiles[0].ltc_divisor = 30;
+		dv_profiles[0].frame_rate_base = 1001;
+		dv_profiles[0].height = 480;
+		dv_profiles[0].width = 720;
+		dv_profiles[0].sar[0].num = 10;
+		dv_profiles[0].sar[0].den = 11;
+		dv_profiles[0].sar[1].num = 40;
+		dv_profiles[0].sar[1].den = 33;
+		dv_profiles[0].video_place = dv_place_411;
+		dv_profiles[0].pix_fmt = PIX_FMT_YUV411P;
+		dv_profiles[0].audio_stride = 90;
+		dv_profiles[0].audio_min_samples[0] = 1580;
+		dv_profiles[0].audio_min_samples[1] = 1452;
+		dv_profiles[0].audio_min_samples[2] = 1053;
+		dv_profiles[0].audio_samples_dist[0] = 1600;
+		dv_profiles[0].audio_samples_dist[1] = 1602;
+		dv_profiles[0].audio_samples_dist[2] = 1602;
+		dv_profiles[0].audio_samples_dist[3] = 1602;
+		dv_profiles[0].audio_samples_dist[4] = 1602;
+		dv_profiles[0].audio_shuffle = dv_audio_shuffle525;
+
+		dv_profiles[1].dsf = 1;
+		dv_profiles[1].frame_size = 144000;        /* IEC 61834 - 625/50 (PAL) */
+		dv_profiles[1].difseg_size = 12;
+		dv_profiles[1].n_difchan = 1;
+		dv_profiles[1].frame_rate = 25;
+		dv_profiles[1].frame_rate_base = 1;
+		dv_profiles[1].ltc_divisor = 25;
+		dv_profiles[1].height = 576;
+		dv_profiles[1].width = 720;
+		//dv_profiles[1].sar = 59; 54 118; 81}
+		dv_profiles[1].sar[0].num = 59;
+		dv_profiles[1].sar[0].den = 54;
+		dv_profiles[1].sar[1].num = 118;
+		dv_profiles[1].sar[1].den = 81;
+		dv_profiles[1].video_place = dv_place_420;
+		dv_profiles[1].pix_fmt = PIX_FMT_YUV420P;
+		dv_profiles[1].audio_stride = 108;
+		//dv_profiles[1].audio_min_samples =  1896; 1742; 1264  /* for 48; 44dv_profiles[1].1 and 32Khz */
+		//dv_profiles[1].audio_samples_dist =  1920; 1920; 1920; 1920; 1920 
+		dv_profiles[1].audio_min_samples[1] = 1896;
+		dv_profiles[1].audio_min_samples[1] = 1742;
+		dv_profiles[1].audio_min_samples[2] = 1264;
+		dv_profiles[1].audio_samples_dist[1] = 1920;
+		dv_profiles[1].audio_samples_dist[1] = 1920;
+		dv_profiles[1].audio_samples_dist[2] = 1920;
+		dv_profiles[1].audio_samples_dist[3] = 1920;
+		dv_profiles[1].audio_samples_dist[4] = 1920;
+		dv_profiles[1].audio_shuffle = dv_audio_shuffle625;
+
+		dv_profiles[2].dsf = 1;
+		dv_profiles[2].frame_size = 144000;        /* SMPTE-314M - 625/50 (PAL) */
+		dv_profiles[2].difseg_size = 12;
+		dv_profiles[2].n_difchan = 1;
+		dv_profiles[2].frame_rate = 25;
+		dv_profiles[2].frame_rate_base = 1;
+		dv_profiles[2].ltc_divisor = 25;
+		dv_profiles[2].height = 576;
+		dv_profiles[2].width = 720;
+		//dv_profiles[2].sar = 59; 54 118; 81}
+		dv_profiles[2].sar[0].num = 59;
+		dv_profiles[2].sar[0].den = 54;
+		dv_profiles[2].sar[1].num = 118;
+		dv_profiles[2].sar[1].den = 81;
+		dv_profiles[2].video_place = dv_place_411P;
+		dv_profiles[2].pix_fmt = PIX_FMT_YUV411P;
+		dv_profiles[2].audio_stride = 108;
+		dv_profiles[2].audio_min_samples[2] = 1896;
+		dv_profiles[2].audio_min_samples[1] = 1742;
+		dv_profiles[2].audio_min_samples[2] = 1264;
+		dv_profiles[2].audio_samples_dist[2] = 1920;
+		dv_profiles[2].audio_samples_dist[1] = 1920;
+		dv_profiles[2].audio_samples_dist[2] = 1920;
+		dv_profiles[2].audio_samples_dist[3] = 1920;
+		dv_profiles[2].audio_samples_dist[4] = 1920;
+		//dv_profiles[2].audio_min_samples =  1896; 1742; 1264  /* for 48; 44dv_profiles[2].1 and 32Khz */
+		//dv_profiles[2].audio_samples_dist =  1920; 1920; 1920; 1920; 1920 
+		dv_profiles[2].audio_shuffle = dv_audio_shuffle625;
+
+		dv_profiles[3].dsf = 0;
+		dv_profiles[3].frame_size = 240000;        /* SMPTE-314M - 525/60 (NTSC) 50 Mbps */
+		dv_profiles[3].difseg_size = 10;           /* also known as "DVCPRO50" */
+		dv_profiles[3].n_difchan = 2;
+		dv_profiles[3].frame_rate = 30000;
+		dv_profiles[3].ltc_divisor = 30;
+		dv_profiles[3].frame_rate_base = 1001;
+		dv_profiles[3].height = 480;
+		dv_profiles[3].width = 720;
+		//dv_profiles[3].sar = 10; 11 40; 33}
+		dv_profiles[3].sar[0].num = 10;
+		dv_profiles[3].sar[0].den = 11;
+		dv_profiles[3].sar[1].num = 40;
+		dv_profiles[3].sar[1].den = 33;
+		dv_profiles[3].video_place = dv_place_422_525;
+		dv_profiles[3].pix_fmt = PIX_FMT_YUV422P;
+		dv_profiles[3].audio_stride = 90;
+		//dv_profiles[3].audio_min_samples =  1580; 1452; 1053  /* for 48; 44dv_profiles[3].1 and 32Khz */
+		//dv_profiles[3].audio_samples_dist =  1600; 1602; 1602; 1602; 1602  /* per SMPTE-314M */
+		dv_profiles[3].audio_min_samples[3] = 1580;
+		dv_profiles[3].audio_min_samples[1] = 1452;
+		dv_profiles[3].audio_min_samples[2] = 1053;
+		dv_profiles[3].audio_samples_dist[3] = 1600;
+		dv_profiles[3].audio_samples_dist[1] = 1602;
+		dv_profiles[3].audio_samples_dist[2] = 1602;
+		dv_profiles[3].audio_samples_dist[3] = 1602;
+		dv_profiles[3].audio_samples_dist[4] = 1602;
+		dv_profiles[3].audio_shuffle = dv_audio_shuffle525;
+
+		dv_profiles[4].dsf = 1;
+		dv_profiles[4].frame_size = 288000;        /* SMPTE-314M - 625/50 (PAL) 50 Mbps */
+		dv_profiles[4].difseg_size = 12;           /* also known as "DVCPRO50" */
+		dv_profiles[4].n_difchan = 2;
+		dv_profiles[4].frame_rate = 25;
+		dv_profiles[4].frame_rate_base = 1;
+		dv_profiles[4].ltc_divisor = 25;
+		dv_profiles[4].height = 576;
+		dv_profiles[4].width = 720;
+		//dv_profiles[4].sar = 59; 54 118; 81}
+		dv_profiles[4].sar[0].num = 59;
+		dv_profiles[4].sar[0].den = 54;
+		dv_profiles[4].sar[1].num = 118;
+		dv_profiles[4].sar[1].den = 81;
+		dv_profiles[4].video_place = dv_place_422_625;
+		dv_profiles[4].pix_fmt = PIX_FMT_YUV422P;
+		dv_profiles[4].audio_stride = 108;
+		//dv_profiles[4].audio_min_samples =  1896; 1742; 1264  /* for 48; 44dv_profiles[4].1 and 32Khz */
+		//dv_profiles[4].audio_samples_dist =  1920; 1920; 1920; 1920; 1920 
+		dv_profiles[4].audio_min_samples[4] = 1896;
+		dv_profiles[4].audio_min_samples[1] = 1742;
+		dv_profiles[4].audio_min_samples[2] = 1264;
+		dv_profiles[4].audio_samples_dist[4] = 1920;
+		dv_profiles[4].audio_samples_dist[1] = 1920;
+		dv_profiles[4].audio_samples_dist[2] = 1920;
+		dv_profiles[4].audio_samples_dist[3] = 1920;
+		dv_profiles[4].audio_samples_dist[4] = 1920;
+		dv_profiles[4].audio_shuffle = dv_audio_shuffle625;
+
+		initedProfiles = 1;
+	}
+		
+	if ((frame[3] & 0x80) == 0) {      /* DSF flag */
         /* it's an NTSC format */
         if ((frame[80*5 + 48 + 3] & 0x4)) { /* 4:2:2 sampling */
             return &dv_profiles[3]; /* NTSC 50Mbps */

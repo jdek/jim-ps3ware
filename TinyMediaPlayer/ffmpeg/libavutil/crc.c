@@ -20,6 +20,7 @@
 
 #include "common.h"
 #include "crc.h"
+#include "bswap.h"
 
 #if LIBAVUTIL_VERSION_INT  < (50<<16)
 AVCRC *av_crcEDB88320;

@@ -34,7 +34,7 @@
 #include <stdarg.h>
 #include <limits.h>
 #include <float.h>
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #include <fcntl.h>
 #endif
 
@@ -1298,11 +1298,11 @@ int av_get_bits_per_sample(enum CodecID codec_id){
     }
 }
 
-#if !defined(HAVE_THREADS)
-int avcodec_thread_init(AVCodecContext *s, int thread_count){
-    return -1;
-}
-#endif
+//#if !defined(HAVE_THREADS)
+//int avcodec_thread_init(AVCodecContext *s, int thread_count){
+//return -1;
+//}
+//#endif
 
 unsigned int av_xiphlacing(unsigned char *s, unsigned int v)
 {
@@ -1325,7 +1325,7 @@ unsigned int av_xiphlacing(unsigned char *s, unsigned int v)
  * and opened file name in **filename. */
 int av_tempfile(char *prefix, char **filename) {
     int fd=-1;
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
     *filename = tempnam(".", prefix);
 #else
     size_t len = strlen(prefix) + 12; /* room for "/tmp/" and "XXXXXX\0" */
@@ -1336,7 +1336,7 @@ int av_tempfile(char *prefix, char **filename) {
         av_log(NULL, AV_LOG_ERROR, "ff_tempfile: Cannot allocate file name\n");
         return -1;
     }
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
     fd = open(*filename, _O_RDWR | _O_BINARY | _O_CREAT, 0444);
 #else
     snprintf(*filename, len, "/tmp/%sXXXXXX", prefix);

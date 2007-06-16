@@ -378,7 +378,7 @@ static MpegTSService *new_service(MpegTSContext *ts, int sid,
     service->sid = sid;
     service->provider_name = provider_name;
     service->name = name;
-    dynarray_add(&ts->services, &ts->nb_services, service);
+    //dynarray_add(&ts->services, &ts->nb_services, service);
     return service;
 }
 

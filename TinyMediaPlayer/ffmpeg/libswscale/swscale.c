@@ -55,11 +55,15 @@ untested special converters
 */
 
 #include <inttypes.h>
+#include <limits.h>
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
+#include <stddef.h>
+#if defined(_GNUC_)
 #include <unistd.h>
-#include "config.h"
+#endif
+#include "../config.h"
 #include <assert.h>
 #ifdef HAVE_SYS_MMAN_H
 #include <sys/mman.h>
@@ -72,7 +76,7 @@ untested special converters
 #include "x86_cpu.h"
 #include "bswap.h"
 #include "rgb2rgb.h"
-#include "libavcodec/opt.h"
+#include "../libavcodec/opt.h"
 
 #undef MOVNTQ
 #undef PAVGB
@@ -245,7 +249,7 @@ static const char * sws_context_to_name(void * ptr) {
 #define VE AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_ENCODING_PARAM
 
 static const AVOption options[] = {
-    { "sws_flags", "scaler/cpu flags", OFFSET(flags), FF_OPT_TYPE_FLAGS, DEFAULT, INT_MIN, INT_MAX, VE, "sws_flags" },
+    { "sws_flags", "scaler/cpu flags", OFFSET(flags), FF_OPT_TYPE_FLAGS, 0, INT_MIN, INT_MAX, VE, "sws_flags" },
     { "fast_bilinear", "fast bilinear", 0, FF_OPT_TYPE_CONST, SWS_FAST_BILINEAR, INT_MIN, INT_MAX, VE, "sws_flags" },
     { "bilinear", "bilinear", 0, FF_OPT_TYPE_CONST, SWS_BILINEAR, INT_MIN, INT_MAX, VE, "sws_flags" },
     { "bicubic", "bicubic", 0, FF_OPT_TYPE_CONST, SWS_BICUBIC, INT_MIN, INT_MAX, VE, "sws_flags" },

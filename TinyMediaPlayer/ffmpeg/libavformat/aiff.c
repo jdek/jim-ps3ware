@@ -412,6 +412,8 @@ static int aiff_read_seek(AVFormatContext *s,
     return pcm_read_seek(s, stream_index, timestamp, flags);
 }
 
+static const AVCodecTag* aiffCodecTag[] =  {codec_aiff_tags, 0};
+
 #ifdef CONFIG_AIFF_DEMUXER
 AVInputFormat aiff_demuxer = {
     "aiff",
@@ -422,7 +424,8 @@ AVInputFormat aiff_demuxer = {
     aiff_read_packet,
     aiff_read_close,
     aiff_read_seek,
-    .codec_tag= (const AVCodecTag*[]){codec_aiff_tags, 0},
+	0, 0, 0, 0, 0, 0,
+	aiffCodecTag,
 };
 #endif
 
@@ -438,6 +441,7 @@ AVOutputFormat aiff_muxer = {
     aiff_write_header,
     aiff_write_packet,
     aiff_write_trailer,
-    .codec_tag= (const AVCodecTag*[]){codec_aiff_tags, 0},
+	0, 0, 0,
+    aiffCodecTag,
 };
 #endif

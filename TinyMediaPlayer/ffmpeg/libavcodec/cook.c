@@ -43,7 +43,6 @@
  * available.
  */
 
-#include <math.h>
 #include <stddef.h>
 #include <stdio.h>
 
@@ -55,6 +54,7 @@
 
 #include "cookdata.h"
 #include "internal.h"
+#include <math.h>
 
 /* the different Cook versions */
 #define MONO            0x1000001

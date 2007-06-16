@@ -27,6 +27,7 @@
 #include "dnxhddata.h"
 #include "dsputil.h"
 #include "mpegvideo.h"
+#include "internal.h"
 
 typedef struct {
     int cid;

@@ -23,6 +23,7 @@
 
 #include "avcodec.h"
 #include "bytestream.h"
+#include "internal.h"
 #include <stddef.h>
 
 #define ROQ_FIRST_FRAME_SIZE     (735*8)

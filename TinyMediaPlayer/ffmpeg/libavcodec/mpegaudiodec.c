@@ -25,6 +25,7 @@
  */
 
 //#define DEBUG
+#include <math.h>
 #include "avcodec.h"
 #include "bitstream.h"
 #include "dsputil.h"
@@ -370,9 +371,9 @@ static int decode_init(AVCodecContext * avctx)
         for(i=0; i<512*16; i++){
             int exponent= (i>>4);
             double f= pow(i&15, 4.0 / 3.0) * pow(2, (exponent-400)*0.25 + FRAC_BITS + 5);
-            expval_table[exponent][i&15]= llrint(f);
+            expval_table[exponent][i&15]= lrintf(f);
             if((i&15)==1)
-                exp_table[exponent]= llrint(f);
+                exp_table[exponent]= lrintf(f);
         }
 
         for(i=0;i<7;i++) {
@@ -2675,7 +2676,8 @@ AVCodec mp3_decoder =
     NULL,
     decode_frame,
     CODEC_CAP_PARSE_ONLY,
-    .flush= flush,
+	0,
+    flush,
 };
 #endif
 #ifdef CONFIG_MP3ADU_DECODER
@@ -2690,7 +2692,8 @@ AVCodec mp3adu_decoder =
     NULL,
     decode_frame_adu,
     CODEC_CAP_PARSE_ONLY,
-    .flush= flush,
+	0,
+	flush,
 };
 #endif
 #ifdef CONFIG_MP3ON4_DECODER
@@ -2704,6 +2707,8 @@ AVCodec mp3on4_decoder =
     NULL,
     decode_close_mp3on4,
     decode_frame_mp3on4,
-    .flush= flush,
+	0,
+	0,
+	flush,
 };
 #endif

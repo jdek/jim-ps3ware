@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="D:\dev\ps3ware\trunk\TinyMediaPlayer\ffmpeg\include;D:\dev\ps3ware\trunk\TinyMediaPlayer\ffmpeg;ffmpeg\libavcodec;ffmpeg\libavformat;D:\dev\ps3ware\trunk\TinyMediaPlayer\ffmpeg\libavutil;D:\dev\ps3ware\trunk\TinyMediaPlayer\ffmpeg\libavcodec;ffmpeg"
+				AdditionalIncludeDirectories="&quot;D:\dev\ps3ware\trunk\TinyMediaPlayer\SDL-1.2.11\include&quot;;D:\dev\ps3ware\trunk\TinyMediaPlayer\ffmpeg\include;D:\dev\ps3ware\trunk\TinyMediaPlayer\ffmpeg;ffmpeg\libavcodec;ffmpeg\libavformat;D:\dev\ps3ware\trunk\TinyMediaPlayer\ffmpeg\libavutil;D:\dev\ps3ware\trunk\TinyMediaPlayer\ffmpeg\libavcodec;ffmpeg"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -61,7 +61,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ddraw.lib gdi32.lib User32.lib"
+				AdditionalDependencies="ddraw.lib gdi32.lib User32.lib ws2_32.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -177,7 +177,27 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\ffmpeg\cmdutils.c"
+				>
+			</File>
+			<File
+				RelativePath="..\ffmpeg\ffplay.c"
+				>
+			</File>
+			<File
 				RelativePath="..\main.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\ffmpeg\misc.c"
 				>
 			</File>
 		</Filter>
@@ -217,6 +237,10 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath="..\SDL-1.2.11\lib\SDL.lib"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

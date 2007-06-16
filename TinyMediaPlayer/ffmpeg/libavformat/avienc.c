@@ -564,6 +564,8 @@ static int avi_write_trailer(AVFormatContext *s)
     return res;
 }
 
+static const AVCodecTag* codecTags[] = {codec_bmp_tags, codec_wav_tags, 0};
+
 AVOutputFormat avi_muxer = {
     "avi",
     "avi format",
@@ -575,6 +577,7 @@ AVOutputFormat avi_muxer = {
     avi_write_header,
     avi_write_packet,
     avi_write_trailer,
-    .codec_tag= (const AVCodecTag*[]){codec_bmp_tags, codec_wav_tags, 0},
+	0, 0, 0,
+	codecTags,
 };
 #endif //CONFIG_AVI_MUXER

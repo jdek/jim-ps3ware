@@ -230,9 +230,9 @@ if((y)<(x)){\
 #endif
 
 /* avoid usage of various functions */
-#define malloc please_use_av_malloc
-#define free please_use_av_free
-#define realloc please_use_av_realloc
+//#define malloc please_use_av_malloc
+//#define free please_use_av_free
+//#define realloc please_use_av_realloc
 //#define time time_is_forbidden_due_to_security_issues
 #define rand rand_is_forbidden_due_to_state_trashing
 #define srand srand_is_forbidden_due_to_state_trashing

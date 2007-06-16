@@ -27,6 +27,7 @@
 #include "avcodec.h"
 #include "bitstream.h"
 #include "mpegaudio.h"
+#include <math.h>
 
 /* currently, cannot change these constants (need to modify
    quantization stage) */

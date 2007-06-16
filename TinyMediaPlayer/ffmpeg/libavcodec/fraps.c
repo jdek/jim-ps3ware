@@ -35,6 +35,7 @@
 #include "avcodec.h"
 #include "bitstream.h"
 #include "dsputil.h"
+#include <stdlib.h>
 
 #define FPS_TAG MKTAG('F', 'P', 'S', 'x')
 

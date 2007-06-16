@@ -30,6 +30,7 @@
 #include "crc.h"
 #include "ac3.h"
 #include "internal.h"
+#include <math.h>
 
 typedef struct AC3EncodeContext {
     PutBitContext pb;

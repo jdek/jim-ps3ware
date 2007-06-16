@@ -798,7 +798,7 @@ static int svq1_decode_frame(AVCodecContext *avctx,
         current += 16*linesize;
       }
     } else {
-      svq1_pmv_t pmv[width/8+3];
+      svq1_pmv_t* pmv = _alloca(((width / 8) + 3) * sizeof(svq1_pmv_t));
       /* delta frame */
       memset (pmv, 0, ((width / 8) + 3) * sizeof(svq1_pmv_t));
 
@@ -1394,6 +1394,8 @@ static int svq1_encode_end(AVCodecContext *avctx)
 
 #endif //CONFIG_ENCODERS
 
+static enum PixelFormat svq1DecoderFormats[] = {PIX_FMT_YUV410P, -1};
+
 #ifdef CONFIG_DECODERS
 AVCodec svq1_decoder = {
     "svq1",
@@ -1405,8 +1407,10 @@ AVCodec svq1_decoder = {
     svq1_decode_end,
     svq1_decode_frame,
     CODEC_CAP_DR1,
-    .flush= ff_mpeg_flush,
-    .pix_fmts= (enum PixelFormat[]){PIX_FMT_YUV410P, -1},
+	0,
+    ff_mpeg_flush,
+	0,
+    svq1DecoderFormats,
 };
 #endif
 

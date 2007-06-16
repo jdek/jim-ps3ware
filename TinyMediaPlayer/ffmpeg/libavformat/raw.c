@@ -499,7 +499,7 @@ AVOutputFormat flac_muxer = {
     flac_write_header,
     raw_write_packet,
     raw_write_trailer,
-    .flags= AVFMT_NOTIMESTAMPS,
+    AVFMT_NOTIMESTAMPS,
 };
 #endif //CONFIG_MUXERS
 
@@ -512,8 +512,9 @@ AVInputFormat ac3_demuxer = {
     ac3_read_header,
     raw_read_partial_packet,
     raw_read_close,
-    .flags= AVFMT_GENERIC_INDEX,
-    .extensions = "ac3",
+	0, 0,
+    AVFMT_GENERIC_INDEX,
+    "ac3",
 };
 #endif
 
@@ -529,7 +530,7 @@ AVOutputFormat ac3_muxer = {
     raw_write_header,
     raw_write_packet,
     raw_write_trailer,
-    .flags= AVFMT_NOTIMESTAMPS,
+    AVFMT_NOTIMESTAMPS,
 };
 #endif //CONFIG_MUXERS
 
@@ -604,7 +605,7 @@ AVOutputFormat h261_muxer = {
     raw_write_header,
     raw_write_packet,
     raw_write_trailer,
-    .flags= AVFMT_NOTIMESTAMPS,
+    AVFMT_NOTIMESTAMPS,
 };
 #endif //CONFIG_MUXERS
 
@@ -636,7 +637,7 @@ AVOutputFormat h263_muxer = {
     raw_write_header,
     raw_write_packet,
     raw_write_trailer,
-    .flags= AVFMT_NOTIMESTAMPS,
+    AVFMT_NOTIMESTAMPS,
 };
 #endif //CONFIG_MUXERS
 
@@ -667,7 +668,7 @@ AVOutputFormat m4v_muxer = {
     raw_write_header,
     raw_write_packet,
     raw_write_trailer,
-    .flags= AVFMT_NOTIMESTAMPS,
+    AVFMT_NOTIMESTAMPS,
 };
 #endif //CONFIG_MUXERS
 
@@ -698,7 +699,7 @@ AVOutputFormat h264_muxer = {
     raw_write_header,
     raw_write_packet,
     raw_write_trailer,
-    .flags= AVFMT_NOTIMESTAMPS,
+    AVFMT_NOTIMESTAMPS,
 };
 #endif //CONFIG_MUXERS
 
@@ -729,7 +730,7 @@ AVOutputFormat mpeg1video_muxer = {
     raw_write_header,
     raw_write_packet,
     raw_write_trailer,
-    .flags= AVFMT_NOTIMESTAMPS,
+    AVFMT_NOTIMESTAMPS,
 };
 #endif //CONFIG_MUXERS
 
@@ -745,7 +746,7 @@ AVOutputFormat mpeg2video_muxer = {
     raw_write_header,
     raw_write_packet,
     raw_write_trailer,
-    .flags= AVFMT_NOTIMESTAMPS,
+    AVFMT_NOTIMESTAMPS,
 };
 #endif //CONFIG_MUXERS
 
@@ -791,7 +792,7 @@ AVOutputFormat mjpeg_muxer = {
     raw_write_header,
     raw_write_packet,
     raw_write_trailer,
-    .flags= AVFMT_NOTIMESTAMPS,
+    AVFMT_NOTIMESTAMPS,
 };
 #endif //CONFIG_MUXERS
 
@@ -822,9 +823,10 @@ AVInputFormat pcm_ ## name ## _demuxer = {\
     raw_read_packet,\
     raw_read_close,\
     pcm_read_seek,\
-    .flags= AVFMT_GENERIC_INDEX,\
-    .extensions = ext,\
-    .value = codec,\
+	0,\
+    AVFMT_GENERIC_INDEX,\
+    ext,\
+    codec,\
 };
 
 #define PCMOUTPUTDEF(name, long_name, ext, codec) \
@@ -839,7 +841,7 @@ AVOutputFormat pcm_ ## name ## _muxer = {\
     raw_write_header,\
     raw_write_packet,\
     raw_write_trailer,\
-    .flags= AVFMT_NOTIMESTAMPS,\
+    AVFMT_NOTIMESTAMPS,\
 };
 
 
@@ -939,7 +941,7 @@ AVOutputFormat rawvideo_muxer = {
     raw_write_header,
     raw_write_packet,
     raw_write_trailer,
-    .flags= AVFMT_NOTIMESTAMPS,
+    AVFMT_NOTIMESTAMPS,
 };
 #endif //CONFIG_MUXERS
 
@@ -964,6 +966,6 @@ AVOutputFormat null_muxer = {
     raw_write_header,
     null_write_packet,
     raw_write_trailer,
-    .flags = AVFMT_NOFILE | AVFMT_RAWPICTURE | AVFMT_NOTIMESTAMPS,
+    AVFMT_NOFILE | AVFMT_RAWPICTURE | AVFMT_NOTIMESTAMPS,
 };
 #endif //CONFIG_MUXERS

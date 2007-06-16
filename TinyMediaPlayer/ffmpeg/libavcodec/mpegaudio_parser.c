@@ -23,7 +23,7 @@
 #include "parser.h"
 #include "mpegaudio.h"
 #include "mpegaudiodecheader.h"
-
+#include "internal.h"
 
 typedef struct MpegAudioParseContext {
     uint8_t inbuf[MPA_MAX_CODED_FRAME_SIZE];    /* input buffer */

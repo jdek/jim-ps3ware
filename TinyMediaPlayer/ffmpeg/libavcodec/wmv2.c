@@ -34,6 +34,7 @@
 #define SKIP_TYPE_ROW  2
 #define SKIP_TYPE_COL  3
 
+extern const uint16_t ff_msmp4_mb_i_table[64][2];
 
 typedef struct Wmv2Context{
     MpegEncContext s;
@@ -867,6 +868,8 @@ AVCodec wmv2_decoder = {
 };
 #endif
 
+static enum PixelFormat pixelFormats[] = {PIX_FMT_YUV420P, -1}; 
+
 #ifdef CONFIG_WMV2_ENCODER
 AVCodec wmv2_encoder = {
     "wmv2",
@@ -876,6 +879,10 @@ AVCodec wmv2_encoder = {
     wmv2_encode_init,
     MPV_encode_picture,
     MPV_encode_end,
-    .pix_fmts= (enum PixelFormat[]){PIX_FMT_YUV420P, -1},
+	0,
+	0,
+	0,
+	0,
+    pixelFormats,
 };
 #endif

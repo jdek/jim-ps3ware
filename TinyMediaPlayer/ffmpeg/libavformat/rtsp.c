@@ -29,6 +29,10 @@
 
 #include "rtp_internal.h"
 
+#if defined(_MSC_VER)
+#define strcasecmp stricmp
+#endif
+
 //#define DEBUG
 //#define DEBUG_RTP_TCP
 
@@ -366,6 +370,7 @@ typedef struct SDPParseState {
 static void sdp_parse_line(AVFormatContext *s, SDPParseState *s1,
                            int letter, const char *buf)
 {
+	volatile int* breakpoint = 0;
     RTSPState *rt = s->priv_data;
     char buf1[64], st_type[64];
     const char *p;
@@ -389,8 +394,10 @@ static void sdp_parse_line(AVFormatContext *s, SDPParseState *s1,
         if (strcmp(buf1, "IP4") != 0)
             return;
         get_word_sep(buf1, sizeof(buf1), "/", &p);
-        if (inet_aton(buf1, &sdp_ip) == 0)
-            return;
+		*breakpoint = 0;
+
+		//if (inet_aton(buf1, &sdp_ip) == 0)
+        //    return;
         ttl = 16;
         if (*p == '/') {
             p++;
@@ -430,7 +437,7 @@ static void sdp_parse_line(AVFormatContext *s, SDPParseState *s1,
         if (!rtsp_st)
             return;
         rtsp_st->stream_index = -1;
-        dynarray_add(&rt->rtsp_streams, &rt->nb_rtsp_streams, rtsp_st);
+        //dynarray_add(&rt->rtsp_streams, &rt->nb_rtsp_streams, rtsp_st);
 
         rtsp_st->sdp_ip = s1->default_ip;
         rtsp_st->sdp_ttl = s1->default_ttl;
@@ -663,8 +670,8 @@ static void rtsp_parse_transport(RTSPHeader *reply, const char *p)
                 if (*p == '=') {
                     p++;
                     get_word_sep(buf, sizeof(buf), ";,", &p);
-                    if (inet_aton(buf, &ipaddr))
-                        th->destination = ntohl(ipaddr.s_addr);
+                    //if (inet_aton(buf, &ipaddr))
+                    //    th->destination = ntohl(ipaddr.s_addr);
                 }
             }
             while (*p != ';' && *p != '\0' && *p != ',')
@@ -1317,9 +1324,12 @@ AVInputFormat rtsp_demuxer = {
     rtsp_read_packet,
     rtsp_read_close,
     rtsp_read_seek,
-    .flags = AVFMT_NOFILE,
-    .read_play = rtsp_read_play,
-    .read_pause = rtsp_read_pause,
+	0,
+    AVFMT_NOFILE,
+	0,
+	0,
+	rtsp_read_play,
+    rtsp_read_pause,
 };
 #endif
 

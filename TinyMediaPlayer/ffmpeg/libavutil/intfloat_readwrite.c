@@ -27,6 +27,8 @@
 
 #include "common.h"
 #include "intfloat_readwrite.h"
+#include <assert.h>
+#include <math.h>
 
 double av_int2dbl(int64_t v){
 	

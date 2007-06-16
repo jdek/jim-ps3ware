@@ -183,7 +183,7 @@ AVOutputFormat yuv4mpegpipe_muxer = {
     yuv4_write_header,
     yuv4_write_packet,
     yuv4_write_trailer,
-    .flags = AVFMT_RAWPICTURE,
+    AVFMT_RAWPICTURE,
 };
 #endif
 
@@ -402,6 +402,7 @@ AVInputFormat yuv4mpegpipe_demuxer = {
     yuv4_read_header,
     yuv4_read_packet,
     yuv4_read_close,
-    .extensions = "y4m"
+	0, 0, 0,
+    "y4m"
 };
 #endif

@@ -30,6 +30,7 @@
 
 #include "dsputil.h"
 #include "faandct.h"
+#include <math.h>
 
 #if defined(_MSC_VER)
 #pragma warning(disable : 4305) // 'initializing' : truncation from 'double' to 'const float

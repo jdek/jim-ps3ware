@@ -21,6 +21,7 @@
 #include "avcodec.h"
 #include "bitstream.h"
 #include "golomb.h"
+#include <math.h>
 
 /**
  * @file sonic.c
