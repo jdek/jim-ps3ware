@@ -2893,10 +2893,10 @@ static int mpeg1_decode_sequence(AVCodecContext *avctx,
         }
     }
 
-    if(show_bits(&s->gb, 23) != 0){
-        av_log(s->avctx, AV_LOG_ERROR, "sequence header damaged\n");
-        return -1;
-    }
+    //if(show_bits(&s->gb, 23) != 0){
+    //    av_log(s->avctx, AV_LOG_ERROR, "sequence header damaged\n");
+    //    return -1;
+    //}
 
     /* we set mpeg2 parameters so that it emulates mpeg1 */
     s->progressive_sequence = 1;

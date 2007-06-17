@@ -301,6 +301,14 @@
 			<File
 				RelativePath="..\ffmpeg\libavutil\softfloat.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ffmpeg\libavutil\softfloat.h"

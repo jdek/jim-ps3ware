@@ -1729,7 +1729,9 @@ int av_find_stream_info(AVFormatContext *ic)
 
     for(i=0;i<ic->nb_streams;i++) {
         st = ic->streams[i];
-        if(st->codec->codec_type == CODEC_TYPE_VIDEO){
+		if (st->codec)
+			st->codec->debug = 1;
+		if(st->codec->codec_type == CODEC_TYPE_VIDEO){
 /*            if(!st->time_base.num)
                 st->time_base= */
             if(!st->codec->time_base.num)

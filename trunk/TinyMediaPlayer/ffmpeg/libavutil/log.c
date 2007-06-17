@@ -35,8 +35,8 @@ void av_log_default_callback(void* ptr, int level, const char* fmt, va_list vl)
 {
     static int print_prefix=1;
     AVClass* avc= ptr ? *(AVClass**)ptr : NULL;
-    if(level>av_log_level)
-        return;
+    //if(level>av_log_level)
+    //    return;
 #undef fprintf
     if(print_prefix && avc) {
             fprintf(stderr, "[%s @ %p]", avc->item_name(ptr), avc);
