@@ -29,9 +29,9 @@
 #include <SDL.h>
 #include <SDL_thread.h>
 
-#ifdef __MINGW32__
+//#ifdef __MINGW32__ 
 #undef main /* We don't want SDL to override our main() */
-#endif
+//#endif
 
 #ifdef CONFIG_OS2
 #define INCL_DOS
@@ -191,7 +191,7 @@ static int screen_width = 0;
 static int screen_height = 0;
 static int frame_width = 0;
 static int frame_height = 0;
-static enum PixelFormat frame_pix_fmt = PIX_FMT_NONE;
+static enum PixelFormat frame_pix_fmt = PIX_FMT_RGB32;
 static int audio_disable;
 static int video_disable;
 static int wanted_audio_stream= 0;
@@ -2530,6 +2530,9 @@ int main(int argc, char **argv)
 {
     int flags;
 
+	av_log_level = -1;
+	//debug = 1;
+
     /* register all codecs, demux and protocols */
     av_register_all();
 
@@ -2551,7 +2554,7 @@ int main(int argc, char **argv)
     }
     flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
 #if !defined(__MINGW32__) && !defined(CONFIG_DARWIN)
-    flags |= SDL_INIT_EVENTTHREAD; /* Not supported on win32 or darwin */
+    //flags |= SDL_INIT_EVENTTHREAD; /* Not supported on win32 or darwin */
 #endif
     if (SDL_Init (flags)) {
         fprintf(stderr, "Could not initialize SDL - %s\n", SDL_GetError());

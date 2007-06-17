@@ -1462,7 +1462,7 @@ static int huffman_decode(MPADecodeContext *s, GranuleDef *g,
 
         /* read huffcode and compute each couple */
         for(;j>0;j--) {
-            int exponent, x, y, v;
+            int exponent, x = 0, y, v;
             int pos= get_bits_count(&s->gb);
 
             if (pos >= end_pos){
