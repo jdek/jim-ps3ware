@@ -38,6 +38,8 @@
 
 #ifndef __SIMDPRINT_H
 #define __SIMDPRINT_H
+#include <stdio.h>
+
 static inline void printfvec(char * name,vector float vf)
 {
 	printf("Vector %s=( %f, %f, %f, %f )\n",name, spu_extract(vf,0), spu_extract(vf,1), spu_extract(vf,2), spu_extract(vf,3));
@@ -57,8 +59,39 @@ static inline void printshortvec(char * name,vector short vs)
 
 void printcharvec(char* name,vector unsigned char vc)
 {
-printf("Vector %s=( %d, %d, %d, %d, %d, %d, %d, %d,%d, %d, %d, %d, %d, %d, %d, %d )\n",name, spu_extract(vc,0), spu_extract(vc,1), spu_extract(vc,2), spu_extract(vc,3), spu_extract(vc,4), spu_extract(vc,5), spu_extract(vc,6), spu_extract(vc,7), spu_extract(vc,8), spu_extract(vc,9), spu_extract(vc,10), spu_extract(vc,11), spu_extract(vc,12), spu_extract(vc,13), spu_extract(vc,14), spu_extract(vc,15));
+	printf("Vector %s=( %d, %d, %d, %d, %d, %d, %d, %d,%d, %d, %d, %d, %d, %d, %d, %d )\n",name, spu_extract(vc,0), spu_extract(vc,1), spu_extract(vc,2), spu_extract(vc,3), spu_extract(vc,4), spu_extract(vc,5), spu_extract(vc,6), spu_extract(vc,7), spu_extract(vc,8), spu_extract(vc,9), spu_extract(vc,10), spu_extract(vc,11), spu_extract(vc,12), spu_extract(vc,13), spu_extract(vc,14), spu_extract(vc,15));
 	
+}
+
+void printfloatmatrix8x8(char *name,vector float* M8f)
+{
+	int i;
+	printf("Matrix %s\n",name);
+	for (i=0;i<8;i++)
+	{
+	printf("| %f\t%f\t%f\t%f\t%f\t%f\t%f\t%f |\n", spu_extract(M8f[i],0),spu_extract(M8f[i],1),spu_extract(M8f[i],2),spu_extract(M8f[i],3),spu_extract(M8f[i+8],0),spu_extract(M8f[i+8],1),spu_extract(M8f[i+8],2),spu_extract(M8f[i+8],3));
+	}
+
+}
+
+void printshortmatrix(char *name,vector signed short * M,int rows, int colums)
+{
+	int i;
+	int j;
+	printf("Matrix %s\n",name);
+	for (i=0;i<rows;i++)
+	{	
+		printf("|");
+		for (j=0;j<colums;j++)
+		{
+			if (j==(colums-1))
+				printf("%d",spu_extract(M[i],j));
+			else
+			printf("%d\t",spu_extract(M[i],j));
+		}
+		printf("|\n");
+	}
+
 }
 
 #endif
