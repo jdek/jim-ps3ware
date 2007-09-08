@@ -18,6 +18,9 @@ char nextbyte(mpeg2_dec_t*);
 mpeg2_dec_t* open_file(char* filename);
 void close_file(mpeg2_dec_t*);
 void sequence_start(mpeg2_dec_t*);
+void group_start(mpeg2_dec_t*);
+void picture_start(mpeg2_dec_t*);
+void slice_start(mpeg2_dec_t*);
 
 static char * frame_rate_str[16] = {
 	"Invalid frame_rate_code",
@@ -34,6 +37,10 @@ static char * aspect_ratio_str[16] = {
 	"Reserved" , "Reserved", "Reserved", "Reserved" ,
 	"Reserved" , "Reserved", "Reserved", "Reserved" ,
 	"Reserved" , "Reserved", "Reserved" 
+};
+
+static char * coding_type_str[8] = {
+	"Forbidden", "Intra-coded(I)","Predictive-coded(P)","Bidirectionally-predictive-coded(B)","shall not be used","reserved","reserved","reserved"
 };
 
 #endif
