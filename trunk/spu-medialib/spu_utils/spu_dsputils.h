@@ -43,7 +43,6 @@
 #include <spu_matrix.h>
 #include <spu_extfunct.h>
 
-
 static vector signed short C[3];
 static vector signed short S[3];
 static vector signed short zero;
@@ -122,7 +121,7 @@ static inline void IDCT_HALF_S(vector signed short DCT_S[8],vector signed short 
 
 
 /*
- *IDCT does inverse direct cosine transform of a transposed matrix and returns the results in block
+ *IDCT does inverse discrete cosine transform of a transposed matrix and returns the results in block
  *
  *
  *
@@ -162,6 +161,73 @@ static inline void init_IDCT_S() // this needs to be initiated prior to executio
 	S[2]=(vector signed short){S6,S6,S6,S6,S6,S6,S6,S6};
 
 	zero=(vector signed short){0,0,0,0,0,0,0,0};
+}
+
+static inline void inverse_scan_progressive(vector unsigned char * Input[8],vector unsigned char * Output[4])
+{
+	//packing data block these can all be removed if ffmpeg supplies data as uint8_t
+	vector unsigned char pack={1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31}; 
+	vector unsigned char A=spu_shuffle(Input[0],Input[1],pack);
+	vector unsigned char B=spu_shuffle(Input[2],Input[3],pack);
+	vector unsigned char C=spu_shuffle(Input[4],Input[5],pack);
+	vector unsigned char D=spu_shuffle(Input[6],Input[7],pack);
+	//packing data block ends these can all be removed if ffmpeg supplies data as uint8_t
+
+	//pipelined this is xx cycles 
+	Output[0]=spu_shuffle(A,B,((vector unsigned char ){0,1,5,6,14,15,27,28,2,4,7,13,16,26,29,0x00}));
+	Output[1]=spu_shuffle(A,B,((vector unsigned char ){3,8,12,17,25,30,0x00,0x00,9,11,18,24,31,0x00,0x00,0x00}));
+	Output[2]=spu_shuffle(C,D,((vector unsigned char ){  0x00,0x00,0x00,0,7,13,20,22,
+							       0x00,0x00,1,6,14,19,23,28}));
+	Output[3]=spu_shuffle(C,D,((vector unsigned char ){	 0x00,2,5,15,18,24,27,29
+							           3,4,16,17,25,26,30,31}));
+	Output[0]=spu_shuffle(Output[0],C,((vector unsigned char ){0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,26}));//adding nr 42
+	Output[1]=spu_shuffle(Output[1],C,((vector unsigned char ){0,1,2,3,4,5,25,27,8,9,10,11,12,24,28,0x00}));//adding 41,43,,40,44
+	
+	Output[2]=spu_shuffle(Output[2],D,((vector unsigned char ){0x00,19,23,3,4,,5,6,7,20,22,10,11,12,13,14,15})); // only missing 1 here;
+	Output[3]=spu_shuffle(Output[3],D,((vector unsigned char ){21,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15})); //move this down
+	Output[1]=spu_shuffle(Output[1],D,((vector unsigned char ){0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,21})); //adding 53
+	Output[2]=spu_shuffle(Output[2],C,((vector unsigned char ){26,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15}));//adding 10
+}
+
+
+static inline void dct_unquantisize_mpeg2_intra(SpuMpegEncContext *s,vector signed short *block[8], int n, int qscale)
+{ 
+	int i, nCoeffs;
+	int level;		
+    vector unsigned short *quant_matrix;
+   uint16_t B0;
+	
+    if(s->alternate_scan) nCoeffs= 63;
+    else nCoeffs= s->block_last_index[n];
+
+    if (n < 4)
+        B0 = spu_extract(block[0],0) * s->y_dc_scale;
+    else
+        B0 = spu_extract(block[0],0) * s->c_dc_scale;
+
+    	quant_matrix = s->intra_matrix;
+
+   // I guarantee that this will run faster if pipelined... unsolo
+    for(i=0;i<=nCoeffs>>2;i++) {
+
+     //   int j= s->intra_scantable.permutated[i]; //already done elsewhere
+
+	level=spu_gather(spu_cmpabsgt(block[i],((vector short){0,0,0,0,0,0,0,0})) //if any element of block[i] isnt 0 please compute
+        if !(level) {
+		vector signed int odd=spu_mulo(block[i],quant_matrix[i]); 
+		vector signed int even=spu_mole(block[i],quant_matrix[i]);
+		
+		vector signed int oddscale=spu_mulo(odd,qscale);
+		vector signed int evenscale=spu_mule(even,qscale);
+		
+
+		vector signed int oddshift=spu_rlmaska(oddscale,-3);
+		vector signed int evenshift= spu_rlmaska(evenscale,-3);
+		block[i]=spu_shuffle(spu_rlmaska(evenshift,16),spu_rlmaska(oddshift,16),((vector unsigned char){0,1,16,17,4,5,20,21,8,9,24,25,12,13,28,29}));
+        }
+    }
+
+	spu_insert(B0,block[0],0); //re insert the 0,0
 }
 
 #endif
