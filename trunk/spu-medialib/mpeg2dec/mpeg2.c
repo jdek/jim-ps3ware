@@ -15,8 +15,18 @@ struct mpeg2_dec_s{
 	int constrained_parameters_flag;
 	int load_intra_quantiser_matrix;
 	int load_non_intra_quantiser_matrix;
+	int time_code;
+	int closed_gop;
+	int broken_link;
 	char intra_quantiser[64];
 	char non_intra_quantiser[64]; 
+	int temporal_reference;
+	int picture_coding_type;
+	int full_pel_forward_vector;
+	int forward_f_code;
+	int full_pel_backward_vector;
+	int backward_f_code;
+	
 	int open;
 	//	ifstream source;
 };
@@ -124,8 +134,56 @@ void sequence_start(mpeg2_dec_s* mp2dec)
 	
 //	if (mp2dec->marker_bit==0x01)
 		
-	
- 
 }
 
+void group_start(mpeg2_dec_s* mp2dec)
+{
+	char buffer[4];
+	fread(buffer,1,4,mp2dec->fp);
+	mp2dec->time_code=buffer[0]<<17|buffer[1]<<9|buffer[2]<<1 |buffer[3]>>7;
+	printf("mpeg2 time code\t:%d\n",mp2dec->time_code);
+	mp2dec->closed_gop=(buffer[3]>>6) &0x01;
+	mp2dec->broken_link=(buffer[3]>>5) &0x01;
+	
+
+}
+
+void picture_start(mpeg2_dec_s* mp2dec)
+{
+	char buffer[2];
+	fread(buffer,1,2,mp2dec->fp);
+	mp2dec->temporal_reference=buffer[0]<<2|buffer[1]>>6;
+	mp2dec->picture_coding_type=(buffer[1]>>3)&0x07;
+	printf("picture_coding_type\t:%s\n",coding_type_str[mp2dec->picture_coding_type]);
+	if ((mp2dec->picture_coding_type==2)||(mp2dec->picture_coding_type==3))
+	{
+		
+	}
+	
+	if (mp2dec->picture_coding_type==3)
+	{
+		
+	}
+
+	//INSERT CODE FOR EXTRA BIT PICTURE
+	//iNSERT CODE FOR EXTRA iNFORMATION PICTURE
+	//INSERT CODE FOR EXTRA BIT PICTURE..
+
+}
+
+void slice_start(mpeg2_dec_s* mp2dec)
+{
+	//insert if vertical size >=2800
+	//insert if sequence scalable extension is present in bitstream
+
+	mp2dec->quantiser_scale_code=
+	//insert if nextbits =="1"
+
+
+	mp2dec->extra_bit_slice=
+
+	do {
+		//macroblock(mp2dec);
+	}while //nextbits !=0x000000
+}
 

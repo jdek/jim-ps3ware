@@ -62,19 +62,22 @@ int main (int nArg, char* cArg[]) {
 				sequence_start(mp2dec);
 				break;
 			case 0xb2:
-		//		printf("User data start\n");
+				printf("User data start\n");
 				break;
 			case 0x00:
-		//		printf("Picture start\n");
+			//	printf("Picture start\n");
+				picture_start(mp2dec);
 				break;
 			case 0xb7:
-		//		printf("Sequence end\n");
+				printf("Sequence end\n");
 				break;
 			case 0xb8:
-		//		printf("group start code\n");
+			//	printf("group start code\n");
+				group_start(mp2dec);
 				break;
 			default : 
 		//		printf("Slice_start_code %#x\n",B);
+				slice_start(mp2dec);
 				break;
 		}
 
