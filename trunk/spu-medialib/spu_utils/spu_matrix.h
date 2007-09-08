@@ -156,6 +156,20 @@ static inline void matrix_short_shift_right(vector signed short *M,int shift,int
 
 }
 
+static inline void matrix_short_shift_right8(vector signed short *M,int shift)
+
+{
+	
+		M[0]=spu_rlmaska(M[0],-shift);
+		M[1]=spu_rlmaska(M[1],-shift);
+		M[2]=spu_rlmaska(M[2],-shift);
+		M[3]=spu_rlmaska(M[3],-shift);
+		M[4]=spu_rlmaska(M[4],-shift);
+		M[5]=spu_rlmaska(M[5],-shift);
+		M[6]=spu_rlmaska(M[6],-shift);
+		M[7]=spu_rlmaska(M[7],-shift);
+}
+
 
 
 #endif

@@ -131,7 +131,7 @@ static inline void IDCT_S(vector signed short* block )
 	IDCT_HALF_S(block,block);
 	rotateshortmatrix8(block);//transpose the matrix
 	IDCT_HALF_S(block,block);
-	matrix_short_shift_right(block,3,8);// correcting the /256 by the 16/N^4 where N=8 (4/N^2 per dimension)
+	matrix_short_shift_right8(block,3);// correcting the /256 by the 16/N^4 where N=8 (4/N^2 per dimension)
 }
 
 
