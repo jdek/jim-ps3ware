@@ -43,6 +43,7 @@
 #define MAX_NUM_CALLBACKS 128
 
 typedef uint8_t message;
+typedef uint8_t spu_callback_id;
 
 struct ppu_bound_message {
   spu_program_unique_id spu_id; // 4 bytes (overkill)
@@ -53,8 +54,7 @@ struct ppu_bound_message {
 
 
 
-typedef void (*ppu_side_event_callback)(spu_program_unique_id id, ppu_bound_message *msg, void *private); //????????????
-
+typedef void (*ppu_side_event_callback)(spu_program_unique_id id, ppu_bound_message *msg, void *private); 
 
 class ppu_event_handler {
 	
@@ -92,12 +92,17 @@ class ppu_event_handler {
    	 	return message_queue;
  	}
 
-	spu_program_id register_event_handler(spu_program_id id, char message_type, ppu_side_event_callback callback) {
+	spu_callback_id register_event_handler(spu_program_id id, ppu_side_event_callback callback) {
 
 		if (spureg.is_in_use(id)) { //check that this is a active ID prior to registering callback
-
-			handlers[id].callbacks[message_type] = callback;
-
+			if (free_callbacks.empty())
+				return -1;
+			
+			spu_callback_id sci=free_callbacks.back()
+			callbacks[sci] = callback;
+			
+			return sci;
+			
 		} else {
 
 			printf("Bad SPU id!!!");
