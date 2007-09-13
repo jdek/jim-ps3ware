@@ -39,69 +39,55 @@
 #define __SPU_EVENT_HANDLER_H
 
 #include "spu_register.h"
+
 #define PPU_MESSAGE_QUEUE_SIZE 16
 #define MAX_NUM_CALLBACKS 128
 
 typedef uint8_t message;
-typedef uint8_t spu_callback_id;
+typedef uint8_t callback_id;
 
 struct ppu_bound_message {
   spu_program_unique_id spu_id; // 4 bytes (overkill)
   message message_type;            // 1 byte
   bool active;                  // 1 byte (overkill)
   char acDetails[122];          // Makes 128 byte message. This is up to the developer.
-}__attribute__((alligned(128)));
+}__attribute__((aligned(128)));
 
 
 
-typedef void (*ppu_side_event_callback)(spu_program_unique_id id, ppu_bound_message *msg, void *private); 
+typedef void (*ppu_side_event_callback)(spu_program_unique_id id, ppu_bound_message *msg); 
 
-class ppu_event_handler {
-	
-	protected:
-	struct handler_entry {
-	//     bool active; covered in register.
-		ppu_side_event_callback callbacks[MAX_NUM_CALLBACKS];
-	//	void *private;
- 	};
-	
-	ppu_event_handler() {
-		free.resize(MAX_NUM_CALLBACKS);
-		for (int i = 0; i<free.size();i++)
+class spu_event_handler /*: spu_register*/ {
+	public:
+
+
+	spu_event_handler() {
+		free_callbacks.resize(MAX_NUM_CALLBACKS);
+		for (int i = 0; i<MAX_NUM_CALLBACKS;i++)
 			free_callbacks.push_back(i);
-		//memset(handlers, 0, sizeof(handlers));
-		//memset(message_queue, 0, sizeof(message_queue));
-		
-		// different threading is better, ofc
+
 		//pthreads..
-		if (fork() == 0) {
-			message_loop();
-			exit(0);
-		}
+	//	if (fork() == 0) {
+	//		message_loop();
+	//		exit(0);
+	//	}
 	}
 	
-	spu_register spureg;
-	vector<int> free_callbacks;
-
+	~spu_event_handler(){};
 	
- 	handler_entry handlers[MAX_SPU_PROGRAM_ID];
-	
-	ppu_bound_message message_queue[PPU_MESSAGE_QUEUE_SIZE];
-
-	ppu_bound_message *get_message_queue() {
-   	 	return message_queue;
- 	}
-
-	spu_callback_id register_event_handler(spu_program_id id, ppu_side_event_callback callback) {
+	callback_id register_callback(spu_program_unique_id id, ppu_side_event_callback callback) 
+	{
 
 		if (spureg.is_in_use(id)) { //check that this is a active ID prior to registering callback
 			if (free_callbacks.empty())
 				return -1;
 			
-			spu_callback_id sci=free_callbacks.back()
+			callback_id sci=free_callbacks.back();
+
 			callbacks[sci] = callback;
 			
 			return sci;
+			free_callbacks.pop_back();
 			
 		} else {
 
@@ -109,4 +95,21 @@ class ppu_event_handler {
 
 		}
   	}
+
+//	protected:
+
+	ppu_side_event_callback callbacks[MAX_NUM_CALLBACKS];
+
+	spu_register spureg;
+	vector<int> free_callbacks;
+	
+	ppu_bound_message message_queue[PPU_MESSAGE_QUEUE_SIZE];
+
+	ppu_bound_message *get_message_queue() {
+   	 	return message_queue;
+ 	}
+
+	
 };
+
+#endif
