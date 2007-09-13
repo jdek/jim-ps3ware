@@ -74,7 +74,7 @@ class spu_register
 	};
 	~spu_register(){};
 	
-	spu_program_unique_id register_program(void* program)
+	spu_program_unique_id register_program()
 	{
 		if (free_spuid.empty()) { return -1; }
 
@@ -85,8 +85,7 @@ class spu_register
 		spuid[id].in_use=true;
 
 		spuid[id].active=false;
-	
-		spuid[id].program=program;
+
 
 		free_spuid.pop_back();
 
@@ -103,6 +102,7 @@ class spu_register
 	
 	//void set_priotiry(spu_program_unique_id,priority);
 	//void set_load_interval(spu_program_unique_id,load_interval);
+	public:
 	bool is_active(spu_program_unique_id id) {return spuid[id].active;}
 	bool is_in_use(spu_program_unique_id id) {return spuid[id].in_use;}
 	void set_active(spu_program_unique_id id) {spuid[id].active=true;}
