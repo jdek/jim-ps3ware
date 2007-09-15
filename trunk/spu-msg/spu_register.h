@@ -82,7 +82,7 @@ class spu_register
 
 		spuid[id].id=id;
 
-		spuid[id].in_use=true;
+		spuid[id].in_use=1;
 
 		spuid[id].active=false;
 
