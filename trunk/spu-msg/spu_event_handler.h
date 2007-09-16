@@ -59,6 +59,7 @@ struct ppu_bound_message {
 
 
 
+
 typedef void (*ppu_side_event_callback)(spu_program_unique_id id, ppu_bound_message *msg); 
 
 struct thread_data {
@@ -71,7 +72,6 @@ struct thread_data {
 
 class spu_event_handler /*:protected spu_register*/ {
 	
-
 	public:
 
 
@@ -139,6 +139,7 @@ class spu_event_handler /*:protected spu_register*/ {
 	
 	static void * message_loop_thread(void* arg)
 	{
+		recv_spu_mbox_message(); // should this be interrupt perhaps ?
 		struct thread_data * arg_ptr;
 		arg_ptr=(struct thread_data *) arg;
 		while (arg_ptr->run)
