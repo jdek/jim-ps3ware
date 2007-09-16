@@ -42,19 +42,32 @@
 #define MAX_SPU_PROGRAMS 256
 #include <list>
 #include <vector>
+//#include <malloc.h>
+#include <pthread.h>	
 
 using namespace std;
  
 typedef uint32_t spu_program_unique_id;
+typedef uint32_t message_queue_size;
 //typedef uint8_t priority; //the programs priority (not used yet)
 //typedef uint32_t time;
 typedef bool spu_state;
 
+struct spu_bound_message {
+	uint32_t active;
+	uint32_t message0;
+	uint32_t message1;
+	uint32_t message2;
+	char acDetails[120];
+}__attribute__((aligned(128))); //divided into 128 bit blocks is perhaps an idea
 
 typedef struct {
 	spu_program_unique_id id;
 	spu_state active; //keeps track of which spu programs are actually running on the spus
 	spu_state in_use; // verification that the id is actually in use..
+	message_queue_size mqsize;
+	spu_bound_message *mqpointer;
+	pthread_mutex_t lock;
 //	priority pri=3; //not used yet 
 //	time load_interval=0; //0 means no restrictions // not used yet
 //	time idle_time;
@@ -74,7 +87,7 @@ class spu_register
 	};
 	~spu_register(){};
 	
-	spu_program_unique_id register_program()
+	spu_program_unique_id register_program(uint32_t queue_size)
 	{
 		if (free_spuid.empty()) { return -1; }
 
@@ -85,12 +98,48 @@ class spu_register
 		spuid[id].in_use=1;
 
 		spuid[id].active=false;
-
+	
+		spuid[id].mqsize=queue_size;	
+	
+		spu_bound_message *d;
+	//	memset(d,0,sizeof(spu_bound_message)*queue_size);
+		d=new spu_bound_message[queue_size];
+	
+	//	spuid[id].mqpointer=d;
 
 		free_spuid.pop_back();
 
 		return id;
  	};
+
+	int register_spu_message(spu_program_unique_id id, spu_bound_message msg)
+	{
+		bool written;
+
+		for (int i = 0; i < spuid[id].mqsize;i++)
+		{
+
+			if (!spuid[id].mqpointer[i].active)
+			{
+				pthread_mutex_lock(&spuid[id].lock);
+				//spuid[id].lock.enterMutex();
+				if (!spuid[id].mqpointer[i].active ) //case where someone wrote to it while we where trying to lock it
+				{
+					pthread_mutex_unlock(&spuid[id].lock);
+				} else {
+					strcpy(spuid[id].mqpointer[i].acDetails,msg.acDetails);
+					spuid[id].mqpointer[i].message0=msg.message0;
+					spuid[id].mqpointer[i].message1=msg.message1;
+					spuid[id].mqpointer[i].message2=msg.message2;
+					spuid[id].mqpointer[i].active=true; // this is what the spu will be looking for before lock reading perhaps
+					pthread_mutex_unlock(&spuid[id].lock);
+					break;
+				}
+			}
+		}
+
+	}	
+
 	void unregister_program(spu_program_unique_id id)
 	{
 		if (spuid[id].in_use) // to avoid un used id's getting pushed back ito the free_spuid because of bad programmers
