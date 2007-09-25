@@ -55,7 +55,8 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	tgi[1]=2;
 	tgi[0]=3;
 	tgi[1]=4;
-	
+	int dstsmallcroma=0;
+	int srcsmallcroma=0;
 	int selOut = 0;
 	int selIn = 0;
 	int tag = 16;
@@ -65,14 +66,14 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	
 	iargs =(struct img_args*)memalign(128,sizeof(*iargs));
 	dmaGetnWait(iargs,(unsigned int)argp,(int)envp,tag); //getting neccesary data to process image
-	printf("SRC width %d,DST width %d\n",iargs->srcW,iargs->dstW);
-	printf("iargs->Ystart=%p\n",(int)iargs->Ystart[0]);
+	printf("spu_yuvscaler: SRC width %i,DST width %i\n",iargs->srcW,iargs->dstW);
+	printf("spu_yuvscaler: iargs->Ystart=%p\n",(int)iargs->Ystart[0]);
 
 	vector unsigned char *widthfilter0=(vector unsigned char*)memalign(128,MAXWIDTH*4);
 	vector unsigned char *widthfilter1=(vector unsigned char*)memalign(128,MAXWIDTH*4);
 
-	vector unsigned char *crwidthfilter0=(vector unsigned char*)memalign(128,MAXWIDTH*2);
-	vector unsigned char *crwidthfilter1=(vector unsigned char*)memalign(128,MAXWIDTH*2);	
+	vector unsigned char *crwidthfilter0=(vector unsigned char*)memalign(128,MAXWIDTH*4);
+	vector unsigned char *crwidthfilter1=(vector unsigned char*)memalign(128,MAXWIDTH*4);	
 
 	vector float * weightWfilter0=(vector float*)memalign(128,MAXWIDTH*4);
 	vector float * weightWfilter1=(vector float*)memalign(128,MAXWIDTH*4);
@@ -96,6 +97,11 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	vector float * fBuffer10=(vector float*)memalign(128,MAXWIDTH*4);// defined as max to avoid problems due to change of scalefactor..
 	vector float * fBuffer11=(vector float*)memalign(128,MAXWIDTH*4);// defined as max to avoid problems due to change of scalefactor..
 
+	vector float * fBufferp00;
+	vector float * fBufferp01;
+	vector float * fBufferp10;
+	vector float * fBufferp11;
+	vector unsigned char shared;
 	unsigned long long Cp;
 
 	int first=1;
@@ -106,12 +112,13 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	unsigned long long UOp,VOp;
 	int crblock0;
 	int crblock1;
-	int crblockdst0;
-	int crblockdst1;
+	int newlines=0;
+	static	int crblockdst0;
+	static	int crblockdst1;
 	while (spu_stat_in_mbox() == 0);
 		msg=spu_read_in_mbox();
 	if (msg==RUN){	
-		printf("RUN\n");
+		printf("spu_yuvscaler: RUN\n");
 	}
 	
 	while (msg!=STOP) 
@@ -122,35 +129,48 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 		
 		if (first==1)
 		{
-			initHFilter(iargs->srcH,iargs->dstH,hfilterpos,weightHfilter0,weightHfilter1);
+
+			
 			initWFilter(iargs->srcW,iargs->dstW,1,wfilterpos,widthfilter0,widthfilter1,weightWfilter0,weightWfilter1);
+			initHFilter(iargs->srcH,iargs->dstH,hfilterpos,weightHfilter0,weightHfilter1);
 			crblock0=(iargs->srcW>>1)&~15; // rounded down
 			crblock1=((iargs->srcW>>1) + 15)&~15; //rounded up
 			crblockdst0=(iargs->dstW>>1)&~15; // rounded down
 			crblockdst1=((iargs->dstW>>1) + 15)&~15; //rounded up
+
 			if ((iargs->srcW%32) != 0)
 			{
-			// we must then compute a separate filter for every other u and v since they arent 128bit alligned.. asuming that it will allways be at least 16!!!
+				printf("spu_yuvscaler: Source width has croma which is not /16\n");
+				srcsmallcroma=1;	
+			// we must then compute a separate filter for every other u and v since they arent 128bit alligned.. asuming that it will allways be at least width factor of 16!!!
 				initWcrFilter(iargs->srcW,iargs->dstW,1,crwfilterpos,crwidthfilter0,crwidthfilter1);	
-				printf("Computing Crshufflefilter\n");
-			
+			//	printf("spu_yuvscaler: Computing Crshufflefilter\n");
+			}
+		
+			if (iargs->dstW%32 != 0) {	
+				dstsmallcroma=1;
+				printf("spu_yuvscaler: Destination width has croma which is not /16\n");
 			}
 			
 			first=0;
 		}
-
+		
 		// Luminance loop dont even think about touching this it works!
 		//get source line 0 and 1 into 0 0+1 and 1 and 1+1
 		YIp = iargs->Ystart[selIn];
 		UIp = iargs->Ustart[selIn];
 		VIp = iargs->Vstart[selIn];
 		YOp = iargs->Output[selOut];
-		UOp = iargs->Output[selOut] + iargs->dstW*iargs->dstH; //+ iargs->dstW; // fix this to something it should be
-		VOp = UOp + iargs->dstW*iargs->dstH/4;//*2 + iargs->dstW*1.5;//fix this to something it should be
-
+		UOp = YOp + (iargs->dstW*iargs->dstH); //+ iargs->dstW; // fix this to something it should be
+		VOp = UOp + (iargs->dstW*iargs->dstH)/4;//*2 + iargs->dstW*1.5;//fix this to something it should be
+		
+		
 		int currentpos=0;
 		int nextpos=1;
+		int current=0;
+		int lasthfilterpos=0;	
 		
+		//lm begins
 		dmaGetnWait(Input[0],YIp,iargs->srcW,tgi[0]);
 		YIp=YIp+iargs->srcW;
 		dmaGet(Input[1],YIp,iargs->srcW,tgi[1]);
@@ -159,13 +179,13 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 		LineSelOut=0;
 		// unpacks a luminance line..
 		unpacklines(Input[0],widthfilter0,widthfilter1,wfilterpos,fBuffer00,fBuffer01,iargs->dstW);
+		newlines=1;
 		//since we already have used input[0] lets get input[2] 
 		dmaGet(Input[0],YIp,iargs->srcW,tgi[0]);
 		YIp=YIp+iargs->srcW;
 
-		int current=0;
-		int lasthfilterpos=0;	
-
+		
+		
 		for (h=0; h < iargs->dstH; h++) 
 		{ 
 			currentpos=hfilterpos[h];
@@ -175,7 +195,9 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			dmaWaitTag(tgi[LineSelIn]);// we check that the second line is awailable before we start working on it
 			
 			
-			if ((currentpos!=lasthfilterpos) || (h==0)){ // no need to shuffle out a new line unless its actually a new line to shuffle
+			if ((newlines)){ // no need to shuffle out a new line unless its actually a new line to shuffle
+				newlines=0;
+				
 				scalenewline(Input[LineSelIn],widthfilter0,widthfilter1,wfilterpos,fBuffer00,fBuffer01,fBuffer10,fBuffer11,weightHfilter0[hfilterpos[h]],weightHfilter1[hfilterpos[h]],weightWfilter0,weightWfilter1,Output[LineSelOut],iargs->dstW);
 			} else {
 				scaleline(wfilterpos,fBuffer00,fBuffer01,fBuffer10,fBuffer11,weightHfilter0[hfilterpos[h]],weightHfilter1[hfilterpos[h]],weightWfilter0,weightWfilter1,Output[LineSelOut],iargs->dstW);
@@ -185,19 +207,21 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			
 			if (nextpos !=currentpos) //new line coming up so we move the old h+1 to h
 			{
-				vector float*temp1;
+				newlines=1;
+				vector float *temp1;
 				temp1 = fBuffer00;
 				fBuffer00 = fBuffer10;
 				fBuffer10 = temp1;
 				
-				vector float* temp2;
+				vector float * temp2;
 				temp2 = fBuffer01;
 				fBuffer01 = fBuffer11;
 				fBuffer11 = temp2;
-				//lets also get another line so that its ready for the loop after the nextone
+				//lets also get another line so that its ready for the loop after the next one
 				dmaGet( Input[LineSelIn], YIp,iargs->srcW, tgi[LineSelIn]);
 				YIp = YIp + iargs->srcW;
-				LineSelIn=LineSelIn ^ 1;			
+				LineSelIn=LineSelIn ^ 1;	
+
 			}
 		
 
@@ -208,6 +232,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	
 		}
 		
+		
 		// Cr 
 		dmaGetnWait(Input[0], UIp, crblock1, tgi[0]); //this is the first U line..
 		UIp = UIp + crblock0; // if its not %16 we still have data in this block we need so we round down after even and up on odd!
@@ -215,8 +240,9 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 		UIp = UIp + crblock1;
 		LineSelIn=1; // want to check the dma at beginning of the loop! 
 		LineSelOut=0;//lets start writing using dmaline0
-		// unpacks a luminance line..
-		unpacklines(Input[0],widthfilter0,widthfilter1,wfilterpos,fBuffer00,fBuffer01,((iargs->dstW>>1)+15)&~15); // this works for all even lines..
+		// unpacks a luminance line..//here it also works for a crominance
+		unpacklines(Input[0],widthfilter0,widthfilter1,wfilterpos,fBuffer00,fBuffer01,crblock1); // this works for all even lines..
+		newlines=1;
 		//since we already have used input[0] lets get input[2] 
 		dmaGet(Input[0],UIp,crblock1,tgi[0]);
 		UIp=UIp+crblock0;
@@ -230,14 +256,14 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			vector unsigned char * tmpfilter1;
 			int * tmpfilterpos;
 			vector unsigned char * tmpOut;
-			vector unsigned char shared;
+			
 
 
 			currentpos=hfilterpos[h];
 			nextpos=hfilterpos[h+1];
 			dmaWaitTag(tgi[LineSelIn]);// we check that the second line is awailable before we start working on it
 
-			if ((iargs->srcW%32 != 0) && (currentpos&1 == 0)) { //current 0 position means we are unshuffeling 0+1 which is the odd..
+			if ((srcsmallcroma) && (LineSelIn==1)) {//&& (currentpos&1 == 0)) { //current 0 position means we are unshuffeling 0+1 which is the odd..
 			
 				tmpfilter0=crwidthfilter0;
 				tmpfilter1=crwidthfilter1;
@@ -248,10 +274,9 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 				tmpfilterpos=wfilterpos;
 
 			}
-		
 					
-			if ((currentpos!=lasthfilterpos)|| (h==0)){// no need to shuffle out a new line unless its actually a new line to shuffle
-			
+			if (newlines){// no need to shuffle out a new line unless its actually a new line to shuffle
+				newlines=0;
 				scalenewline(Input[LineSelIn],tmpfilter0,tmpfilter1,tmpfilterpos,fBuffer00,fBuffer01,fBuffer10,fBuffer11,weightHfilter0[hfilterpos[h]],weightHfilter1[hfilterpos[h]],weightWfilter0,weightWfilter1,Output[LineSelOut],crblockdst1);
 			} else {
 				scaleline(wfilterpos,fBuffer00,fBuffer01,fBuffer10,fBuffer11,weightHfilter0[hfilterpos[h]],weightHfilter1[hfilterpos[h]],weightWfilter0,weightWfilter1,Output[LineSelOut],crblockdst1);
@@ -279,35 +304,28 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 				} else { 
 
 						dmaGet(Input[LineSelIn], UIp, crblock1, tgi[LineSelIn]);
-						UIp = UIp + crblock1; // round up! if its exactly /16		
+						UIp = UIp + crblock1; // round up! if its not exactly /16		
 				}
+				newlines=1;
 				LineSelIn=LineSelIn ^ 1;			
 			}
 			
 			dmaWaitTag(tgo[LineSelOut]); // wait in case the line isnt written out yet!
-			if ((h&1)==0){
-				if(iargs->dstW%32!=0)
-				{
-					shared=Output[LineSelOut][crblockdst1>>4];
-				}
+			
+			if (dstsmallcroma){
+
 				dmaPut(Output[LineSelOut],UOp,crblockdst0,tgo[LineSelOut]);
 				UOp=UOp+crblockdst0;
-			}
-			else
-			{
-						
-				//insert the shuffle here if w isnt mod 32 BUSY					
-				if(iargs->dstW%32!=0)
-				{
-					rightshiftnadd8(shared,Output[LineSelOut],crblockdst1);
-				}
+			} else {
+
 				dmaPut(Output[LineSelOut],UOp,crblockdst1,tgo[LineSelOut]);
 				UOp=UOp+crblockdst1;
 			}
+
 			LineSelOut=LineSelOut ^ 1; // we flip since we want to use another buffer for the next line..
 		}
 		
-
+		
 		//Cb
 		dmaGetnWait(Input[0], VIp, crblock1, tgi[0]); //this is the first U line..
 		VIp = VIp + crblock0; // if its not %16 we still have data in this block we need. 
@@ -317,7 +335,8 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 		LineSelOut=0;
 
 		unpacklines(Input[0],widthfilter0,widthfilter1,wfilterpos,fBuffer00,fBuffer01,crblock1); // this works for all even lines..
-		//since we already have used input[0] lets get input[2] 
+		newlines=1;
+		//since we already have used input[0] lets get input[2] aka input[0]
 		dmaGet(Input[0],VIp,crblock1,tgi[0]);
 		VIp=VIp+ crblock0;
 
@@ -329,7 +348,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			vector unsigned char * tmpfilter0;
 			vector unsigned char * tmpfilter1;
 			int * tmpfilterpos;
-			vector unsigned char shared;
+
 
 
 			currentpos=hfilterpos[h];
@@ -337,7 +356,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 
 			dmaWaitTag(tgi[LineSelIn]);// we check that the second line is awailable before we start working on it
 
-			if ((iargs->srcW%32 != 0) && (currentpos&1 == 0)) { //current 0 position means we are unshuffeling 0+1 which is the odd..
+			if ((srcsmallcroma) && (LineSelIn==1)) {//(currentpos&1 == 0)) { //current 0 position means we are unshuffeling 0+1 which is the odd..
 			
 				tmpfilter0=crwidthfilter0;
 				tmpfilter1=crwidthfilter1;
@@ -350,8 +369,8 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			}
 		
 					
-			if ((currentpos!=lasthfilterpos)|| (h==0)){// no need to shuffle out a new line unless its actually a new line to shuffle
-			
+			if (newlines){// no need to shuffle out a new line unless its actually a new line to shuffle
+				newlines=0;
 				scalenewline(Input[LineSelIn],tmpfilter0,tmpfilter1,tmpfilterpos,fBuffer00,fBuffer01,fBuffer10,fBuffer11,weightHfilter0[hfilterpos[h]],weightHfilter1[hfilterpos[h]],weightWfilter0,weightWfilter1,Output[LineSelOut],crblockdst1);
 			} else {
 				scaleline(wfilterpos,fBuffer00,fBuffer01,fBuffer10,fBuffer11,weightHfilter0[hfilterpos[h]],weightHfilter1[hfilterpos[h]],weightWfilter0,weightWfilter1,Output[LineSelOut],crblockdst1);
@@ -386,33 +405,23 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			
 
 			dmaWaitTag(tgo[LineSelOut]); // wait in case the line isnt written out yet!
-			if ((h&1)==0){
-				if(iargs->dstW%32!=0)
-				{
-					shared=Output[LineSelOut][crblockdst1>>4];
-				}
-				dmaPut(Output[LineSelOut],VOp,crblockdst0,tgo[LineSelOut]);
-				VOp=VOp+crblockdst0;
-			}
-			else
-			{
-				
-				//insert the shuffle here if w isnt mod 32 BUSY	
-				if((iargs->dstW%32) != 0)
-				{
-					rightshiftnadd8(shared,Output[LineSelOut],crblockdst1);
-				}
-				dmaPut(Output[LineSelOut],VOp,crblockdst1,tgo[LineSelOut]);
-				VOp=VOp+crblockdst1;
-			}
-		//	VOp = VOp + iargs->dstW*4; // increment output pointer .
+		
+ 			if (dstsmallcroma) {
+ 				dmaPut(Output[LineSelOut],VOp,crblockdst0,tgo[LineSelOut]);
+ 				VOp=VOp+crblockdst0;
+ 			} else {
+
+ 				dmaPut(Output[LineSelOut],VOp,crblockdst1,tgo[LineSelOut]);
+ 				VOp=VOp+crblockdst1;
+ 			}
+
 			LineSelOut=LineSelOut ^ 1; // we flip since we want to use another buffer for the next line..
 		}
-
+		
 		
 		while (spu_stat_out_intr_mbox() == 0);
 		msg=RDY;
-		spu_writech(SPU_WrOutIntrMbox, msg);
+		spu_writech(SPU_WrOutIntrMbox, msg); //generates interrupt
 		
 		while (spu_stat_in_mbox() == 0);
 		msg=spu_read_in_mbox();
@@ -422,7 +431,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 		}
 		else if (msg == STOP)
 		{
-			printf("Stopping\n");
+			printf("spu_yuvscaler: Stopping\n");
 		}
 		else if (msg == UPDATE)
 		{

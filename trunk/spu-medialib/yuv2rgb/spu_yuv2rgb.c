@@ -67,11 +67,11 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	struct img_args *iargs;
 	iargs =(struct img_args*)memalign(128,sizeof(struct img_args));
 	dmaGetnWait(iargs,(unsigned int)argp,(int)envp,tag); //getting neccesary data to process image
-	printf("SRC width %d,SRC Height %d\n",iargs->srcW,iargs->srcH);
+	printf("spu_yuv2rgb: SRC width %d,SRC Height %d\n",iargs->srcW,iargs->srcH);
 	
 	//32-bit ppu program fix
 /*	if (((uint64_t)(iargs->Ystart) &PPU_ADDR_MASK) == PPU_ADDR_MASK) {
-		printf("Detected 32-bit PPU program, fixing pointers for sign extension\n");
+		printf("spu_yuv2rgb: Detected 32-bit PPU program, fixing pointers for sign extension\n");
 		iargs->Ystart[0] &= 0xFFFFFFFF;
 		iargs->Ystart[1] &= 0xFFFFFFFF;
 		iargs->Ustart[0] &= 0xFFFFFFFF;
@@ -99,19 +99,31 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	Obuffer[0]=(vector unsigned char*)memalign(128,MAXWIDTH*4*2); //2 lines of ARGB
 	Obuffer[1]=(vector unsigned char*)memalign(128,MAXWIDTH*4*2); //2 lines of ARGB
 
-
+	int cromblock;
+	int crblock0;
+	int crblock1;
+	int smallcroma=0;
 	unsigned long long Op, Yp, Up, Vp;
 	unsigned int msg;
 	int LSB=0;
 	while (spu_stat_in_mbox() == 0);
 	msg=spu_read_in_mbox();
 	if (msg==RUN){	
-		printf("RUN\n");
+		printf("spu_yuv2rgb: RUN, selIn=%i, selOut=%i\n", selIn, selOut);
 	}
 	
 	while (msg!=STOP) 
-	{
-		
+	{	
+		if (iargs->srcW%32 !=0)
+		{ 
+			printf("spu_yuv2rgb: Source width has croma which is not /16");
+			smallcroma=1;
+			crblock0=((iargs->srcW>>1))&~15;
+			crblock1=((iargs->srcW>>1)+15)&~15;
+		} else {
+			smallcroma=0;
+		}
+		//printf("smallcroma %d\n",smallcroma);
 		Op=iargs->Output[selOut];
 		Op=Op+iargs->offset;
 		Yp=iargs->Ystart[selIn];
@@ -136,19 +148,28 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 		LineSelOut=0;
 		int i=0;
 		for (i=0;i < iargs->srcH>>1;i++) { // loop asumes srcH is at least a factor of 2 lines!
+			
 			dmaWaitTag(tgi[LineSelIn]);
 			
 			dmaWaitTag(tgo[LineSelOut]);
 
-			if ((iargs->dstW%32 != 0 )&&(LineSelIn==1)) { LSB=1;} else {LSB=0;}
+			if ((smallcroma > 0)&&(LineSelIn==1)) { 
+				LSB=1;
+			} else {
+				LSB=0;
+			}
 
 			yuv420toARGB(Iybuffer[LineSelIn],Iubuffer[LineSelIn],Ivbuffer[LineSelIn],Obuffer[LineSelOut],iargs->srcW,iargs->maxwidth,LSB);
 			dmaPut(Obuffer[LineSelOut],Op,iargs->maxwidth*4*2,tgo[LineSelOut]);
 			
-
-			int cromblock=(((iargs->srcW>>1))&~15);
+		
 			
-			if ((iargs->dstW%32 != 0 )&&(LineSelIn==1)) { cromblock=(((iargs->srcW>>1)+15)&~15);}
+			if ((smallcroma) && (LineSelIn == 0)) { 
+				cromblock=(((iargs->srcW>>1)+15)&~15);
+			} else {
+				cromblock=(((iargs->srcW>>1))&~15);
+			}
+
 			Op += iargs->maxwidth*4*2;
 			Yp=Yp+iargs->srcW*2;
 			Up=Up+cromblock;
@@ -174,11 +195,11 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 		msg=spu_read_in_mbox();
 		
 		if (msg == RUN){
-
+	//	   printf("spu_yuv2rgb: RUN, selIn=%i, seloOut=%i\n", selIn, selOut);
 		}
 		else if (msg == STOP)
 		{
-			printf("Stopping\n");
+	//		printf("spu_yuv2rgb: Stopping\n");
 		}
 		else if (msg == UPDATE)
 		{

@@ -94,7 +94,7 @@ static inline void initWFilter(int srcW,int dstW,int type,int *filterpos,vector 
 }
 
 
-static inline void initWcrFilter(int srcW,int dstW,int type,int *filterpos,vector unsigned char *shufflefilter0 ,vector unsigned char* shufflefilter1)
+static inline void initWcrFilter(int srcW,int dstW,int type,int *filterpos,vector unsigned char *crshufflefilter0 ,vector unsigned char* crshufflefilter1)
 {
 	int i;
 	int j;
@@ -105,22 +105,40 @@ static inline void initWcrFilter(int srcW,int dstW,int type,int *filterpos,vecto
 	uint8_t src0[4],src1[4];
 	float wf0[4],wf1[4];
 	int current;
-	for (i=0; i<dstW/4;i++)
+	for (i=0; i< dstW/8;i++)
 	{
-		current=8+i*4*scale;
+		current=i*4*scale;
 		filterpos[i]=current/16;
 
-		src0[0]=(i*4*scale)-filterpos[i]*16;
-		src0[1]=((i*4+1)*scale)-filterpos[i]*16;
-		src0[2]=((i*4+2)*scale)-filterpos[i]*16;
-		src0[3]=((i*4+3)*scale)-filterpos[i]*16;
+		src0[0]=8+(i*4*scale)-filterpos[i]*16;
+		src0[1]=8+((i*4+1)*scale)-filterpos[i]*16;
+		src0[2]=8+((i*4+2)*scale)-filterpos[i]*16;
+		src0[3]=8+((i*4+3)*scale)-filterpos[i]*16;
 		src1[0]=src0[0]+1;
 		src1[1]=src0[1]+1;
 		src1[2]=src0[2]+1;
 		src1[3]=src0[3]+1;
-		shufflefilter0[i]=(vector unsigned char){ 0x80,0x80,0x80,src0[0],0x80,0x80,0x80,src0[1],0x80,0x80,0x80,src0[2],0x80,0x80,0x80,src0[3] };
-		shufflefilter1[i]=(vector unsigned char){ 0x80,0x80,0x80,src1[0],0x80,0x80,0x80,src1[1],0x80,0x80,0x80,src1[2],0x80,0x80,0x80,src1[3] };
+		crshufflefilter0[i]=(vector unsigned char){ 0x80,0x80,0x80,src0[0],0x80,0x80,0x80,src0[1],0x80,0x80,0x80,src0[2],0x80,0x80,0x80,src0[3] };
+		crshufflefilter1[i]=(vector unsigned char){ 0x80,0x80,0x80,src1[0],0x80,0x80,0x80,src1[1],0x80,0x80,0x80,src1[2],0x80,0x80,0x80,src1[3] };
 	}
+
+/*	for (i=0; i< dstW/8;i++)
+	{
+		current=8+i*4*scale;
+		filterpos[i+dstW/8]=current/16;
+
+		src0[0]=8+(i*4*scale)-filterpos[i+dstW/8]*16;
+		src0[1]=8+((i*4+1)*scale)-filterpos[i+dstW/8]*16;
+		src0[2]=8+((i*4+2)*scale)-filterpos[i+dstW/8]*16;
+		src0[3]=8+((i*4+3)*scale)-filterpos[i+dstW/8]*16;
+		src1[0]=src0[0]+1;
+		src1[1]=src0[1]+1;
+		src1[2]=src0[2]+1;
+		src1[3]=src0[3]+1;
+		crshufflefilter0[i+dstW/8]=(vector unsigned char){ 0x80,0x80,0x80,src0[0],0x80,0x80,0x80,src0[1],0x80,0x80,0x80,src0[2],0x80,0x80,0x80,src0[3] };
+		crshufflefilter1[i+dstW/8]=(vector unsigned char){ 0x80,0x80,0x80,src1[0],0x80,0x80,0x80,src1[1],0x80,0x80,0x80,src1[2],0x80,0x80,0x80,src1[3] };
+	}
+*/
 
 }
 
@@ -415,14 +433,15 @@ static inline void rightshiftnadd8(vector unsigned char start,vector unsigned ch
 {
 	vector unsigned char temp0,temp1;
 	int i=0;
-	temp0=shuffleme[0];
+//	temp0=shuffleme[0];
 	static vector unsigned char off8={8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
 	temp0=shuffleme[0];
-	shuffleme[0]=spu_shuffle(start,shuffleme[0],((vector unsigned char){0,1,2,3,4,5,6,7,16,17,18,19,20,21,22,23}));
-	for (i=0;i<sizetoshuffle/16;i++)
+	shuffleme[0]=spu_shuffle(start,shuffleme[0],((vector unsigned char){0,1,2,3,4,5,6,7,24,25,26,27,28,29,30,31}));
+	for (i=1;i<sizetoshuffle/16;i++)
 	{
-		shuffleme[i]=spu_shuffle(temp0,shuffleme[i+1],off8);
-		temp0=shuffleme[i+1];
+		temp1=shuffleme[i];
+		shuffleme[i]=spu_shuffle(temp0,shuffleme[i],off8);
+		temp0=temp1;
 	}
 
 }
