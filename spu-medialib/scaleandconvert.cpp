@@ -64,6 +64,9 @@ int main (int nArg, char* cArg[]) {
 	int srcH=288;
 	int dstW=1920;
 	int dstH=1080;
+//	int dstW=720;
+//	int dstH=480;
+
 	int maxwidth=1920;
 	int offset=0;
 	int curBuf = 0;
@@ -76,6 +79,7 @@ int main (int nArg, char* cArg[]) {
 	ifstream Source;
 	ofstream Destination;
 
+	
         int counter=0;
         double time_elapsed=0.0;
         double start=mysecond();
@@ -89,6 +93,21 @@ int main (int nArg, char* cArg[]) {
 	if (nArg > 3) frame=(int)atoi(cArg[4]);
 	if (nArg > 4) maxwidth=(int)atoi(cArg[5]);
 
+	if (maxwidth==1920){
+		dstW=1920;
+		dstH=1080;	
+	}
+	
+	if (maxwidth==1280){
+		dstW=1280;
+		dstH=720;
+	}
+
+	if (maxwidth==720){
+		dstW=720;
+		dstH=480;
+	}
+	
 	void* fbuf0=fb_init();
 	void* fbuf1=fb_swap();//swap to get backbuffer!
 	fb_swap();//swap back!
@@ -102,6 +121,7 @@ int main (int nArg, char* cArg[]) {
 
 	Source.read(inBuf[0],(srcW*srcH+(srcW*srcH)/2));
 	//Source.read(inBuf[1],(srcW*srcH+(srcW*srcH)/2));
+	memcpy(inBuf[1],inBuf[0],(srcW*srcH+(srcW*srcH)/2));
 
 	Ypointer=inBuf[curBuf];
 	Upointer=Ypointer+srcW*srcH;
@@ -112,11 +132,10 @@ int main (int nArg, char* cArg[]) {
 
 	
 	yuvscaler_t *yuvs = sws_init_yuvscaler(srcW, srcH, dstW, dstH, (ea_t)inBuf[0], (ea_t)inBuf[1], (ea_t)RAMBufferA[0],(ea_t)RAMBufferA[1]);
-	printf("spu_yuv2rgb_initialised\n");
 	printf("spu_yuvscaler_initialised\n");
 	//we swap rambuffer so that they dont work on the same frame at the same time!
-	yuv2rgb_t *yuvc = csc_init_yuv2rgb(dstW, dstH, offset,maxwidth, (ea_t)RAMBufferA[0], (ea_t)RAMBufferA[1], fbuf0, fbuf1);
-	
+	yuv2rgb_t *yuvc = csc_init_yuv2rgb(dstW, dstH, offset,maxwidth, (ea_t)RAMBufferA[1], (ea_t)RAMBufferA[0], fbuf0, fbuf1);
+	printf("spu_yuvscaler_initialised\n");	
 	SelIn=1;
 
 	sws_send_message(yuvs,RUN);

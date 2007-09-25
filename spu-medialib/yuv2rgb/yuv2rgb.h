@@ -39,7 +39,9 @@
 #ifndef __YUV2RGB_H
 #define __YUV2RGB_H
 
-extern "C"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 struct yuv2rgb_s;
@@ -92,5 +94,8 @@ void csc_set_srcH(yuv2rgb_t*,int srcw);
 void csc_set_offset(yuv2rgb_t*,int offset);
 void csc_set_maxwidth(yuv2rgb_t*,int maxwidth);
 
+#ifdef __cplusplus
+}
 #endif
 
+#endif

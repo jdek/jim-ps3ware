@@ -39,9 +39,10 @@
 #ifndef __YUVSCALER_H
 #define __YUVSCALER_H
 
-#include <spu_control.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-extern "C"
 
 
 struct yuvscaler_s;
@@ -94,5 +95,8 @@ void sws_set_srcW(yuvscaler_t*,int srcw);
 void sws_set_dstH(yuvscaler_t*,int dsth);
 void sws_set_srcH(yuvscaler_t*,int srch);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif
