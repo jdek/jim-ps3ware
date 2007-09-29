@@ -39,7 +39,7 @@
 #ifndef __YUV2ARGB_SCALER_H
 #define __YUV2ARGB_SCALER_H
 
-extern "C"
+//extern "C"
 
 
 struct yuvscaler2argb_s;
