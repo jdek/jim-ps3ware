@@ -158,9 +158,13 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	InputV1[0]=(vector unsigned char*)memalign(128,MAXWIDTH/2+16); 
 	InputV1[1]=(vector unsigned char*)memalign(128,MAXWIDTH/2+16); 	
 
-	vector unsigned char* Output[2];
-	Output[0]=(vector unsigned char*)memalign(128,MAXWIDTH*8);	// 1line output
-	Output[1]=(vector unsigned char*)memalign(128,MAXWIDTH*8);	// 1line output
+	vector unsigned char* Output0[2];
+	Output0[0]=(vector unsigned char*)memalign(128,MAXWIDTH*4);	// 1line output
+	Output0[1]=(vector unsigned char*)memalign(128,MAXWIDTH*4);	// 1line output
+
+	vector unsigned char* Output1[2];
+	Output1[0]=(vector unsigned char*)memalign(128,MAXWIDTH*4);	// 1line output
+	Output1[1]=(vector unsigned char*)memalign(128,MAXWIDTH*4);	// 1line output
 	
 	while (spu_stat_in_mbox() == 0);
 		msg=spu_read_in_mbox();
@@ -172,7 +176,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	{
 		int h=0;
 		int i;
-		Op=iargs->Output[selOut];
+		Op=iargs->Output[selOut]+iargs->offset;
 		
 		if (first)
 		{
@@ -183,11 +187,11 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 
 			initHFilter(iargs->srcW,iargs->srcH,iargs->dstH,hfilterpos0,hfilterpos1,weightHfilter,dmapos,dmacromapos);
 			
-			for (i=0;i < iargs->dstH;i++)
-			{
-				printf("Hfilterpos0 dst: %d, src:%d, weight:%f\n",i,hfilterpos0[i],weightHfilter[i]);
-				printf("Hfilterpos1 dst: %d, src:%d, weight:%f\n",i,hfilterpos1[i],1.0-weightHfilter[i]);
-			}
+// 			for (i=0;i < iargs->dstH;i++)
+// 			{
+// 				printf("Hfilterpos0 dst: %d, src:%d, weight:%f\n",i,hfilterpos0[i],weightHfilter[i]);
+// 				printf("Hfilterpos1 dst: %d, src:%d, weight:%f\n",i,hfilterpos1[i],1.0-weightHfilter[i]);
+// 			}
 			
 			if ((iargs->srcW==iargs->dstW)&&(iargs->srcH==iargs->dstH))
 			{
@@ -201,14 +205,14 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 
 				initWFilter(iargs->srcW,iargs->dstW,1,wfilterpos,widthfilter0,widthfilter1,weightWfilter0,weightWfilter1);
 
-				for (i=0;i < iargs->dstW/4;i++)
+/*				for (i=0;i < iargs->dstW/4;i++)
 				{
 					printf("filterpos dst: %d, src:%d\n",i,wfilterpos[i]);
 					printcharvec("widthfilter0",widthfilter0[i]);
 					printcharvec("widthfilter1",widthfilter1[i]);
 					printfvec("weightWfilter0",weightWfilter0[i]);
 					printfvec("weightWfilter1",weightWfilter1[i]);
-				}				
+				}*/				
 
 				srcsmallcroma=0;
 				sc.smallcroma=0;
@@ -219,15 +223,15 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 					initWcrFilter(iargs->srcW/2,iargs->dstW/2,1,crwfilterpos,crwidthfilter0,crwidthfilter1);	
 					printf("spu_yuv2argb_scaler: Computing Crshuffle filter\n");
 	
-					for (i=0;i < (iargs->dstW>>1)/4;i++)
-					{
-						printf("crwfilterpos dst: %d, src:%d, weight:%f\n",i,crwfilterpos[i]);
-						printcharvec("crwidthfilter0",crwidthfilter0[i]);
-						printcharvec("crwidthfilter1",crwidthfilter1[i]);
-						printfvec("weightWfilter0",weightWfilter0[i]);
-						printfvec("weightWfilter1",weightWfilter1[i]);
-					
-					}
+// 					for (i=0;i < (iargs->dstW>>1)/4;i++)
+// 					{
+// 						printf("crwfilterpos dst: %d, src:%d, weight:%f\n",i,crwfilterpos[i]);
+// 						printcharvec("crwidthfilter0",crwidthfilter0[i]);
+// 						printcharvec("crwidthfilter1",crwidthfilter1[i]);
+// 						printfvec("weightWfilter0",weightWfilter0[i]);
+// 						printfvec("weightWfilter1",weightWfilter1[i]);
+// 					
+// 					}
 							
 				}
 				
@@ -278,7 +282,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 
 
 
-		for (h=0; h < iargs->dstH>>1; h++) //asume that output is allways h/2
+		for (h=0; h < iargs->dstH>>1; h++) //we asume that output is allways h/2
 		{
 
 			sc.width=iargs->dstW;
@@ -335,12 +339,12 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 					sc.smallcroma=0; //both lines are 128 bit alligned only when doing extreme downscaling can this happen
 				}
 			}
-			if (noscale) {
-				sc.width=crblockdst0;//crblockdst1;
-			} else {
-				sc.width=crblockdst0;
-			}
-		//	sc.width=iargs->dstW/2;
+// 			if (noscale) {
+// 				sc.width=crblockdst0;//crblockdst1;
+// 			} else {
+// 				sc.width=crblockdst0;
+// 			}
+			sc.width=iargs->dstW/2;
 			sc.wHfilter=weightHfilter[h];
 			
 	
@@ -375,12 +379,15 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 
 			selCrIn=selCrIn^1;
 							
-			yuv420toARGBfloat(Ytemp0,Ytemp1,Utemp,Vtemp,Output[LineSelOut],iargs->dstW,iargs->maxwidth);
-			dmaPut(Output[LineSelOut],Op,iargs->maxwidth*8,tgo[LineSelOut]);
-			Op=Op+iargs->maxwidth*8;
+			yuv420toARGBfloat(Ytemp0,Ytemp1,Utemp,Vtemp,Output0[LineSelOut],Output1[LineSelOut],iargs->dstW,iargs->maxwidth);
+			dmaPut(Output0[LineSelOut],Op,iargs->dstW*4,tgo[LineSelOut]);
+			Op=Op+iargs->maxwidth*4;
+			dmaPut(Output1[LineSelOut],Op,iargs->dstW*4,tgo[LineSelOut]);
+			Op=Op+iargs->maxwidth*4;
 			
 			LineSelOut=LineSelOut^1;
 		} 
+		dmaWaitTag(tgo[LineSelOut^1]); //wait for last write.
 	
 		
 		while (spu_stat_out_intr_mbox() == 0);
@@ -391,7 +398,8 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 		msg=spu_read_in_mbox();
 		
 		if (msg == RUN){
-			
+			selOut = selOut ^ 1; // flips the output buffer pointers
+			selIn = selIn ^ 1; // flips the input buffer pointers	
 		}
 		else if (msg == STOP)
 		{
@@ -401,9 +409,10 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 		{
 			dmaGetnWait(iargs,(unsigned int)argp,(int)envp,tag); //getting neccesary data to process the new image	
 			first=0; // update filters to reflect the new image!
+			selOut=0;
+			selIn=0;
 		}
-		selOut = selOut ^ 1; // flips the output buffer pointers
-		selIn = selIn ^ 1; // flips the input buffer pointers
+
 	}
 	
 	return 0;
