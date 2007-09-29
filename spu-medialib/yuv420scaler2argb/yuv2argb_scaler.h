@@ -42,8 +42,8 @@
 extern "C"
 
 
-struct yuv2rgb_s;
-typedef struct yuv2rgb_s yuv2rgb_t;
+struct yuvscaler2argb_s;
+typedef struct yuvscaler2argb_s yuvscaler2argb_t;
 
 typedef void * ea_t;
 
@@ -51,46 +51,48 @@ typedef void * ea_t;
 * init_yuv2rgb 
 * initiates the spu yuv2rgb.
 */ 
-yuv2rgb_t * csc_init_yuv2rgb(int srcW, int srcH,int dstW,int dstH, int offset, int maxwidth,
-				ea_t front_inBuffer, ea_t back_inBuffer,
+yuvscaler2argb_t * csc_init_yuv2rgb(int srcW, int srcH,int dstW,int dstH, int offset, int maxwidth,
+				ea_t front_inYBuffer, ea_t back_inYBuffer,
+				ea_t front_inUBuffer, ea_t back_inUBuffer,
+				ea_t front_inVBuffer, ea_t back_inVBuffer,
                                 ea_t front_outBuffer, ea_t back_outBuffer);
 
 /**
 *gets the spe context pointer from the initiated yuv2rgb
 */
-spe_context_ptr_t csc_getCTX(yuv2rgb_t*);
+spe_context_ptr_t csc_getCTX(yuvscaler2argb_t*);
 
 /**
 * recive_message waits for a interrupt message from the spu notifying a loop completion
 */
-unsigned int csc_receive_message(yuv2rgb_t*);
+unsigned int csc_receive_message(yuvscaler2argb_t*);
 
 
 /**
 * sends a message to the spu telling it what to do options are RDY UPDATE and STOP defined in spu_control.h
 */
-void csc_send_message(yuv2rgb_t*,unsigned int message);
+void csc_send_message(yuvscaler2argb_t*,unsigned int message);
 
 /**
 * destroys the spu scaler object and this object
 */
-void csc_yuv2rgb_destroy(yuv2rgb_t*);
+void csc_yuv2rgb_destroy(yuvscaler2argb_t*);
 
 /**
 * get functions for image sizes
 */
-unsigned int csc_get_srcW(const yuv2rgb_t*);
-unsigned int csc_get_srcH(const yuv2rgb_t*);
-unsigned int csc_get_offset(const yuv2rgb_t*);
-unsigned int csc_get_maxwidth(const yuv2rgb_t*);
+unsigned int csc_get_srcW(const yuvscaler2argb_t*);
+unsigned int csc_get_srcH(const yuvscaler2argb_t*);
+unsigned int csc_get_offset(const yuvscaler2argb_t*);
+unsigned int csc_get_maxwidth(const yuvscaler2argb_t*);
 
 /**
 * set functions for image sizes (only takes effect if followed by an update!)
 */
-void csc_set_srcW(yuv2rgb_t*,int dstw);
-void csc_set_srcH(yuv2rgb_t*,int srcw);
-void csc_set_offset(yuv2rgb_t*,int offset);
-void csc_set_maxwidth(yuv2rgb_t*,int maxwidth);
+void csc_set_srcW(yuvscaler2argb_t*,int dstw);
+void csc_set_srcH(yuvscaler2argb_t*,int srcw);
+void csc_set_offset(yuvscaler2argb_t*,int offset);
+void csc_set_maxwidth(yuvscaler2argb_t*,int maxwidth);
 
 #endif
 

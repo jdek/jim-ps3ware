@@ -43,7 +43,7 @@
 #include <spu_control.h>
 #include "yuv2argb_scaler.h"
 
-struct yuv2rgb_s {
+struct yuvscaler2argb_s {
 		struct img_args *iargs;
 		struct spe_context * ctx;
 		struct spe_event_unit event;
@@ -59,8 +59,8 @@ struct yuv2rgb_s {
 
 static void * csc_spe_thread(void * arg) 
 {
-	struct yuv2rgb_s * arg_ptr;
-	arg_ptr=(struct yuv2rgb_s *) arg;	
+	struct yuvscaler2argb_s * arg_ptr;
+	arg_ptr=(struct yuvscaler2argb_s *) arg;	
    	spe_program_handle_t * program;
 
 	program = spe_image_open("spu_yuv2argb_scaler");
@@ -74,10 +74,10 @@ static void * csc_spe_thread(void * arg)
 	pthread_exit(NULL);
 }
 
-yuv2rgb_s * csc_init_yuv2rgb(int srcW,int srcH,int dstW,int dstH,int offset, int maxwidth,ea_t front_inBuffer, ea_t back_inBuffer, ea_t front_outBuffer, ea_t back_outBuffer)
+yuvscaler2argb_s * csc_init_yuv2rgb(int srcW,int srcH,int dstW,int dstH,int offset, int maxwidth,ea_t front_inYBuffer, ea_t back_inYBuffer,ea_t front_inUBuffer, ea_t back_inUBuffer,ea_t front_inVBuffer, ea_t back_inVBuffer, ea_t front_outBuffer, ea_t back_outBuffer)
 {
-	struct yuv2rgb_s *yuvcsc;
-	yuvcsc=(struct yuv2rgb_s *)memalign(64,sizeof(struct yuv2rgb_s));
+	struct yuvscaler2argb_s *yuvcsc;
+	yuvcsc=(struct yuvscaler2argb_s *)memalign(64,sizeof(struct yuvscaler2argb_s));
 	yuvcsc->iargs=(struct img_args *)memalign(128,sizeof(struct img_args));
 	yuvcsc->iargs->srcW=srcW;
 	yuvcsc->iargs->srcH=srcH;
@@ -85,13 +85,13 @@ yuv2rgb_s * csc_init_yuv2rgb(int srcW,int srcH,int dstW,int dstH,int offset, int
 	yuvcsc->iargs->dstW=dstW;
 	yuvcsc->iargs->offset=offset;
 	yuvcsc->iargs->maxwidth=maxwidth;
-	yuvcsc->iargs->Ystart[0]=(unsigned long long)front_inBuffer;
-	yuvcsc->iargs->Ystart[1]=(unsigned long long)back_inBuffer;
+	yuvcsc->iargs->Ystart[0]=(unsigned long long)front_inYBuffer;
+	yuvcsc->iargs->Ystart[1]=(unsigned long long)back_inYBuffer;
 
-	yuvcsc->iargs->Ustart[0]=yuvcsc->iargs->Ystart[0]+srcW*srcH; //maybe these should be removed...
-	yuvcsc->iargs->Ustart[1]=yuvcsc->iargs->Ystart[1]+srcW*srcH;
-	yuvcsc->iargs->Vstart[0]=yuvcsc->iargs->Ystart[0]+srcW*srcH + srcW*srcH/4;
-	yuvcsc->iargs->Vstart[1]=yuvcsc->iargs->Ystart[1]+srcW*srcH + srcW*srcH/4;
+	yuvcsc->iargs->Ustart[0]=(unsigned long long)front_inUBuffer;
+	yuvcsc->iargs->Ustart[1]=(unsigned long long)back_inUBuffer;
+	yuvcsc->iargs->Vstart[0]=(unsigned long long)front_inVBuffer;
+	yuvcsc->iargs->Vstart[1]=(unsigned long long)back_inVBuffer;
 
 	yuvcsc->iargs->Output[0]=(unsigned long long)front_outBuffer;
 	yuvcsc->iargs->Output[1]=(unsigned long long)back_outBuffer;
@@ -112,18 +112,18 @@ yuv2rgb_s * csc_init_yuv2rgb(int srcW,int srcH,int dstW,int dstH,int offset, int
 	return yuvcsc;
 }
 
-spe_context_ptr_t csc_getCTX(yuv2rgb_s * arg)
+spe_context_ptr_t csc_getCTX(yuvscaler2argb_s * arg)
 {
-	struct yuv2rgb_s * arg_ptr;
-	arg_ptr=(struct yuv2rgb_s *) arg;
+	struct yuvscaler2argb_s * arg_ptr;
+	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	return arg_ptr->ctx;
 }
 
-unsigned int csc_receive_message(yuv2rgb_s *arg)
+unsigned int csc_receive_message(yuvscaler2argb_s *arg)
 {
 	unsigned int message;
-	struct yuv2rgb_s * arg_ptr;
-	arg_ptr=(struct yuv2rgb_s *) arg;
+	struct yuvscaler2argb_s * arg_ptr;
+	arg_ptr=(struct yuvscaler2argb_s *) arg;
 
 	int retries = 3;
 
@@ -145,20 +145,20 @@ unsigned int csc_receive_message(yuv2rgb_s *arg)
 
 }
 
-void csc_send_message(yuv2rgb_s *arg,unsigned int message)
+void csc_send_message(yuvscaler2argb_s *arg,unsigned int message)
 {
-	struct yuv2rgb_s * arg_ptr;
-	arg_ptr=(struct yuv2rgb_s *) arg;
+	struct yuvscaler2argb_s * arg_ptr;
+	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	while (spe_in_mbox_status(arg_ptr->ctx) == 0); // switch this to a nice little interupt based one
 	spe_in_mbox_write(arg_ptr->ctx,&message,1,SPE_MBOX_ALL_BLOCKING);	
 }
 
 
-void csc_yuv2rgb_destroy(yuv2rgb_t* arg)
+void csc_yuv2rgb_destroy(yuvscaler2argb_t* arg)
 {
 	unsigned int message=STOP;
-	struct yuv2rgb_s * arg_ptr;
-	arg_ptr=(struct yuv2rgb_s *) arg;
+	struct yuvscaler2argb_s * arg_ptr;
+	arg_ptr=(struct yuvscaler2argb_s *) arg;
 
 	spe_in_mbox_write(arg_ptr->ctx,&message,1,SPE_MBOX_ALL_BLOCKING);
 	
@@ -167,57 +167,57 @@ void csc_yuv2rgb_destroy(yuv2rgb_t* arg)
 	
 }
 
-unsigned int csc_get_dstW(yuv2rgb_t* arg)
+unsigned int csc_get_dstW(yuvscaler2argb_t* arg)
 {
-	struct yuv2rgb_s * arg_ptr;
-	arg_ptr=(struct yuv2rgb_s *) arg;
+	struct yuvscaler2argb_s * arg_ptr;
+	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	return arg->iargs->dstW;
 }
-unsigned int csc_get_srcW(yuv2rgb_t* arg)
+unsigned int csc_get_srcW(yuvscaler2argb_t* arg)
 {
-	struct yuv2rgb_s * arg_ptr;
-	arg_ptr=(struct yuv2rgb_s *) arg;
+	struct yuvscaler2argb_s * arg_ptr;
+	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	return arg->iargs->srcW;
 }
 
-unsigned int csc_get_offset(yuv2rgb_t* arg)
+unsigned int csc_get_offset(yuvscaler2argb_t* arg)
 {
-	struct yuv2rgb_s * arg_ptr;
-	arg_ptr=(struct yuv2rgb_s *) arg;
+	struct yuvscaler2argb_s * arg_ptr;
+	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	return arg->iargs->offset;
 }
 
-unsigned int csc_get_maxwidth(yuv2rgb_t* arg)
+unsigned int csc_get_maxwidth(yuvscaler2argb_t* arg)
 {
-	struct yuv2rgb_s * arg_ptr;
-	arg_ptr=(struct yuv2rgb_s *) arg;
+	struct yuvscaler2argb_s * arg_ptr;
+	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	return arg->iargs->maxwidth;
 }
 
-void csc_set_dstW(yuv2rgb_t* arg,int dstw)
+void csc_set_dstW(yuvscaler2argb_t* arg,int dstw)
 {
-	struct yuv2rgb_s * arg_ptr;
-	arg_ptr=(struct yuv2rgb_s *) arg;
+	struct yuvscaler2argb_s * arg_ptr;
+	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	arg->iargs->dstW=dstw;
 }
 
-void csc_set_srcW(yuv2rgb_t* arg,int srcw)
+void csc_set_srcW(yuvscaler2argb_t* arg,int srcw)
 {
-	struct yuv2rgb_s * arg_ptr;
-	arg_ptr=(struct yuv2rgb_s *) arg;
+	struct yuvscaler2argb_s * arg_ptr;
+	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	arg->iargs->srcW=srcw;
 }
 
-void csc_set_offset(yuv2rgb_t* arg,int offset)
+void csc_set_offset(yuvscaler2argb_t* arg,int offset)
 {
-	struct yuv2rgb_s * arg_ptr;
-	arg_ptr=(struct yuv2rgb_s *) arg;
+	struct yuvscaler2argb_s * arg_ptr;
+	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	arg->iargs->offset=offset;
 }
 
-void csc_set_maxwidth(yuv2rgb_t* arg,int maxwidth)
+void csc_set_maxwidth(yuvscaler2argb_t* arg,int maxwidth)
 {
-	struct yuv2rgb_s * arg_ptr;
-	arg_ptr=(struct yuv2rgb_s *) arg;
+	struct yuvscaler2argb_s * arg_ptr;
+	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	arg->iargs->maxwidth=maxwidth;
 }

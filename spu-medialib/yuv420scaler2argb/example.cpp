@@ -65,13 +65,13 @@ int main (int nArg, char* cArg[]) {
 	int dstH=720;
 	int dstW=1280;
 	
-	int maxwidth=352;
+	int maxwidth=1920;
 	int offset=0;
 	int curBuf = 0;
 	int ftot = 5000; //< Number of frames to run through for FPS accuracy
 	int fcount = 1;
 	char *filename="default", *inBuf[2];
-	char *RAMBufferA[2], *Ypointer, *Upointer, *Vpointer;
+	char *RAMBufferA[2], *Ypointer[2], *Upointer[2], *Vpointer[2];
 	unsigned int msg;
 
 	ifstream Source;
@@ -124,9 +124,14 @@ int main (int nArg, char* cArg[]) {
 	Source.read(inBuf[0],(srcW*srcH+(srcW*srcH)/2));
 	Source.read(inBuf[1],(srcW*srcH+(srcW*srcH)/2));
 	Source.close();
-	Ypointer=inBuf[curBuf];
-	Upointer=Ypointer+srcW*srcH;
-	Vpointer=Upointer+srcW*srcH/4;
+	
+	Ypointer[0]=inBuf[0];
+	Upointer[0]=Ypointer[0]+srcW*srcH;
+	Vpointer[0]=Upointer[0]+srcW*srcH/4;
+
+	Ypointer[1]=inBuf[0];
+	Upointer[1]=Ypointer[1]+srcW*srcH;
+	Vpointer[1]=Upointer[1]+srcW*srcH/4;
 
 //	RAMBufferA[0]=(char*)memalign(128,srcW*srcH*4);
 //	RAMBufferA[1]=(char*)memalign(128,srcW*srcH*4);	
@@ -136,7 +141,7 @@ int main (int nArg, char* cArg[]) {
 // 	void* fbuf1=RAMBufferA[1];
 	fb_swap();//swap back!
 
-	yuv2rgb_t *yuvcsc = csc_init_yuv2rgb(srcW, srcH, dstW, dstH, offset, maxwidth, (ea_t)inBuf[0], (ea_t)inBuf[0], fbuf0,fbuf1);
+	yuvscaler2argb_t *yuvcsc = csc_init_yuv2rgb(srcW, srcH, dstW, dstH, offset, maxwidth, (ea_t)Ypointer[0], (ea_t)Ypointer[1], (ea_t)Upointer[0], (ea_t)Upointer[1], (ea_t)Vpointer[0], (ea_t)Vpointer[1], fbuf0,fbuf1);
 
 	csc_send_message(yuvcsc,RUN);
 
