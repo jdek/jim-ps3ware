@@ -171,5 +171,31 @@ static inline void matrix_short_shift_right8(vector signed short *M,int shift)
 }
 
 
+static inline void matrix_clamp8_0_255(vector signed short *M)
+{
+	static vector signed short max = {255,255,255,255,255,255,255,255};
+	vector signed short min={0,0,0,0,0,0,0,0};
 
+	vector unsigned short A=spu_compgt(M[0],max);//spu_compgt(M[0],max);
+	M[0]=spu_sel(M[0], max, A);
+	M[0]=spu_sel(M[0],max,spu_compgt(M[0],255));
+	M[1]=spu_sel(M[1],max,spu_compgt(M[1],255));
+	M[2]=spu_sel(M[2],max,spu_compgt(M[2],max));
+	M[3]=spu_sel(M[3],max,spu_compgt(M[3],max));
+	M[4]=spu_sel(M[4],max,spu_compgt(M[4],max));
+	M[5]=spu_sel(M[5],max,spu_compgt(M[5],max));
+	M[6]=spu_sel(M[6],max,spu_compgt(M[6],max));
+	M[7]=spu_sel(M[7],max,spu_compgt(M[7],max));
+
+	
+	M[0]=spu_sel(min,M[0],spu_compgt(min,M[0]));
+	M[1]=spu_sel(min,M[1],spu_compgt(min,M[1]));
+	M[2]=spu_sel(min,M[2],spu_compgt(min,M[2]));
+	M[3]=spu_sel(min,M[3],spu_compgt(min,M[3]));
+	M[4]=spu_sel(min,M[4],spu_compgt(min,M[4]));
+	M[5]=spu_sel(min,M[5],spu_compgt(min,M[5]));
+	M[6]=spu_sel(min,M[6],spu_compgt(min,M[6]));
+	M[7]=spu_sel(min,M[7],spu_compgt(min,M[7]));
+
+}
 #endif

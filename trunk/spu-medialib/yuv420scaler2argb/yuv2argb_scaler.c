@@ -57,13 +57,13 @@ struct yuvscaler2argb_s {
    		unsigned int entry;
 };
 
-static void * csc_spe_thread(void * arg) 
+static void * yuvscsc_spe_thread(void * arg) 
 {
 	struct yuvscaler2argb_s * arg_ptr;
 	arg_ptr=(struct yuvscaler2argb_s *) arg;	
    	spe_program_handle_t * program;
 
-	program = spe_image_open("spu_yuv2argb_scaler");
+	program = spe_image_open("/usr/local/bin/spu_yuv2argb_scaler");
 
    	if (spe_program_load(arg_ptr->ctx, program) < 0) 
 	{
@@ -74,7 +74,7 @@ static void * csc_spe_thread(void * arg)
 	pthread_exit(NULL);
 }
 
-yuvscaler2argb_s * csc_init_yuv2rgb(int srcW,int srcH,int dstW,int dstH,int offset, int maxwidth,ea_t front_inYBuffer, ea_t back_inYBuffer,ea_t front_inUBuffer, ea_t back_inUBuffer,ea_t front_inVBuffer, ea_t back_inVBuffer, ea_t front_outBuffer, ea_t back_outBuffer)
+yuvscaler2argb_s * yuvscsc_init_yuv2argb_scaler(int srcW,int srcH,int dstW,int dstH,int offset, int maxwidth,ea_t front_inYBuffer, ea_t back_inYBuffer,ea_t front_inUBuffer, ea_t back_inUBuffer,ea_t front_inVBuffer, ea_t back_inVBuffer, ea_t front_outBuffer, ea_t back_outBuffer)
 {
 	struct yuvscaler2argb_s *yuvcsc;
 	yuvcsc=(struct yuvscaler2argb_s *)memalign(64,sizeof(struct yuvscaler2argb_s));
@@ -101,7 +101,7 @@ yuvscaler2argb_s * csc_init_yuv2rgb(int srcW,int srcH,int dstW,int dstH,int offs
 	yuvcsc->entry=SPE_DEFAULT_ENTRY;
 	yuvcsc->runflags=0;
 	yuvcsc->ctx=spe_context_create(yuvcsc->createflags, NULL);
-	yuvcsc->thread_id=pthread_create(&yuvcsc->pts,NULL,&csc_spe_thread,yuvcsc);
+	yuvcsc->thread_id=pthread_create(&yuvcsc->pts,NULL,&yuvscsc_spe_thread,yuvcsc);
 
 	yuvcsc->spe_event_yuv2rgb = spe_event_handler_create();
 	yuvcsc->event.spe = yuvcsc->ctx;
@@ -112,14 +112,14 @@ yuvscaler2argb_s * csc_init_yuv2rgb(int srcW,int srcH,int dstW,int dstH,int offs
 	return yuvcsc;
 }
 
-spe_context_ptr_t csc_getCTX(yuvscaler2argb_s * arg)
+spe_context_ptr_t yuvscsc_getCTX(yuvscaler2argb_s * arg)
 {
 	struct yuvscaler2argb_s * arg_ptr;
 	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	return arg_ptr->ctx;
 }
 
-unsigned int csc_receive_message(yuvscaler2argb_s *arg)
+unsigned int yuvscsc_receive_message(yuvscaler2argb_s *arg)
 {
 	unsigned int message;
 	struct yuvscaler2argb_s * arg_ptr;
@@ -145,7 +145,7 @@ unsigned int csc_receive_message(yuvscaler2argb_s *arg)
 
 }
 
-void csc_send_message(yuvscaler2argb_s *arg,unsigned int message)
+void yuvscsc_send_message(yuvscaler2argb_s *arg,unsigned int message)
 {
 	struct yuvscaler2argb_s * arg_ptr;
 	arg_ptr=(struct yuvscaler2argb_s *) arg;
@@ -154,7 +154,7 @@ void csc_send_message(yuvscaler2argb_s *arg,unsigned int message)
 }
 
 
-void csc_yuv2rgb_destroy(yuvscaler2argb_t* arg)
+void yuvscsc_destroy(yuvscaler2argb_t* arg)
 {
 	unsigned int message=STOP;
 	struct yuvscaler2argb_s * arg_ptr;
@@ -167,55 +167,55 @@ void csc_yuv2rgb_destroy(yuvscaler2argb_t* arg)
 	
 }
 
-unsigned int csc_get_dstW(yuvscaler2argb_t* arg)
+unsigned int yuvscsc_get_dstW(yuvscaler2argb_t* arg)
 {
 	struct yuvscaler2argb_s * arg_ptr;
 	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	return arg->iargs->dstW;
 }
-unsigned int csc_get_srcW(yuvscaler2argb_t* arg)
+unsigned int yuvscsc_get_srcW(yuvscaler2argb_t* arg)
 {
 	struct yuvscaler2argb_s * arg_ptr;
 	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	return arg->iargs->srcW;
 }
 
-unsigned int csc_get_offset(yuvscaler2argb_t* arg)
+unsigned int yuvscsc_get_offset(yuvscaler2argb_t* arg)
 {
 	struct yuvscaler2argb_s * arg_ptr;
 	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	return arg->iargs->offset;
 }
 
-unsigned int csc_get_maxwidth(yuvscaler2argb_t* arg)
+unsigned int yuvscsc_get_maxwidth(yuvscaler2argb_t* arg)
 {
 	struct yuvscaler2argb_s * arg_ptr;
 	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	return arg->iargs->maxwidth;
 }
 
-void csc_set_dstW(yuvscaler2argb_t* arg,int dstw)
+void yuvscsc_set_dstW(yuvscaler2argb_t* arg,int dstw)
 {
 	struct yuvscaler2argb_s * arg_ptr;
 	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	arg->iargs->dstW=dstw;
 }
 
-void csc_set_srcW(yuvscaler2argb_t* arg,int srcw)
+void yuvscsc_set_srcW(yuvscaler2argb_t* arg,int srcw)
 {
 	struct yuvscaler2argb_s * arg_ptr;
 	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	arg->iargs->srcW=srcw;
 }
 
-void csc_set_offset(yuvscaler2argb_t* arg,int offset)
+void yuvscsc_set_offset(yuvscaler2argb_t* arg,int offset)
 {
 	struct yuvscaler2argb_s * arg_ptr;
 	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	arg->iargs->offset=offset;
 }
 
-void csc_set_maxwidth(yuvscaler2argb_t* arg,int maxwidth)
+void yuvscsc_set_maxwidth(yuvscaler2argb_t* arg,int maxwidth)
 {
 	struct yuvscaler2argb_s * arg_ptr;
 	arg_ptr=(struct yuvscaler2argb_s *) arg;

@@ -141,17 +141,17 @@ int main (int nArg, char* cArg[]) {
 // 	void* fbuf1=RAMBufferA[1];
 	fb_swap();//swap back!
 
-	yuvscaler2argb_t *yuvcsc = csc_init_yuv2rgb(srcW, srcH, dstW, dstH, offset, maxwidth, (ea_t)Ypointer[0], (ea_t)Ypointer[1], (ea_t)Upointer[0], (ea_t)Upointer[1], (ea_t)Vpointer[0], (ea_t)Vpointer[1], fbuf0,fbuf1);
+	yuvscaler2argb_t *yuvcsc = yuvscsc_init_yuv2argb_scaler(srcW, srcH, dstW, dstH, offset, maxwidth, (ea_t)Ypointer[0], (ea_t)Ypointer[1], (ea_t)Upointer[0], (ea_t)Upointer[1], (ea_t)Vpointer[0], (ea_t)Vpointer[1], fbuf0,fbuf1);
 
-	csc_send_message(yuvcsc,RUN);
+	yuvscsc_send_message(yuvcsc,RUN);
 
 	while (msg != STOP)
 	{
 		counter++;
 		
-		msg=csc_receive_message(yuvcsc);	
+		msg=yuvscsc_receive_message(yuvcsc);	
 		if (fcount == ftot)  {
-			csc_send_message(yuvcsc,STOP);
+			yuvscsc_send_message(yuvcsc,STOP);
 			msg=STOP;
 			stop=mysecond();
 			printf("clock %f\n", stop);
@@ -171,14 +171,14 @@ int main (int nArg, char* cArg[]) {
 
 			fcount++;
 			fb_swap();
-			csc_send_message(yuvcsc,RUN);
+			yuvscsc_send_message(yuvcsc,RUN);
 		}
 	}
 	Destination.write(RAMBufferA[0],srcW*srcH*4); // writes your new scaled YUV to a file!
 	Destination.close();
 	
 	
-	csc_yuv2rgb_destroy(yuvcsc);
+	yuvscsc_destroy(yuvcsc);
 
 	return(0) ;
 }

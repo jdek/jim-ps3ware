@@ -38,7 +38,7 @@
 #ifndef __SPU_SCALER_H
 #define __SPU_SCALER_H
 
-static inline void initHFilter(int srcH, int dstH,int * hfilterpos, vector float *weightHfilter0, vector float *weightHfilter1)
+static inline void initHFilter(int srcH, int dstH,int * hfilterpos,/*int *hfilterpos1,*/ vector float *weightHfilter0, vector float *weightHfilter1)
 {
 	int i;
 	int tmp;
@@ -47,6 +47,7 @@ static inline void initHFilter(int srcH, int dstH,int * hfilterpos, vector float
 	for (i=0;i < dstH; i++) 
 	{
 		hfilterpos[i]=i*scale;
+	//	hfilterpos1[i]=hfilterpos[i]+1;
 		w1=(i*scale-(hfilterpos[i]));
 		w0=1-w1;
 
@@ -105,7 +106,11 @@ static inline void initWcrFilter(int srcW,int dstW,int type,int *filterpos,vecto
 	uint8_t src0[4],src1[4];
 	float wf0[4],wf1[4];
 	int current;
+<<<<<<< .mine
+	for (i=0; i<dstW/8;i++)
+=======
 	for (i=0; i< dstW/8;i++)
+>>>>>>> .r73
 	{
 		current=i*4*scale;
 		filterpos[i]=current/16;
@@ -431,13 +436,21 @@ static inline void scaleline(int *filterpos, vector float * Input00, vector floa
 
 static inline void rightshiftnadd8(vector unsigned char start,vector unsigned char* shuffleme,int sizetoshuffle)
 {
-	vector unsigned char temp0,temp1;
+	vector unsigned char temp0;
 	int i=0;
+<<<<<<< .mine
+=======
 //	temp0=shuffleme[0];
+>>>>>>> .r73
 	static vector unsigned char off8={8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
 	temp0=shuffleme[0];
+<<<<<<< .mine
+	shuffleme[0]=spu_shuffle(start,shuffleme[0],((vector unsigned char){0,1,2,3,4,5,6,7,16,17,18,19,20,21,22,23}));
+	for (i=0;i < sizetoshuffle/16 ; i++)
+=======
 	shuffleme[0]=spu_shuffle(start,shuffleme[0],((vector unsigned char){0,1,2,3,4,5,6,7,24,25,26,27,28,29,30,31}));
 	for (i=1;i<sizetoshuffle/16;i++)
+>>>>>>> .r73
 	{
 		temp1=shuffleme[i];
 		shuffleme[i]=spu_shuffle(temp0,shuffleme[i],off8);
