@@ -39,7 +39,9 @@
 #ifndef __YUV2ARGB_SCALER_H
 #define __YUV2ARGB_SCALER_H
 
-//extern "C"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 struct yuvscaler2argb_s;
@@ -51,7 +53,7 @@ typedef void * ea_t;
 * init_yuv2rgb 
 * initiates the spu yuv2rgb.
 */ 
-yuvscaler2argb_t * csc_init_yuv2rgb(int srcW, int srcH,int dstW,int dstH, int offset, int maxwidth,
+yuvscaler2argb_t * yuvscsc_init_yuv2argb_scaler(int srcW, int srcH,int dstW,int dstH, int offset, int maxwidth,
 				ea_t front_inYBuffer, ea_t back_inYBuffer,
 				ea_t front_inUBuffer, ea_t back_inUBuffer,
 				ea_t front_inVBuffer, ea_t back_inVBuffer,
@@ -60,39 +62,42 @@ yuvscaler2argb_t * csc_init_yuv2rgb(int srcW, int srcH,int dstW,int dstH, int of
 /**
 *gets the spe context pointer from the initiated yuv2rgb
 */
-spe_context_ptr_t csc_getCTX(yuvscaler2argb_t*);
+spe_context_ptr_t yuvscsc_getCTX(yuvscaler2argb_t*);
 
 /**
 * recive_message waits for a interrupt message from the spu notifying a loop completion
 */
-unsigned int csc_receive_message(yuvscaler2argb_t*);
+unsigned int yuvscsc_receive_message(yuvscaler2argb_t*);
 
 
 /**
 * sends a message to the spu telling it what to do options are RDY UPDATE and STOP defined in spu_control.h
 */
-void csc_send_message(yuvscaler2argb_t*,unsigned int message);
+void yuvscsc_send_message(yuvscaler2argb_t*,unsigned int message);
 
 /**
 * destroys the spu scaler object and this object
 */
-void csc_yuv2rgb_destroy(yuvscaler2argb_t*);
+void yuvscsc_destroy(yuvscaler2argb_t*);
 
 /**
 * get functions for image sizes
 */
-unsigned int csc_get_srcW(const yuvscaler2argb_t*);
-unsigned int csc_get_srcH(const yuvscaler2argb_t*);
-unsigned int csc_get_offset(const yuvscaler2argb_t*);
-unsigned int csc_get_maxwidth(const yuvscaler2argb_t*);
+unsigned int yuvscsc_get_srcW(const yuvscaler2argb_t*);
+unsigned int yuvscsc_get_srcH(const yuvscaler2argb_t*);
+unsigned int yuvscsc_get_offset(const yuvscaler2argb_t*);
+unsigned int yuvscsc_get_maxwidth(const yuvscaler2argb_t*);
 
 /**
 * set functions for image sizes (only takes effect if followed by an update!)
 */
-void csc_set_srcW(yuvscaler2argb_t*,int dstw);
-void csc_set_srcH(yuvscaler2argb_t*,int srcw);
-void csc_set_offset(yuvscaler2argb_t*,int offset);
-void csc_set_maxwidth(yuvscaler2argb_t*,int maxwidth);
+void yuvscsc_set_srcW(yuvscaler2argb_t*,int dstw);
+void yuvscsc_set_srcH(yuvscaler2argb_t*,int srcw);
+void yuvscsc_set_offset(yuvscaler2argb_t*,int offset);
+void yuvscsc_set_maxwidth(yuvscaler2argb_t*,int maxwidth);
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

@@ -153,11 +153,17 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			
 			dmaWaitTag(tgo[LineSelOut]);
 
+
+			if ((iargs->dstW%32 != 0 ) && (LineSelIn==1)) { LSB=1;} else {LSB=0;}
+
+
 			if ((smallcroma > 0)&&(LineSelIn==1)) { 
 				LSB=1;
 			} else {
 				LSB=0;
 			}
+
+
 
 			yuv420toARGB(Iybuffer[LineSelIn],Iubuffer[LineSelIn],Ivbuffer[LineSelIn],Obuffer[LineSelOut],iargs->srcW,iargs->maxwidth,LSB);
 			dmaPut(Obuffer[LineSelOut],Op,iargs->maxwidth*4*2,tgo[LineSelOut]);
@@ -165,6 +171,15 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 		
 			
 			if ((smallcroma) && (LineSelIn == 0)) { 
+				cromblock=(((iargs->srcW>>1)+15)&~15);
+			} else {
+				cromblock=(((iargs->srcW>>1))&~15);
+			}
+
+			int cromblock;//=(((iargs->srcW>>1))&~15);
+			
+			if (((iargs->dstW%32) != 0 ) && (LineSelIn==1)) { 
+			
 				cromblock=(((iargs->srcW>>1)+15)&~15);
 			} else {
 				cromblock=(((iargs->srcW>>1))&~15);
@@ -178,6 +193,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			dmaGet(Iybuffer[LineSelIn],Yp,iargs->srcW*2,tgi[LineSelIn]);
 			dmaGet(Iubuffer[LineSelIn],Up,((iargs->srcW>>1)+15)&~15,tgi[LineSelIn]);
 			dmaGet(Ivbuffer[LineSelIn],Vp,((iargs->srcW>>1)+15)&~15,tgi[LineSelIn]);
+
 			LineSelIn=LineSelIn^1;
 			LineSelOut=LineSelOut^1;
 		

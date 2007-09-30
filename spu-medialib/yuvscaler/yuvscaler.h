@@ -43,7 +43,12 @@
 extern "C" {
 #endif
 
-
+<<<<<<< .mine
+#ifdef __cplusplus
+extern "C" {
+#endif
+=======
+>>>>>>> .r73
 
 struct yuvscaler_s;
 typedef struct yuvscaler_s yuvscaler_t;

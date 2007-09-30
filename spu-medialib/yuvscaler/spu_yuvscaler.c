@@ -135,6 +135,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			initHFilter(iargs->srcH,iargs->dstH,hfilterpos,weightHfilter0,weightHfilter1);
 			crblock0=(iargs->srcW>>1)&~15; // rounded down
 			crblock1=((iargs->srcW>>1) + 15)&~15; //rounded up
+	
 			crblockdst0=(iargs->dstW>>1)&~15; // rounded down
 			crblockdst1=((iargs->dstW>>1) + 15)&~15; //rounded up
 
@@ -405,6 +406,29 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			
 
 			dmaWaitTag(tgo[LineSelOut]); // wait in case the line isnt written out yet!
+<<<<<<< .mine
+
+			if ((h&1)==0){
+				if(iargs->dstW%32!=0)
+				{
+					shared=Output[LineSelOut][crblockdst1>>4];
+				}
+				dmaPut(Output[LineSelOut],VOp,crblockdst0,tgo[LineSelOut]);
+				VOp=VOp+crblockdst0;
+			}
+			else
+			{
+				
+				//insert the shuffle here if w isnt mod 32 BUSY	
+				if((iargs->dstW%32) != 0)
+				{
+					rightshiftnadd8(shared,Output[LineSelOut],crblockdst1);
+				}
+				dmaPut(Output[LineSelOut],VOp,crblockdst1,tgo[LineSelOut]);
+				VOp=VOp+crblockdst1;
+			}
+		//	VOp = VOp + iargs->dstW*4; // increment output pointer .
+=======
 		
  			if (dstsmallcroma) {
  				dmaPut(Output[LineSelOut],VOp,crblockdst0,tgo[LineSelOut]);
@@ -415,6 +439,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
  				VOp=VOp+crblockdst1;
  			}
 
+>>>>>>> .r73
 			LineSelOut=LineSelOut ^ 1; // we flip since we want to use another buffer for the next line..
 		}
 		
