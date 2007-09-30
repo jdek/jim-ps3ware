@@ -62,13 +62,13 @@ double mysecond() {
 int main (int nArg, char* cArg[]) {
 	int srcW=352;
 	int srcH=288;
-	int dstH=720;
-	int dstW=1280;
+	int dstH=178;
+	int dstW=320;
 	
 	int maxwidth=1920;
 	int offset=0;
 	int curBuf = 0;
-	int ftot = 5000; //< Number of frames to run through for FPS accuracy
+	int ftot = 1000; //< Number of frames to run through for FPS accuracy
 	int fcount = 1;
 	char *filename="default", *inBuf[2];
 	char *RAMBufferA[2], *Ypointer[2], *Upointer[2], *Vpointer[2];
@@ -127,11 +127,11 @@ int main (int nArg, char* cArg[]) {
 	
 	Ypointer[0]=inBuf[0];
 	Upointer[0]=Ypointer[0]+srcW*srcH;
-	Vpointer[0]=Upointer[0]+srcW*srcH/4;
+	Vpointer[0]=Ypointer[0]+(srcW*srcH)+(srcW*srcH)/4;
 
 	Ypointer[1]=inBuf[0];
 	Upointer[1]=Ypointer[1]+srcW*srcH;
-	Vpointer[1]=Upointer[1]+srcW*srcH/4;
+	Vpointer[1]=Ypointer[1]+(srcW*srcH)+(srcW*srcH)/4;
 
 //	RAMBufferA[0]=(char*)memalign(128,srcW*srcH*4);
 //	RAMBufferA[1]=(char*)memalign(128,srcW*srcH*4);	

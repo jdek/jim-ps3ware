@@ -41,7 +41,7 @@
 #include <math.h>
 #include "scaler_settings.h"
 
-static inline void initHFilter(int srcW,int srcH, int dstH,int * hfilterpos0,int * hfilterpos1,float *weightH,int *dmapos,int*dmacromapos/* vector float *weightHfilter0, vector float *weightHfilter1*/)
+static inline void initHFilter(int srcW,int srcH, int dstH,int * hfilterpos0,int * hfilterpos1,float *weightH,unsigned long long *dmapos,unsigned long long *dmacromapos/* vector float *weightHfilter0, vector float *weightHfilter1*/)
 {
 	int smallcroma;
 	if (srcW%32 != 0) 
@@ -58,24 +58,25 @@ static inline void initHFilter(int srcW,int srcH, int dstH,int * hfilterpos0,int
 	dmacromapos[0]=0;
 	dmapos[0]=0;
 	
-	for (i=0;i < srcH/2+1;i++)
+		
+	for (i=1;i < srcH + 4;i++)
 	{
 		if (smallcroma) {
-			if ((i&1) == 0) //are we fetching a source that is aligned
+			if ((i&1) == 1) //are we fetching a source that is aligned
 				{
-					dmacromapos[i]=(srcW*i)/2;
+					dmacromapos[i]=dmacromapos[i-1] + (((srcW)>>1)&~15);
 				} else {
-					dmacromapos[i]=(srcW*(i-1))/2 + ((srcW>>1)&~15);
+					dmacromapos[i]=(srcW*i)/2;
 				}
 		} else {
 				dmacromapos[i]=((srcW>>1)&~15)*i;// + ((srcW>>1+15)&~15)*i; //rounded down
 		}
-		dmapos[2*i]=(2*i)*srcW;
- 		dmapos[2*i+1]=(2*i+1)*srcW;
+		dmapos[i]=i*srcW;
+ 	//	dmapos[2*i+1]=(2*i+1)*srcW;
 
 	}
 
-	for (i=0;i < dstH; i++) 
+	for (i=0;i < dstH+4; i++) 
 	{
 		//int s=
 		hfilterpos0[i]=i*scale;
@@ -487,71 +488,215 @@ static inline void scale(scaler_settings_t *sc)
 	int width=sc->width;
 	vector float wHfilter0={sc->wHfilter,sc->wHfilter,sc->wHfilter,sc->wHfilter};
 	vector float wHfilter1={1-sc->wHfilter,1-sc->wHfilter,1-sc->wHfilter,1-sc->wHfilter};
-	if (!sc->smallcroma)
-	{
-		vector unsigned char shuf00,shuf01,shuf02,shuf03;
-		vector unsigned char in00,in01,in02,in03,in10,in11,in12,in13;
-			
-		in00=sc->source00[sc->wfilterpos[0]];
-		in01=sc->source00[sc->wfilterpos[0]+1];
-		in02=sc->source00[sc->wfilterpos[1]];
-		in03=sc->source00[sc->wfilterpos[1]+1];
-		
-		in10=sc->source01[sc->wfilterpos[0]];
-		in11=sc->source01[sc->wfilterpos[0]+1];
-		in12=sc->source01[sc->wfilterpos[1]];
-		in13=sc->source01[sc->wfilterpos[1]+1];
-
-		shuf00=sc->sWfilter0[0];
-		shuf01=sc->sWfilter1[0];
-		shuf02=sc->sWfilter0[1];		
-		shuf03=sc->sWfilter1[1];
-
-		for (i=0; i< width>>3; i++) {
-
-			int nextpos0=sc->wfilterpos[2*i+2];
-			int nextpos1=sc->wfilterpos[2*i+2]+1;
-			int nextpos2=sc->wfilterpos[2*i+3];
-			int nextpos3=sc->wfilterpos[2*i+3]+1;	
-		
-			vector unsigned char nextin00=sc->source00[nextpos0];
-			vector unsigned char nextin01=sc->source00[nextpos1];
-			vector unsigned char nextin02=sc->source00[nextpos2];
-			vector unsigned char nextin03=sc->source00[nextpos3];
-			
-			vector unsigned char nextin10=sc->source01[nextpos0];
-			vector unsigned char nextin11=sc->source01[nextpos1];
-			vector unsigned char nextin12=sc->source01[nextpos2];
-			vector unsigned char nextin13=sc->source01[nextpos3];
-		
-
-			vector unsigned char nextshuf00=sc->sWfilter0[2*i+2];
-			vector unsigned char nextshuf01=sc->sWfilter1[2*i+2];
-			vector unsigned char nextshuf02=sc->sWfilter0[2*i+3];
-			vector unsigned char nextshuf03=sc->sWfilter1[2*i+3];		
 	
-			vector float input00 = spu_convtf(((vector unsigned int)spu_shuffle(in00, in01,shuf00)),0);
-			vector float input01 = spu_convtf(((vector unsigned int)spu_shuffle(in00, in01,shuf01)),0);
-			
-			vector float input10 = spu_convtf(((vector unsigned int)spu_shuffle(in10, in11,shuf00)),0);
-			vector float input11 = spu_convtf(((vector unsigned int)spu_shuffle(in10, in11,shuf01)),0);
+	int inc=0;
+	int dest=0;
+	vector float Out0;
+	vector float Out1;
+// 	if (!sc->smallcroma)
+// 	{
+// 		vector unsigned char shuf00,shuf01,shuf02,shuf03;
+// 		vector unsigned char in00,in01,in02,in03,in10,in11,in12,in13;
+// 
+// 		
+// 		
+// 		in00=sc->source00[sc->wfilterpos[0]];
+// 		in01=sc->source00[sc->wfilterpos[0]+1];
+// 		in02=sc->source00[sc->wfilterpos[1]];
+// 		in03=sc->source00[sc->wfilterpos[1]+1];
+// 		
+// 		in10=sc->source01[sc->wfilterpos[0]];
+// 		in11=sc->source01[sc->wfilterpos[0]+1];
+// 		in12=sc->source01[sc->wfilterpos[1]];
+// 		in13=sc->source01[sc->wfilterpos[1]+1];
+// 
+// 		shuf00=sc->sWfilter0[0];
+// 		shuf01=sc->sWfilter1[0];
+// 		shuf02=sc->sWfilter0[1];		
+// 		shuf03=sc->sWfilter1[1];
+// 
+// 		for (i=0; i< width>>3; i++) {
+// 			sc->Output[2*dest]=Out0;
+// 			sc->Output[2*dest+1]=Out1;
+// 			int nextpos0=sc->wfilterpos[2*i+2];
+// 			int nextpos1=sc->wfilterpos[2*i+2]+1;
+// 			int nextpos2=sc->wfilterpos[2*i+3];
+// 			int nextpos3=sc->wfilterpos[2*i+3]+1;	
+// 		
+// 			vector unsigned char nextin00=sc->source00[nextpos0];
+// 			vector unsigned char nextin01=sc->source00[nextpos1];
+// 			vector unsigned char nextin02=sc->source00[nextpos2];
+// 			vector unsigned char nextin03=sc->source00[nextpos3];
+// 			
+// 			vector unsigned char nextin10=sc->source01[nextpos0];
+// 			vector unsigned char nextin11=sc->source01[nextpos1];
+// 			vector unsigned char nextin12=sc->source01[nextpos2];
+// 			vector unsigned char nextin13=sc->source01[nextpos3];
+// 		
+// 
+// 			vector unsigned char nextshuf00=sc->sWfilter0[2*i+2];
+// 			vector unsigned char nextshuf01=sc->sWfilter1[2*i+2];
+// 			vector unsigned char nextshuf02=sc->sWfilter0[2*i+3];
+// 			vector unsigned char nextshuf03=sc->sWfilter1[2*i+3];		
+// 	
+// 			vector float input00 = spu_convtf(((vector unsigned int)spu_shuffle(in00, in01,shuf00)),0);
+// 			vector float input01 = spu_convtf(((vector unsigned int)spu_shuffle(in00, in01,shuf01)),0);
+// 			
+// 			vector float input10 = spu_convtf(((vector unsigned int)spu_shuffle(in10, in11,shuf00)),0);
+// 			vector float input11 = spu_convtf(((vector unsigned int)spu_shuffle(in10, in11,shuf01)),0);
+// 
+// 			vector float w00=spu_mul(sc->wWfilter0[2*i],wHfilter0); //px0,0 //first 4 pixel weight values
+// 			vector float w01=spu_mul(sc->wWfilter1[2*i],wHfilter0); // px 0,1 aka w(+1)
+// 			vector float w10=spu_mul(sc->wWfilter0[2*i],wHfilter1); // px1,0
+// 			vector float w11=spu_mul(sc->wWfilter1[2*i],wHfilter1);// px1,1
+// 			
+// 			vector float newpixel0=spu_mul(w00,input00);
+// 			newpixel0=spu_madd(w01,input01,newpixel0);
+// 			newpixel0=spu_madd(w10,input10,newpixel0);
+// 			Out0=spu_madd(w11,input11,newpixel0);					
+// 			
+// 			vector float input02 = spu_convtf(((vector unsigned int)spu_shuffle(in02, in03,shuf02)),0);
+// 			vector float input03 = spu_convtf(((vector unsigned int)spu_shuffle(in02, in03,shuf03)),0);
+// 			
+// 			vector float input12 = spu_convtf(((vector unsigned int)spu_shuffle(in12, in13,shuf02)),0);
+// 			vector float input13 = spu_convtf(((vector unsigned int)spu_shuffle(in12, in13,shuf03)),0);
+// 
+// 			vector float w02=spu_mul(sc->wWfilter0[2*i+1],wHfilter0); //px0,0 //first 4 pixel weight values
+// 			vector float w03=spu_mul(sc->wWfilter1[2*i+1],wHfilter0); // px 0,1 aka w(+1)
+// 			vector float w12=spu_mul(sc->wWfilter0[2*i+1],wHfilter1); // px1,0
+// 			vector float w13=spu_mul(sc->wWfilter1[2*i+1],wHfilter1);// px1,1
+// 			
+// 			vector float newpixel1=spu_mul(w02,input02);
+// 			newpixel1=spu_madd(w03,input03,newpixel1);
+// 			newpixel1=spu_madd(w12,input12,newpixel1);
+// 			Out1=spu_madd(w13,input13,newpixel1);	
+// 			
+// 			in00=nextin00;
+// 			in01=nextin01;
+// 			in02=nextin02;
+// 			in03=nextin03;
+// 
+// 			in10=nextin10;
+// 			in11=nextin11;
+// 			in12=nextin12;
+// 			in13=nextin13;
+// 
+// 			shuf00=nextshuf00;
+// 			shuf01=nextshuf01;
+// 			shuf02=nextshuf02;
+// 			shuf03=nextshuf03;
+// 
+// 		dest=dest + inc;
+// 		inc=1;
+// 		}
+// 		sc->Output[2*dest]=Out0;
+// 		sc->Output[2*dest+1]=Out1;
+// 
+// 	} else {
+		vector unsigned char shuf00,shuf01,shuf02,shuf03,shuf10,shuf11,shuf12,shuf13;
+		vector unsigned char in00,in01,in02,in03,in10,in11,in12,in13;
+	
+		vector unsigned char *line0sw0=sc->sWfilter0; 
+		vector unsigned char *line0sw1=sc->sWfilter1;
+		vector unsigned char *line1sw0=sc->sWfilter0;
+		vector unsigned char *line1sw1=sc->sWfilter1;
+		int *wfilterpos0=sc->wfilterpos;
+		int *wfilterpos1=sc->wfilterpos;
 
+		if (sc->smallcromaline0==1)
+		{
+			line0sw0=sc->crsWfilter0;
+			line0sw1=sc->crsWfilter1;
+			wfilterpos0=sc->crfilterpos;
+		} 
+	
+		if (sc->smallcromaline1==1)
+		{
+			line1sw0=sc->crsWfilter0;
+			line1sw1=sc->crsWfilter1;
+			wfilterpos1=sc->crfilterpos;
+		} 
+
+		in00=sc->source00[wfilterpos0[0]];
+		in01=sc->source00[wfilterpos0[0]+1];
+		in02=sc->source00[wfilterpos0[1]];
+		in03=sc->source00[wfilterpos0[1]+1];
+		
+		in10=sc->source01[wfilterpos1[0]];
+		in11=sc->source01[wfilterpos1[0]+1];
+		in12=sc->source01[wfilterpos1[1]];
+		in13=sc->source01[wfilterpos1[1]+1];
+
+		shuf00=line0sw0[0];
+		shuf01=line0sw1[0];
+		shuf02=line0sw0[1];
+		shuf03=line0sw1[1];
+
+		shuf10=line1sw0[1];
+		shuf11=line1sw1[1];
+		shuf12=line1sw0[1];
+		shuf13=line1sw1[1];
+		
+		dest=0;
+		inc=0;
+
+		for (i=0;i < (width>>3);i++)
+		{
+			sc->Output[2*dest]=Out0;
+			sc->Output[2*dest+1]=Out1;
+			
+			int nextpos00=wfilterpos0[2*i+2];
+			int nextpos01=wfilterpos0[2*i+2]+1;
+			int nextpos02=wfilterpos0[2*i+3];
+			int nextpos03=wfilterpos0[2*i+3]+1;
+
+			int nextpos10=wfilterpos1[2*i+2];
+			int nextpos11=wfilterpos1[2*i+2]+1;
+			int nextpos12=wfilterpos1[2*i+3];
+			int nextpos13=wfilterpos1[2*i+3]+1;
+		
+			vector unsigned char nextin00=sc->source00[nextpos00];
+			vector unsigned char nextin01=sc->source00[nextpos01];
+			vector unsigned char nextin02=sc->source00[nextpos02];
+			vector unsigned char nextin03=sc->source00[nextpos03];
+			
+			vector unsigned char nextin10=sc->source01[nextpos10];
+			vector unsigned char nextin11=sc->source01[nextpos11];
+			vector unsigned char nextin12=sc->source01[nextpos12];
+			vector unsigned char nextin13=sc->source01[nextpos13];
+
+		
+
+			vector unsigned char nextshuf00=line0sw0[2*i+2];
+			vector unsigned char nextshuf01=line0sw1[2*i+2];
+			vector unsigned char nextshuf02=line0sw0[2*i+3];
+			vector unsigned char nextshuf03=line0sw1[2*i+3];
+
+			vector unsigned char nextshuf10=line1sw0[2*i+2];
+			vector unsigned char nextshuf11=line1sw1[2*i+2];
+			vector unsigned char nextshuf12=line1sw0[2*i+3];
+			vector unsigned char nextshuf13=line1sw1[2*i+3];	
+
+
+			vector float input00 = spu_convtf(((vector unsigned int)spu_shuffle(in00, in01,shuf00)),0);
+			vector float input01 = spu_convtf(((vector unsigned int)spu_shuffle(in00, in01,shuf01)),0);	
+			vector float input10 = spu_convtf(((vector unsigned int)spu_shuffle(in10, in11,shuf10)),0);
+			vector float input11 = spu_convtf(((vector unsigned int)spu_shuffle(in10, in11,shuf11)),0);
+			
 			vector float w00=spu_mul(sc->wWfilter0[2*i],wHfilter0); //px0,0 //first 4 pixel weight values
 			vector float w01=spu_mul(sc->wWfilter1[2*i],wHfilter0); // px 0,1 aka w(+1)
 			vector float w10=spu_mul(sc->wWfilter0[2*i],wHfilter1); // px1,0
 			vector float w11=spu_mul(sc->wWfilter1[2*i],wHfilter1);// px1,1
 			
 			vector float newpixel0=spu_mul(w00,input00);
-			newpixel0=spu_madd(w01,input01,newpixel0);
-			newpixel0=spu_madd(w10,input10,newpixel0);
-			newpixel0=spu_madd(w11,input11,newpixel0);	
-			sc->Output[2*i]=newpixel0;				
-	
+			newpixel0=            spu_madd(w01,input01,newpixel0);
+			newpixel0=            spu_madd(w10,input10,newpixel0);
+			Out0=                 spu_madd(w11,input11,newpixel0);	
+
 			vector float input02 = spu_convtf(((vector unsigned int)spu_shuffle(in02, in03,shuf02)),0);
 			vector float input03 = spu_convtf(((vector unsigned int)spu_shuffle(in02, in03,shuf03)),0);
-			
-			vector float input12 = spu_convtf(((vector unsigned int)spu_shuffle(in12, in13,shuf02)),0);
-			vector float input13 = spu_convtf(((vector unsigned int)spu_shuffle(in12, in13,shuf03)),0);
+			vector float input12 = spu_convtf(((vector unsigned int)spu_shuffle(in12, in13,shuf12)),0);
+			vector float input13 = spu_convtf(((vector unsigned int)spu_shuffle(in12, in13,shuf13)),0);
 
 			vector float w02=spu_mul(sc->wWfilter0[2*i+1],wHfilter0); //px0,0 //first 4 pixel weight values
 			vector float w03=spu_mul(sc->wWfilter1[2*i+1],wHfilter0); // px 0,1 aka w(+1)
@@ -559,11 +704,10 @@ static inline void scale(scaler_settings_t *sc)
 			vector float w13=spu_mul(sc->wWfilter1[2*i+1],wHfilter1);// px1,1
 			
 			vector float newpixel1=spu_mul(w02,input02);
-			newpixel1=spu_madd(w03,input03,newpixel1);
-			newpixel1=spu_madd(w12,input12,newpixel1);
-			newpixel1=spu_madd(w13,input13,newpixel1);	
-			sc->Output[2*i+1]=newpixel1;
-			
+			newpixel1=            spu_madd(w03,input03,newpixel1);
+			newpixel1=            spu_madd(w12,input12,newpixel1);
+			Out1=                 spu_madd(w13,input13,newpixel1);	
+
 			in00=nextin00;
 			in01=nextin01;
 			in02=nextin02;
@@ -578,53 +722,19 @@ static inline void scale(scaler_settings_t *sc)
 			shuf01=nextshuf01;
 			shuf02=nextshuf02;
 			shuf03=nextshuf03;
-		}
-
-	} else {
-
-		for (i=0;i < (width>>2);i++)
-		{
-			vector unsigned char in00,in01,in10,in11;
-			vector unsigned char shuf00,shuf01,shuf10,shuf11;
-			if ((sc->smallcromaline)) {
-			 	in00=sc->source00[sc->wfilterpos[i]];
-			 	in01=sc->source00[sc->wfilterpos[i]+1]; //if else etc
-				in10=sc->source01[sc->crfilterpos[i]];
-				in11=sc->source01[sc->crfilterpos[i]+1];
-
-				shuf00=sc->sWfilter0[i]; //if else etc..
-				shuf01=sc->sWfilter1[i];
-				shuf10=sc->crsWfilter0[i]; //if else etc..
-				shuf11=sc->crsWfilter0[i];		
-			} else {
-				in00=sc->source00[sc->crfilterpos[i]];
-				in01=sc->source00[sc->crfilterpos[i]+1]; //if else etc
-				in10=sc->source01[sc->wfilterpos[i]];
-				in11=sc->source01[sc->wfilterpos[i]+1];
-
-				shuf00=sc->crsWfilter0[i]; //if else etc..
-				shuf01=sc->crsWfilter1[i];
-				shuf10=sc->sWfilter0[i]; //if else etc..
-				shuf11=sc->sWfilter0[i];	
-			}
-
-			vector float input00 = spu_convtf(((vector unsigned int)spu_shuffle(in00, in01,shuf00)),0);
-			vector float input01 = spu_convtf(((vector unsigned int)spu_shuffle(in00, in01,shuf01)),0);
 			
-			vector float input10 = spu_convtf(((vector unsigned int)spu_shuffle(in10, in11,shuf10)),0);
-			vector float input11 = spu_convtf(((vector unsigned int)spu_shuffle(in10, in11,shuf11)),0);
-			vector float w00=spu_mul(sc->wWfilter0[i],wHfilter0); //px0,0 //first 4 pixel weight values
-			vector float w01=spu_mul(sc->wWfilter1[i],wHfilter0); // px 0,1 aka w(+1)
-			vector float w10=spu_mul(sc->wWfilter0[i],wHfilter1); // px1,0
-			vector float w11=spu_mul(sc->wWfilter1[i],wHfilter1);// px1,1
+			shuf10=nextshuf10;
+			shuf11=nextshuf11;
+			shuf12=nextshuf12;
+			shuf13=nextshuf13;
 			
-			vector float newpixel0=spu_mul(w00,input00);
-			newpixel0=spu_madd(w01,input01,newpixel0);
-			newpixel0=spu_madd(w10,input10,newpixel0);
-			newpixel0=spu_madd(w11,input11,newpixel0);	
-			sc->Output[i]=newpixel0;
+			dest=dest + inc;
+			inc=1;
+		
 		}
-	}
+		sc->Output[2*dest]=Out0;
+		sc->Output[2*dest+1]=Out1;
+//	}
 }
 
 static inline vector unsigned char packfARGB(vector float R, vector float G, vector float B)
@@ -658,28 +768,40 @@ static inline void yuv420toARGBfloat(vector float *Y0,vector float *Y1,vector fl
 
 		int dest=0;
 		int inc=0;
+			
+		Yf0=Y0[0];
+		Yf1=Y0[1];
+		Yf2=Y0[2];
+		Yf3=Y0[3];
+		Yf4=Y1[0];
+		Yf5=Y1[1];
+		Yf6=Y1[2];
+		Yf7=Y1[3];
+		
+		Uf0=U[0];
+		Uf1=U[1];
+			
+		Vf0=V[0];
+		Vf1=V[1];
+
 
 		for (i =0;i < width>>4;i++) {
+			vector float nextYf0=Y0[4*i+4];
+			vector float nextYf1=Y0[4*i+5];
+			vector float nextYf2=Y0[4*i+6];
+			vector float nextYf3=Y0[4*i+7];
 			
-			Uf0=U[i*2];
-			Uf1=U[i*2+1];
-		
-			Vf0=V[i*2];
-			Vf1=V[i*2+1];
+			vector float nextYf4=Y1[4*i+4];
+			vector float nextYf5=Y1[4*i+5];
+			vector float nextYf6=Y1[4*i+6];
+			vector float nextYf7=Y1[4*i+7];
 
-			Yf0=Y0[i*4];
-			Yf1=Y0[i*4+1];
-			Yf2=Y0[i*4+2];
-			Yf3=Y0[i*4+3];
-		
-			Yf4=Y1[i*4];
-			Yf5=Y1[i*4+1];
-			Yf6=Y1[i*4+2];
-			Yf7=Y1[i*4+3];
-
-
-
-
+			
+			vector float nextUf0=U[2*i+2];
+			vector float nextUf1=U[2*i+3];
+			
+			vector float nextVf0=V[2*i+2];
+			vector float nextVf1=V[2*i+3];
 
 			E=spu_sub(Vf0,((vector float){128.0,128.0,128.0,128.0}));
 			D=spu_sub(Uf0,((vector float){128.0,128.0,128.0,128.0}));
@@ -744,22 +866,38 @@ static inline void yuv420toARGBfloat(vector float *Y0,vector float *Y1,vector fl
 			ARGB0[4*i+1]= packfARGB(R01,G01,B01);
 			ARGB0[4*i+2]= packfARGB(R02,G02,B02);
 			ARGB0[4*i+3]= packfARGB(R03,G03,B03);
+			
 			ARGB1[4*i]  = packfARGB(R10,G10,B10);
 			ARGB1[4*i+1]= packfARGB(R11,G11,B11);
 			ARGB1[4*i+2]= packfARGB(R12,G12,B12);
 			ARGB1[4*i+3]= packfARGB(R13,G13,B13);
-		//	Y0=nextY0;
-		//	Y1=nextY1;
-		//	dest=dest + inc;
-		//	inc=1;
+
+			Yf0=nextYf0;
+			Yf1=nextYf1;
+			Yf2=nextYf2;
+			Yf3=nextYf3;
+			Yf4=nextYf4;
+			Yf5=nextYf5;
+			Yf6=nextYf6;
+			Yf7=nextYf7;
+			
+			Uf0=nextUf0;
+			Uf1=nextUf1;
+			
+			Vf0=nextVf0;
+			Vf1=nextVf1;
+
+			dest=dest + inc;
+			inc=1;
 		}
+
 }
 
 static inline void unpack(scaler_settings_t *sc)
 {
 	
 	int i;
-	if (!sc->smallcromaline) {
+	if (!sc->smallcromaline0) {
 		for (i=0;i < sc->width>>4 ;i++) 
 		{
 			sc->Output[4*i]  = unpackhh(sc->source00[i]);
