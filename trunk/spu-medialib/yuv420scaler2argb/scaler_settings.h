@@ -45,7 +45,8 @@ struct scaler_settings_s {
 	int *crfilterpos;
 	int width;
 	int smallcroma;
-	int smallcromaline;
+	int smallcromaline0;
+	int smallcromaline1;
 	vector unsigned char *sWfilter0;// shufflefilter0
 	vector unsigned char *sWfilter1;//shufflefilter1 0+1
 	vector unsigned char *crsWfilter0;

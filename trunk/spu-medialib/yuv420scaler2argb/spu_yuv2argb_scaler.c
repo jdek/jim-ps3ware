@@ -59,12 +59,13 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	int tgiu1[2];
 	int tgiv0[2];
 	int tgiv1[2];
-	int tgo[2];
-	
+	int tgo0[2];
+	int tgo1[2];
+
 	tgiu1[0]=1;
 	tgiu1[1]=2;
-	tgo[0]=3;
-	tgo[1]=4;
+	tgo0[0]=3;
+	tgo0[1]=4;
 	tgiy0[0]=5;
 	tgiy0[1]=6;
 	tgiy1[0]=7;
@@ -75,10 +76,12 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	tgiv0[1]=12;
 	tgiv1[1]=13;
 	tgiv1[1]=14;
+	tgo1[0]=15;
+	tgo1[1]=16;
 	
 	int selOut = 0;
 	int selIn = 0;
-	int tag = 16;
+	int tag = 31;
 	int LineSelIn=0;
 	int LineSelOut=0;
 		
@@ -121,18 +124,19 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 
 	float weightHfilter[MAXHEIGHT+1];
 
-	int dmacromapos[MAXHEIGHT/2+2];
-	int dmapos[MAXHEIGHT+2];
+	unsigned long long dmapos[MAXHEIGHT+2];
+	unsigned long long dmacromapos[MAXHEIGHT+2];
+	
 	
 	vector float * Ytemp0=(vector float *)memalign(128,MAXWIDTH*4+16);
 	vector float * Ytemp1=(vector float *)memalign(128,MAXWIDTH*4+16);
 	vector float * Utemp=(vector float *)memalign(128,MAXWIDTH*2+16);
 	vector float * Vtemp=(vector float *)memalign(128,MAXWIDTH*2+16);
 
-	int wfilterpos[MAXWIDTH+1];
+	int wfilterpos[MAXWIDTH+2];
 	int hfilterpos0[MAXHEIGHT+2];
 	int hfilterpos1[MAXHEIGHT+2];
-	int crwfilterpos[MAXWIDTH/2+1];
+	int crwfilterpos[MAXWIDTH/2+2];
 
 	vector unsigned char *InputY0[2];
 	InputY0[0]=(vector unsigned char*)memalign(128,MAXWIDTH); 
@@ -187,10 +191,15 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 
 			initHFilter(iargs->srcW,iargs->srcH,iargs->dstH,hfilterpos0,hfilterpos1,weightHfilter,dmapos,dmacromapos);
 			
-// 			for (i=0;i < iargs->dstH;i++)
+// 			printf("line :%d, dmapos :%f, dmacromapos :%f \n",i,dmapos[hfilterpos1[1]]/16.0,dmacromapos[hfilterpos1[0]]/16.0);
+// 			printf("line :%d, dmapos :%f, dmacromapos :%f \n",i,dmapos[hfilterpos1[1]]/16.0,dmacromapos[hfilterpos1[1]]/16.0);
+// 			
+// 			for (i=0;i < iargs->dstH>>1;i++)
 // 			{
-// 				printf("Hfilterpos0 dst: %d, src:%d, weight:%f\n",i,hfilterpos0[i],weightHfilter[i]);
-// 				printf("Hfilterpos1 dst: %d, src:%d, weight:%f\n",i,hfilterpos1[i],1.0-weightHfilter[i]);
+//  			//	printf("Hfilterpos0 dst: %d, src:%d, weight:%f\n",i,hfilterpos0[i],weightHfilter[i]);
+//  			//	printf("Hfilterpos1 dst: %d, src:%d, weight:%f\n",i,hfilterpos1[i],1.0-weightHfilter[i]);
+// 				printf("line :%d, dmapos :%f, dmacromapos :%f \n",i,dmapos[hfilterpos1[2*i+2]]/16.0,dmacromapos[hfilterpos1[2*i+2]]/16.0);
+// 				printf("line :%d, dmapos :%f, dmacromapos :%f \n",i,dmapos[hfilterpos1[2*i+3]]/16.0,dmacromapos[hfilterpos1[2*i+3]]/16.0);
 // 			}
 			
 			if ((iargs->srcW==iargs->dstW)&&(iargs->srcH==iargs->dstH))
@@ -244,7 +253,8 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 				sc.crsWfilter1=crwidthfilter1;
 				sc.crfilterpos=crwfilterpos;
 
-				sc.smallcromaline=0;
+				sc.smallcromaline0=0;
+				sc.smallcromaline1=0;
 				
 			}
 			first=0;
@@ -263,34 +273,42 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 		selY1In=0;
 		selCrIn=0;
 
-
+	
 		dmaGet(InputY0[0],YIp+dmapos[hfilterpos0[0]],iargs->srcW,tgiy0[0]); 
 		dmaGet(InputY1[0],YIp+dmapos[hfilterpos1[0]],iargs->srcW,tgiy1[0]); 
 		dmaGet(InputY0[1],YIp+dmapos[hfilterpos0[1]],iargs->srcW,tgiy0[1]); 
 		dmaGet(InputY1[1],YIp+dmapos[hfilterpos1[1]],iargs->srcW,tgiy1[1]); 
-		
+
 
 		dmaGet(InputU0[0],UIp+dmacromapos[hfilterpos0[0]],crblock1,tgiu0[0]);
 		dmaGet(InputU0[1],UIp+dmacromapos[hfilterpos0[1]],crblock1,tgiu0[1]);
 		dmaGet(InputU1[0],UIp+dmacromapos[hfilterpos1[0]],crblock1,tgiu1[0]);	
 		dmaGet(InputU1[1],UIp+dmacromapos[hfilterpos1[1]],crblock1,tgiu1[1]); 
-
+// 
 		dmaGet(InputV0[0],VIp+dmacromapos[hfilterpos0[0]],crblock1,tgiv0[0]);
 		dmaGet(InputV0[1],VIp+dmacromapos[hfilterpos0[1]],crblock1,tgiv0[1]);
 		dmaGet(InputV1[0],VIp+dmacromapos[hfilterpos1[0]],crblock1,tgiv1[0]);	
 		dmaGet(InputV1[1],VIp+dmacromapos[hfilterpos1[1]],crblock1,tgiv1[1]);
 
 
-
+		LineSelOut=0;
+		selY0In=0; 
+		selY1In=0;
+		selCrIn=0;
+	//	printf("New image\n");
 		for (h=0; h < iargs->dstH>>1; h++) //we asume that output is allways h/2
 		{
 
 			sc.width=iargs->dstW;
 			sc.smallcroma=0;
+			sc.smallcromaline0=0;
+			sc.smallcromaline1=0;
 
 			sc.wHfilter=weightHfilter[2*h];
 			dmaWaitTag(tgiy0[selY0In]);
+		//	printf("dma: %d\n",2*h+2);
 			dmaWaitTag(tgiy1[selY1In]);
+		//	printf("dma: %d\n",2*h+2);
 			sc.source00=InputY0[selY0In];
 			sc.source01=InputY1[selY1In];
 			sc.Output=Ytemp0;
@@ -302,9 +320,11 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			}	
 								//first Y line scaled
 			dmaGet(InputY0[selY0In],YIp+dmapos[hfilterpos0[2*h+2]],iargs->srcW,tgiy0[selY0In]); 
+		//	printf("dma: %d\n",2*h+2);
 			if (!noscale) { //if we are scaling we also need the second line
 				dmaGet(InputY1[selY1In],YIp+dmapos[hfilterpos1[2*h+2]],iargs->srcW,tgiy1[selY1In]); 
 			}
+		//	printf("dma: %d\n",2*h+2);
 			selY0In=selY0In^1;
 			selY1In=selY1In^1;
 			
@@ -327,15 +347,22 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			}
 			selY0In=selY0In^1;
 			selY1In=selY1In^1;
-		
+		//	printf("dma: %d\n",2*h+3);
 			if (srcsmallcroma) //these settings applly for both U and V
 			{	
 				sc.smallcroma=1;
 				if ((hfilterpos0[h]&1)==1) {
-					sc.smallcromaline=0;	
-				} else if ((hfilterpos1[h]&1)==1){
-					sc.smallcromaline=1;
+					sc.smallcromaline0=1;	
 				} else {
+					sc.smallcromaline0=0;
+				}
+				if ((hfilterpos1[h]&1)==1){
+					sc.smallcromaline1=1;
+				} else {
+					sc.smallcromaline1=0;
+				} 	
+				if (((hfilterpos0[h]&1)==0)&&((hfilterpos1[h]&1)==0))
+				{
 					sc.smallcroma=0; //both lines are 128 bit alligned only when doing extreme downscaling can this happen
 				}
 			}
@@ -344,7 +371,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 // 			} else {
 // 				sc.width=crblockdst0;
 // 			}
-			sc.width=iargs->dstW/2;
+			sc.width=iargs->dstW>>1;
 			sc.wHfilter=weightHfilter[h];
 			
 	
@@ -372,23 +399,29 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 
 			dmaGet(InputV0[selCrIn],VIp+dmacromapos[hfilterpos0[h+2]],crblock1,tgiu0[selCrIn]); 		//this is allways pos 0 
 			dmaGet(InputU0[selCrIn],UIp+dmacromapos[hfilterpos0[h+2]],crblock1,tgiv0[selCrIn]); 
+
 			if(!noscale) {	//if we are scaling we also need the second line
 				dmaGet(InputV1[selCrIn],VIp+dmacromapos[hfilterpos1[h+2]],crblock1,tgiu1[selCrIn]);
 				dmaGet(InputU1[selCrIn],UIp+dmacromapos[hfilterpos1[h+2]],crblock1,tgiv1[selCrIn]); 
 			} 
 
 			selCrIn=selCrIn^1;
-							
-			yuv420toARGBfloat(Ytemp0,Ytemp1,Utemp,Vtemp,Output0[LineSelOut],Output1[LineSelOut],iargs->dstW,iargs->maxwidth);
-			dmaPut(Output0[LineSelOut],Op,iargs->dstW*4,tgo[LineSelOut]);
+			dmaWaitTag(tgo0[LineSelOut]);
+			dmaWaitTag(tgo1[LineSelOut]);				
+			yuv420toARGBfloat(Ytemp0,Ytemp1,Utemp,Vtemp,Output0[LineSelOut],Output1[LineSelOut],iargs->dstW,iargs->maxwidth); //colorspace convert results
+			
+			dmaPut(Output0[LineSelOut],Op,iargs->dstW*4,tgo0[LineSelOut]);
 			Op=Op+iargs->maxwidth*4;
-			dmaPut(Output1[LineSelOut],Op,iargs->dstW*4,tgo[LineSelOut]);
+			
+			dmaPut(Output1[LineSelOut],Op,iargs->dstW*4,tgo1[LineSelOut]);
 			Op=Op+iargs->maxwidth*4;
 			
 			LineSelOut=LineSelOut^1;
 		} 
-		dmaWaitTag(tgo[LineSelOut^1]); //wait for last write.
-	
+		dmaWaitTag(tgo0[LineSelOut^1]); //wait for last write.
+		dmaWaitTag(tgo1[LineSelOut^1]); //wait for last write.
+
+	//	printf("Image done\n");
 		
 		while (spu_stat_out_intr_mbox() == 0);
 		msg=RDY;
