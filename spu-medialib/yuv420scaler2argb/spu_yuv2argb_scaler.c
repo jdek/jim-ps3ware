@@ -111,8 +111,15 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	scaler_settings_t sc;
 
 	dmaGetnWait(iargs,(unsigned int)argp,(int)envp,tag); //getting neccesary data to process image
-	printf("spu_yuv2argb_scaler: SRC width %i,DST width %i\n",iargs->srcW,iargs->dstW);
+	printf("spu_yuv2argb_scaler: SRC width %d,DST width %d\n",iargs->srcW,iargs->dstW);
+	printf("spu_yuv2argb_scaler: SRC height %d,DST height %d\n",iargs->srcH,iargs->dstH);
 	
+	printf("spu_yuv2argb_scaler: DST offset %d\n",iargs->offset);
+	
+	// bad fix for centering image on 1080p)
+	//iargs->offset=iargs->maxwidth*(1080-iargs->dstH)/2;	
+	
+
 	vector unsigned char *widthfilter0=(vector unsigned char*)memalign(128,MAXWIDTH*4+16);
 	vector unsigned char *widthfilter1=(vector unsigned char*)memalign(128,MAXWIDTH*4+16);
 
@@ -126,7 +133,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 
 	unsigned long long dmapos[MAXHEIGHT+2];
 	unsigned long long dmacromapos[MAXHEIGHT+2];
-	
+
 	
 	vector float * Ytemp0=(vector float *)memalign(128,MAXWIDTH*4+16);
 	vector float * Ytemp1=(vector float *)memalign(128,MAXWIDTH*4+16);
@@ -180,7 +187,6 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	{
 		int h=0;
 		int i;
-		Op=iargs->Output[selOut]+iargs->offset;
 		
 		if (first)
 		{
@@ -265,7 +271,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 		YIp = iargs->Ystart[selIn];
 		UIp = iargs->Ustart[selIn];
 		VIp = iargs->Vstart[selIn];
-		Op = iargs->Output[selOut];
+		Op = iargs->Output[selOut] + iargs->offset*4;
 
 		
 		LineSelOut=0;
