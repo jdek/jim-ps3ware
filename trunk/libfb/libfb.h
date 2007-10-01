@@ -9,8 +9,9 @@
  *
  * $Id$
  */
-
+#ifdef __cplusplus
 extern "C" {
+#endif
 /**
   * Initialize the FrameBuffer library and disable the console
   *
@@ -59,5 +60,8 @@ void fb_cleanup();
   * @return description of the error
   */
 char *fb_getError();
+#ifdef __cplusplus
 } // extern "C"
+#endif
+
 
