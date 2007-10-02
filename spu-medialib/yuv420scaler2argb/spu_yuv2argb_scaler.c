@@ -95,7 +95,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	unsigned long long Cp;
 
 	int first=1;
-
+	int waiting=0;
 	unsigned long long Op;
 	unsigned int msg;
 	unsigned long long YIp,UIp,VIp,YOp;
@@ -117,7 +117,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	printf("spu_yuv2argb_scaler: DST offset %d\n",iargs->offset);
 	
 	// bad fix for centering image on 1080p)
-	//iargs->offset=iargs->maxwidth*(1080-iargs->dstH)/2;	
+	//iargs->offset=(iargs->maxwidth-iargs->dstW)/2 + iargs->maxwidth*(1080-iargs->dstH)/2;	
 	
 
 	vector unsigned char *widthfilter0=(vector unsigned char*)memalign(128,MAXWIDTH*4+16);
@@ -195,8 +195,8 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			crblockdst1=((iargs->dstW>>1) + 15)&~15;//destination size rounded up.
 			crblockdst0=((iargs->dstW>>1) + 7)&~7;//destination size rounded up.
 
-			initHFilter(iargs->srcW,iargs->srcH,iargs->dstH,hfilterpos0,hfilterpos1,weightHfilter,dmapos,dmacromapos);
 			
+			initHFilter(iargs->srcW,iargs->srcH,iargs->dstH,hfilterpos0,hfilterpos1,weightHfilter,dmapos,dmacromapos);
 // 			printf("line :%d, dmapos :%f, dmacromapos :%f \n",i,dmapos[hfilterpos1[1]]/16.0,dmacromapos[hfilterpos1[0]]/16.0);
 // 			printf("line :%d, dmapos :%f, dmacromapos :%f \n",i,dmapos[hfilterpos1[1]]/16.0,dmacromapos[hfilterpos1[1]]/16.0);
 // 			
@@ -210,14 +210,20 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			
 			if ((iargs->srcW==iargs->dstW)&&(iargs->srcH==iargs->dstH))
 			{
+				
 				printf("spu_yuv2argb_scaler: No scaling proceeding with direct csc\n");
 				noscale=1;
+				if ((iargs->srcW%32) != 0)
+				{
+					srcsmallcroma=1;
+					sc.smallcroma=1;
+				}
 				
 			} else {
-
+				
+			
 				noscale=0;
 				printf("spu_yuv2argb_scaler: Scaling, computing shuffle filters\n");
-
 				initWFilter(iargs->srcW,iargs->dstW,1,wfilterpos,widthfilter0,widthfilter1,weightWfilter0,weightWfilter1);
 
 /*				for (i=0;i < iargs->dstW/4;i++)
@@ -386,6 +392,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			sc.Output=Utemp;
 			sc.source00=InputU0[selCrIn];
 			sc.source01=InputU1[selCrIn];
+		
 			if (noscale) {
 				unpack(&sc);
 			} else {
@@ -397,6 +404,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			sc.Output=Vtemp;
 			sc.source00=InputV0[selCrIn];
 			sc.source01=InputV1[selCrIn];
+			
 			if (noscale) {
 				unpack(&sc);
 			} else {
@@ -413,7 +421,8 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 
 			selCrIn=selCrIn^1;
 			dmaWaitTag(tgo0[LineSelOut]);
-			dmaWaitTag(tgo1[LineSelOut]);				
+			dmaWaitTag(tgo1[LineSelOut]);
+							
 			yuv420toARGBfloat(Ytemp0,Ytemp1,Utemp,Vtemp,Output0[LineSelOut],Output1[LineSelOut],iargs->dstW,iargs->maxwidth); //colorspace convert results
 			
 			dmaPut(Output0[LineSelOut],Op,iargs->dstW*4,tgo0[LineSelOut]);
@@ -432,25 +441,34 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 		while (spu_stat_out_intr_mbox() == 0);
 		msg=RDY;
 		spu_writech(SPU_WrOutIntrMbox, msg);
+		waiting=1;
 		
-		while (spu_stat_in_mbox() == 0);
-		msg=spu_read_in_mbox();
+		while (waiting){
+			
+			while (spu_stat_in_mbox() == 0);
+			msg=spu_read_in_mbox();
+			
+			if (msg == RUN){
+				selOut = selOut ^ 1; // flips the output buffer pointers
+				selIn = selIn ^ 1; // flips the input buffer pointers	
+				waiting=0;
+			}
+			else if (msg == STOP)
+			{
+				printf("spu_yuvscaler: Stopping\n");
+				waiting=0;
+			}
+			else if (msg == UPDATE)
+			{
+				dmaGetnWait(iargs,(unsigned int)argp,(int)envp,tag); //getting neccesary data to process the new image	
+				first=0; // update filters to reflect the new image!
+				selOut=0;
+				selIn=0;
+			}
+		}
 		
-		if (msg == RUN){
-			selOut = selOut ^ 1; // flips the output buffer pointers
-			selIn = selIn ^ 1; // flips the input buffer pointers	
-		}
-		else if (msg == STOP)
-		{
-			printf("spu_yuvscaler: Stopping\n");
-		}
-		else if (msg == UPDATE)
-		{
-			dmaGetnWait(iargs,(unsigned int)argp,(int)envp,tag); //getting neccesary data to process the new image	
-			first=0; // update filters to reflect the new image!
-			selOut=0;
-			selIn=0;
-		}
+		
+		
 
 	}
 	

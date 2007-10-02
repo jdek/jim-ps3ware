@@ -76,7 +76,7 @@ static inline void initHFilter(int srcW,int srcH, int dstH,int * hfilterpos0,int
 
 	}
 
-	for (i=0;i < dstH+4; i++) 
+	for (i=0;i < dstH + 4; i++) 
 	{
 		//int s=
 		hfilterpos0[i]=i*scale;

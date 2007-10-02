@@ -114,6 +114,12 @@ int main (int nArg, char* cArg[]) {
 		dstH=576;
 		maxwidth=720;
 	}
+	
+	if (type == 10) {
+		dstW=srcW;
+		dstH=srcH;
+		maxwidth=1920;
+	}
 	//Open input file and read 
 	Source.open(filename,ios::binary);
 	Destination.open("dest.argb",ios::binary);
