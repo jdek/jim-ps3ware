@@ -39,9 +39,17 @@
 #include <libspe2.h>
 #include <pthread.h>
 #include <malloc.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+      
+
 #include <yuv_datastructs.h>
 #include <spu_control.h>
 #include "yuv2argb_scaler.h"
+
+extern spe_program_handle_t spu_yuv2argb_scaler_handle;
 
 struct yuvscaler2argb_s {
 		struct img_args *iargs;
@@ -55,22 +63,23 @@ struct yuvscaler2argb_s {
 		unsigned int createflags;
    		unsigned int runflags;
    		unsigned int entry;
+		char *filename;
 };
 
 static void * yuvscsc_spe_thread(void * arg) 
 {
 	struct yuvscaler2argb_s * arg_ptr;
 	arg_ptr=(struct yuvscaler2argb_s *) arg;	
-   	spe_program_handle_t * program;
 
-	program = spe_image_open("/usr/local/bin/spu_yuv2argb_scaler");
-
-   	if (spe_program_load(arg_ptr->ctx, program) < 0) 
+	if (spe_program_load(arg_ptr->ctx, &spu_yuv2argb_scaler_handle) < 0) 
 	{
-		perror("error loading program");
+		perror("error loading spu-elf spu_yuv2argb_scaler");
 		pthread_exit(NULL);
 	}
+
+
 	spe_context_run(arg_ptr->ctx, &arg_ptr->entry, arg_ptr->runflags,arg_ptr->argp,arg_ptr->envp, NULL);
+
 	pthread_exit(NULL);
 }
 
@@ -100,6 +109,7 @@ yuvscaler2argb_s * yuvscsc_init_yuv2argb_scaler(int srcW,int srcH,int dstW,int d
 	yuvcsc->createflags=SPE_EVENTS_ENABLE;
 	yuvcsc->entry=SPE_DEFAULT_ENTRY;
 	yuvcsc->runflags=0;
+	yuvcsc->filename="";
 	yuvcsc->ctx=spe_context_create(yuvcsc->createflags, NULL);
 	yuvcsc->thread_id=pthread_create(&yuvcsc->pts,NULL,&yuvscsc_spe_thread,yuvcsc);
 
@@ -107,7 +117,6 @@ yuvscaler2argb_s * yuvscsc_init_yuv2argb_scaler(int srcW,int srcH,int dstW,int d
 	yuvcsc->event.spe = yuvcsc->ctx;
 	yuvcsc->event.events = SPE_EVENT_OUT_INTR_MBOX | SPE_EVENT_SPE_STOPPED;
 	spe_event_handler_register(yuvcsc->spe_event_yuv2rgb, &yuvcsc->event);
-
 
 	return yuvcsc;
 }

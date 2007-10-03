@@ -42,7 +42,7 @@
 #include <yuv_datastructs.h>
 #include <spu_control.h>
 #include "yuv2rgb.h"
-
+extern spe_program_handle_t spu_yuv2rgb_handle;
 struct yuv2rgb_s {
 		struct img_args *iargs;
 		struct spe_context * ctx;
@@ -61,11 +61,11 @@ static void * csc_spe_thread(void * arg)
 {
 	struct yuv2rgb_s * arg_ptr;
 	arg_ptr=(struct yuv2rgb_s *) arg;	
-   	spe_program_handle_t * program;
+//    	spe_program_handle_t * program;
+// 
+// 	program = spe_image_open("spu_yuv2rgb");
 
-	program = spe_image_open("spu_yuv2rgb");
-
-   	if (spe_program_load(arg_ptr->ctx, program) < 0) 
+   	if (spe_program_load(arg_ptr->ctx, &spu_yuv2rgb_handle) < 0) 
 	{
 		perror("error loading program");
 		pthread_exit(NULL);
