@@ -1,9 +1,0 @@
-all:
-	@echo Compiling libps3fb.c
-	@gcc -O2 -c libps3fb.c -o libpsfb.o
-	@echo Generating library
-	@ar rcs libps3fb.a libps3fb.o
-
-clean:
-	@echo Removing binaries
-	@rm -f libps3fb.o libps3fb.a
