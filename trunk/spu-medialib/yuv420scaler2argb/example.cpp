@@ -146,8 +146,8 @@ int main (int nArg, char* cArg[]) {
 // 	void* fbuf0=RAMBufferA[0];
 // 	void* fbuf1=RAMBufferA[1];
 	fb_swap();//swap back!
-
-	yuvscaler2argb_t *yuvcsc = yuvscsc_init_yuv2argb_scaler(srcW, srcH, dstW, dstH, offset, maxwidth, (ea_t)Ypointer[0], (ea_t)Ypointer[1], (ea_t)Upointer[0], (ea_t)Upointer[1], (ea_t)Vpointer[0], (ea_t)Vpointer[1], fbuf0,fbuf1);
+	char *spu_file="spu_yuv2argb_scaler";
+	yuvscaler2argb_t *yuvcsc = yuvscsc_init_yuv2argb_scaler(srcW, srcH, dstW, dstH, offset, maxwidth, (ea_t)Ypointer[0], (ea_t)Ypointer[1], (ea_t)Upointer[0], (ea_t)Upointer[1], (ea_t)Vpointer[0], (ea_t)Vpointer[1], fbuf0,fbuf1,spu_file);
 
 	yuvscsc_send_message(yuvcsc,RUN);
 

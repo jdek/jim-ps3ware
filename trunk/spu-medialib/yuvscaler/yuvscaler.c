@@ -42,6 +42,7 @@
 #include <yuv_datastructs.h>
 #include <spu_control.h>
 #include "yuvscaler.h"
+extern spe_program_handle_t spu_yuvscaler_handle;
 
 struct yuvscaler_s {
 		struct img_args *iargs;
@@ -61,11 +62,11 @@ static void * sws_spe_thread(void * arg)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;	
-   	spe_program_handle_t * program;
+//    	spe_program_handle_t * program;
+// 
+// 	program = spe_image_open("spu_yuvscaler");
 
-	program = spe_image_open("spu_yuvscaler");
-
-   	if (spe_program_load(arg_ptr->ctx, program) < 0) 
+   	if (spe_program_load(arg_ptr->ctx, &spu_yuvscaler_handle) < 0) 
 	{
 		perror("error loading program");
 		pthread_exit(NULL);
@@ -74,7 +75,7 @@ static void * sws_spe_thread(void * arg)
 	pthread_exit(NULL);
 }
 
-yuvscaler_s * sws_init_yuvscaler(int srcW,int srcH,int dstW, int dstH,ea_t front_inBuffer, ea_t back_inBuffer, ea_t front_outBuffer, ea_t back_outBuffer)
+yuvscaler_t * sws_init_yuvscaler(int srcW,int srcH,int dstW, int dstH,ea_t front_inBuffer, ea_t back_inBuffer, ea_t front_outBuffer, ea_t back_outBuffer)
 {
 	struct yuvscaler_s *yuvs;
 	yuvs=(struct yuvscaler_s *)memalign(64,sizeof(struct yuvscaler_s));
@@ -110,14 +111,14 @@ yuvscaler_s * sws_init_yuvscaler(int srcW,int srcH,int dstW, int dstH,ea_t front
 	return yuvs;
 }
 
-spe_context_ptr_t sws_getCTX(yuvscaler_s * arg)
+spe_context_ptr_t sws_getCTX(yuvscaler_t * arg)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
 	return arg_ptr->ctx;
 }
 
-unsigned int sws_receive_message(yuvscaler_s *arg)
+unsigned int sws_receive_message(yuvscaler_t *arg)
 {
 	unsigned int message;
 	struct yuvscaler_s * arg_ptr;
@@ -143,7 +144,7 @@ unsigned int sws_receive_message(yuvscaler_s *arg)
 
 }
 
-void sws_send_message(yuvscaler_s *arg,unsigned int message)
+void sws_send_message(yuvscaler_t *arg,unsigned int message)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
@@ -165,55 +166,55 @@ void sws_yuvscaler_destroy(yuvscaler_t* arg)
 	
 }
 
-unsigned int sws_get_dstW(yuvscaler_t* arg)
+unsigned int sws_get_dstW(const yuvscaler_t* arg)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
 	return arg->iargs->dstW;
 }
-unsigned int sws_get_srcW(yuvscaler_t* arg)
+unsigned int sws_get_srcW(const yuvscaler_t* arg)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
 	return arg->iargs->srcW;
 }
 
-unsigned int sws_get_dstH(yuvscaler_t* arg)
+unsigned int sws_get_dstH(const yuvscaler_t* arg)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
 	return arg->iargs->dstH;
 }
 
-unsigned int sws_get_srcH(yuvscaler_t* arg)
+unsigned int sws_get_srcH(const yuvscaler_t* arg)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
 	return arg->iargs->srcH;
 }
 
-void sws_set_dstW(yuvscaler_t* arg,int dstw)
+void sws_set_dstW(const yuvscaler_t* arg,int dstw)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
 	arg->iargs->dstW=dstw;
 }
 
-void sws_set_srcW(yuvscaler_t* arg,int srcw)
+void sws_set_srcW(const yuvscaler_t* arg,int srcw)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
 	arg->iargs->srcW=srcw;
 }
 
-void sws_set_dstH(yuvscaler_t* arg,int dsth)
+void sws_set_dstH(const yuvscaler_t* arg,int dsth)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
 	arg->iargs->dstH=dsth;
 }
 
-void sws_set_srcHW(yuvscaler_t* arg,int srch)
+void sws_set_srcH(const yuvscaler_t* arg,int srch)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
