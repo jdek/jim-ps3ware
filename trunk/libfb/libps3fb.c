@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-#include <asm/ps3fb.h>
+#include <ps3fb.h>
 #include <linux/fb.h>
 #include <linux/kd.h>
 #include <sys/ioctl.h>
@@ -47,7 +47,7 @@ static inline void enableCursor(int enable) {
 	}
 }
 
-void *fb_init() {
+void *ps3fb_init() {
 	fbAddr=(void *)0xDEADBEEF;
 	sprintf(errorStr, "No Error");
 	fb = open("/dev/fb0", O_RDWR);
@@ -74,28 +74,28 @@ void *fb_init() {
 	return fbAddr;
 }
 
-void *fb_swap() {
+void *ps3fb_swap() {
 	ioctl(fb, PS3FB_IOCTL_FSEL, (unsigned long)&frame);
 	frame = !frame;
 	return fbAddr + ((res.xres * res.yres * 4) * (frame)); // should this be !frame?
 }
 
-void *fb_swapVsync() {
+void *ps3fb_swapVsync() {
 	ioctl(fb, FBIO_WAITFORVSYNC, (unsigned long)&crt);
 	ioctl(fb, PS3FB_IOCTL_FSEL, (unsigned long)&frame);
 	frame = !frame;
 	return fbAddr + ((res.xres * res.yres * 4) * (frame)); // should this be !frame?	
 }
 
-int fb_getXres() {
+int ps3fb_getXres() {
 	return res.xres;
 }
 
-int fb_getYres() {
+int ps3fb_getYres() {
 	return res.yres;
 }
 
-void fb_cleanup() {
+void ps3fb_cleanup() {
 	//enable kernel vsync
 	ioctl(fb, PS3FB_IOCTL_OFF, 0);
 	munmap(NULL, length);
