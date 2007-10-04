@@ -1,10 +1,7 @@
 PPU_CC=gcc
-PPU_CXX=g++
 SPU_CC=spu-elf-gcc
 PPU_CFLAGS=-fno-exceptions -I../libfb -Iyuv2rgb -Iyuvscaler -Ispu_utils -I../../libfb/asm -O2 -Wall
 PPU_CFLAGS64= -m64 $(PPU_CFLAGS)
-PPU_CXXFLAGS= -I../libfb -Iyuv2rgb -Iyuvscaler -Ispu_utils -I../../libfb/asm -O2
-PPU_CXXFLAGS64= -m64 $(PPU_CFLAGS)
 SPU_CFLAGS=-std=c99 -O2 -fno-exceptions -g -Ispu_utils -Wall
 
 SPU_BIN0=spu_yuv2rgb
@@ -19,11 +16,10 @@ SPU_CSF0=$(SPU_BIN0)_csf.o
 SPU_CSF1=$(SPU_BIN1)_csf.o
 SPU_CSF2=$(SPU_BIN2)_csf.o
 
-PPU_LDFLAGS=yuvscaler/yuvscaler.c yuv2rgb/yuv2rgb.c -L../libfb -lfb -lspe2 
+PPU_LDFLAGS=yuvscaler/yuvscaler.c yuv2rgb/yuv2rgb.c -lspe2 
 SPU_LDFLAGS=
-PREFIX=/usr/local
+PREFIX=/usr
 INS_LIB=libspu-medialib.a 
-
 INS_INC=spu_utils/spu_control.h yuv2rgb/yuv2rgb.h yuvscaler/yuvscaler.h yuv420scaler2argb/yuv2argb_scaler.h
 
 all: spu embed lib
@@ -37,12 +33,11 @@ embed:
 	embedspu $(SPU_HANDLE0) $(SPU_BIN0) $(SPU_CSF0)
 	embedspu $(SPU_HANDLE1) $(SPU_BIN1) $(SPU_CSF1)
 	embedspu $(SPU_HANDLE2) $(SPU_BIN2) $(SPU_CSF2)
-lib: libspu-medialib.a
 
-libspu-medialib.a:
-	$(PPU_CXX) $(PPU_CFLAGS64) -c yuvscaler/yuvscaler.c -o yuvscaler.o
-	$(PPU_CXX) $(PPU_CFLAGS64) -c yuv2rgb/yuv2rgb.c -o yuv2rgb.o
-	$(PPU_CXX) $(PPU_CFLAGS64) -c yuv420scaler2argb/yuv2argb_scaler.c -o yuv2argb_scaler.o
+lib:
+	$(PPU_CC) $(PPU_CFLAGS64) -c yuvscaler/yuvscaler.c -o yuvscaler.o
+	$(PPU_CC) $(PPU_CFLAGS64) -c yuv2rgb/yuv2rgb.c -o yuv2rgb.o
+	$(PPU_CC) $(PPU_CFLAGS64) -c yuv420scaler2argb/yuv2argb_scaler.c -o yuv2argb_scaler.o
 	
 	ar rcs libspu-medialib.a yuvscaler.o yuv2rgb.o yuv2argb_scaler.o $(SPU_CSF0) $(SPU_CSF1) $(SPU_CSF2)
 
