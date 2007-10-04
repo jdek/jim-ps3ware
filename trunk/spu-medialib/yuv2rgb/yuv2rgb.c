@@ -74,7 +74,7 @@ static void * csc_spe_thread(void * arg)
 	pthread_exit(NULL);
 }
 
-yuv2rgb_s * csc_init_yuv2rgb(int srcW,int srcH,int offset, int maxwidth,ea_t front_inBuffer, ea_t back_inBuffer, ea_t front_outBuffer, ea_t back_outBuffer)
+yuv2rgb_t * csc_init_yuv2rgb(int srcW,int srcH,int offset, int maxwidth,ea_t front_inBuffer, ea_t back_inBuffer, ea_t front_outBuffer, ea_t back_outBuffer)
 {
 	struct yuv2rgb_s *yuvcsc;
 	yuvcsc=(struct yuv2rgb_s *)memalign(64,sizeof(struct yuv2rgb_s));
@@ -110,14 +110,14 @@ yuv2rgb_s * csc_init_yuv2rgb(int srcW,int srcH,int offset, int maxwidth,ea_t fro
 	return yuvcsc;
 }
 
-spe_context_ptr_t csc_getCTX(yuv2rgb_s * arg)
+spe_context_ptr_t csc_getCTX(yuv2rgb_t * arg)
 {
 	struct yuv2rgb_s * arg_ptr;
 	arg_ptr=(struct yuv2rgb_s *) arg;
 	return arg_ptr->ctx;
 }
 
-unsigned int csc_receive_message(yuv2rgb_s *arg)
+unsigned int csc_receive_message(yuv2rgb_t *arg)
 {
 	unsigned int message;
 	struct yuv2rgb_s * arg_ptr;
@@ -143,7 +143,7 @@ unsigned int csc_receive_message(yuv2rgb_s *arg)
 
 }
 
-void csc_send_message(yuv2rgb_s *arg,unsigned int message)
+void csc_send_message(yuv2rgb_t *arg,unsigned int message)
 {
 	struct yuv2rgb_s * arg_ptr;
 	arg_ptr=(struct yuv2rgb_s *) arg;
@@ -171,21 +171,21 @@ unsigned int csc_get_dstW(yuv2rgb_t* arg)
 	arg_ptr=(struct yuv2rgb_s *) arg;
 	return arg->iargs->dstW;
 }
-unsigned int csc_get_srcW(yuv2rgb_t* arg)
+unsigned int csc_get_srcW(const yuv2rgb_t* arg)
 {
 	struct yuv2rgb_s * arg_ptr;
 	arg_ptr=(struct yuv2rgb_s *) arg;
 	return arg->iargs->srcW;
 }
 
-unsigned int csc_get_offset(yuv2rgb_t* arg)
+unsigned int csc_get_offset(const yuv2rgb_t* arg)
 {
 	struct yuv2rgb_s * arg_ptr;
 	arg_ptr=(struct yuv2rgb_s *) arg;
 	return arg->iargs->offset;
 }
 
-unsigned int csc_get_maxwidth(yuv2rgb_t* arg)
+unsigned int csc_get_maxwidth(const yuv2rgb_t* arg)
 {
 	struct yuv2rgb_s * arg_ptr;
 	arg_ptr=(struct yuv2rgb_s *) arg;

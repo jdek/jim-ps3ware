@@ -83,7 +83,7 @@ static void * yuvscsc_spe_thread(void * arg)
 	pthread_exit(NULL);
 }
 
-yuvscaler2argb_s * yuvscsc_init_yuv2argb_scaler(int srcW,int srcH,int dstW,int dstH,int offset, int maxwidth,ea_t front_inYBuffer, ea_t back_inYBuffer,ea_t front_inUBuffer, ea_t back_inUBuffer,ea_t front_inVBuffer, ea_t back_inVBuffer, ea_t front_outBuffer, ea_t back_outBuffer)
+yuvscaler2argb_t * yuvscsc_init_yuv2argb_scaler(int srcW,int srcH,int dstW,int dstH,int offset, int maxwidth,ea_t front_inYBuffer, ea_t back_inYBuffer,ea_t front_inUBuffer, ea_t back_inUBuffer,ea_t front_inVBuffer, ea_t back_inVBuffer, ea_t front_outBuffer, ea_t back_outBuffer)
 {
 	struct yuvscaler2argb_s *yuvcsc;
 	yuvcsc=(struct yuvscaler2argb_s *)memalign(64,sizeof(struct yuvscaler2argb_s));
@@ -121,14 +121,14 @@ yuvscaler2argb_s * yuvscsc_init_yuv2argb_scaler(int srcW,int srcH,int dstW,int d
 	return yuvcsc;
 }
 
-spe_context_ptr_t yuvscsc_getCTX(yuvscaler2argb_s * arg)
+spe_context_ptr_t yuvscsc_getCTX(yuvscaler2argb_t * arg)
 {
 	struct yuvscaler2argb_s * arg_ptr;
 	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	return arg_ptr->ctx;
 }
 
-unsigned int yuvscsc_receive_message(yuvscaler2argb_s *arg)
+unsigned int yuvscsc_receive_message(yuvscaler2argb_t *arg)
 {
 	unsigned int message;
 	struct yuvscaler2argb_s * arg_ptr;
@@ -154,7 +154,7 @@ unsigned int yuvscsc_receive_message(yuvscaler2argb_s *arg)
 
 }
 
-void yuvscsc_send_message(yuvscaler2argb_s *arg,unsigned int message)
+void yuvscsc_send_message(yuvscaler2argb_t *arg,unsigned int message)
 {
 	struct yuvscaler2argb_s * arg_ptr;
 	arg_ptr=(struct yuvscaler2argb_s *) arg;
@@ -176,27 +176,27 @@ void yuvscsc_destroy(yuvscaler2argb_t* arg)
 	
 }
 
-unsigned int yuvscsc_get_dstW(yuvscaler2argb_t* arg)
+unsigned int yuvscsc_get_dstW(const yuvscaler2argb_t* arg)
 {
 	struct yuvscaler2argb_s * arg_ptr;
 	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	return arg->iargs->dstW;
 }
-unsigned int yuvscsc_get_srcW(yuvscaler2argb_t* arg)
+unsigned int yuvscsc_get_srcW(const yuvscaler2argb_t* arg)
 {
 	struct yuvscaler2argb_s * arg_ptr;
 	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	return arg->iargs->srcW;
 }
 
-unsigned int yuvscsc_get_offset(yuvscaler2argb_t* arg)
+unsigned int yuvscsc_get_offset(const yuvscaler2argb_t* arg)
 {
 	struct yuvscaler2argb_s * arg_ptr;
 	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	return arg->iargs->offset;
 }
 
-unsigned int yuvscsc_get_maxwidth(yuvscaler2argb_t* arg)
+unsigned int yuvscsc_get_maxwidth(const yuvscaler2argb_t* arg)
 {
 	struct yuvscaler2argb_s * arg_ptr;
 	arg_ptr=(struct yuvscaler2argb_s *) arg;

@@ -193,28 +193,28 @@ unsigned int sws_get_srcH(const yuvscaler_t* arg)
 	return arg->iargs->srcH;
 }
 
-void sws_set_dstW(const yuvscaler_t* arg,int dstw)
+void sws_set_dstW(yuvscaler_t* arg,int dstw)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
 	arg->iargs->dstW=dstw;
 }
 
-void sws_set_srcW(const yuvscaler_t* arg,int srcw)
+void sws_set_srcW(yuvscaler_t* arg,int srcw)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
 	arg->iargs->srcW=srcw;
 }
 
-void sws_set_dstH(const yuvscaler_t* arg,int dsth)
+void sws_set_dstH(yuvscaler_t* arg,int dsth)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
 	arg->iargs->dstH=dsth;
 }
 
-void sws_set_srcH(const yuvscaler_t* arg,int srch)
+void sws_set_srcH(yuvscaler_t* arg,int srch)
 {
 	struct yuvscaler_s * arg_ptr;
 	arg_ptr=(struct yuvscaler_s *) arg;
