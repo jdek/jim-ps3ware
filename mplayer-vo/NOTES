@@ -1,0 +1,51 @@
+Notes:
+  needs to do direct rendering, but you don't have
+  to specify -dr on the command line because vo will
+  enable it automatically if it can
+
+  needs to double buffer, but you don't have to specify that either (-double)
+
+  doesn't do windows - takes over framebuffer for now
+
+  h264 issues:
+        currently not working
+        video currently doesn't direct render unless u post process with -vf pp
+        broken on PS3 (regardless of vo) - too slow & audio strange
+        try with -demuxer 35 -lavdopts fast:threads=2 for improvement, but still not usable
+        try with -vo null and still broken (see, it's not vo's fault :) )
+
+  configure now autodetects ps3
+
+  works with:
+     'f'      for fullscreen scaling toggle
+     'space'  for pausing
+     '.       for single frame stepping
+
+  use -vo ps3:snapshot to save a .yuv file of current buffers on pause
+
+Dependencies:
+     spu-medialib & ps3fb must be installed
+     must be able to find:
+        libspe2.h
+        spu-medialib/spu_control.h
+        spu-medialib/yuv2argb_scaler.h
+        ps3fb/libps3fb.h
+        libspu-medialib.a
+        libps3lib.a
+
+Installation:
+  install ps3fb (http://forums.ps2dev.org/viewtopic.php?p=59150#59150)
+  install spu-medialib (http://forums.ps2dev.org/viewtopic.php?t=9109)
+  get & patch mplayer (currently tested with rev. 24714)
+     svn co svn://svn.mplayerhq.hu/mplayer/trunk mplayer
+     cd mplayer & patch:
+        $ patch -p0 < mplayer-r24714-vo_ps3-r1.patch
+         patching file libvo/video_out.c
+         patching file libvo/vo_ps3.c
+         patching file configure
+        make normally (./configure; make && make install)
+
+Usage:
+  $ ps3videomode
+  $ mplayer -vo ps3 /lost/video/watch-ppu-usage.mpg
+
