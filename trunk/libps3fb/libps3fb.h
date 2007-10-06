@@ -6,7 +6,7 @@
  * libfb.h - Interface to the FrameBuffer Library
  *
  * Copyright (c) 2007 John Kelley <ps2dev@kelley.ca>
- *
+ * Copyright (c) 2007 Kristian Jerpetjøn <kristian.jerpetjoen@gmail.com>
  * $Id$
  */
 
@@ -37,6 +37,20 @@ int ps3fb_getXres();
   * @return int vertical resolution
   */
 int ps3fb_getYres();
+
+/**
+  * Get the horizontal offset of the FrameBuffer
+  *
+  * @return int horizontal offset
+  */
+int ps3fb_getXoff();
+
+/**
+  * Get the vertical offset of the FrameBuffer
+  *
+  * @return int vertical offset
+  */
+int ps3fb_getYoff();
 
 /**
   * Swap the FrameBuffer immediately

@@ -6,7 +6,7 @@
  * fb.c - FrameBuffer Library
  *
  * Copyright (c) 2007 John Kelley <ps2dev@kelley.ca>
- *
+ * Copyright (c) 2007 Kristian Jerpetjøn <kristian.jerpetjoen@gmail.com>
  * $Id$
  */
 
@@ -93,6 +93,14 @@ int ps3fb_getXres() {
 
 int ps3fb_getYres() {
 	return res.yres;
+}
+
+int ps3fb_getXoff() {
+	return res.xoff;
+}
+
+int ps3fb_getYoff() {
+	return res.yoff;
 }
 
 void ps3fb_cleanup() {
