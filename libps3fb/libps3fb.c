@@ -103,6 +103,10 @@ int ps3fb_getYoff() {
 	return res.yoff;
 }
 
+int ps3fb_getnum_frames() {
+	return res.num_frames;
+}
+
 void ps3fb_cleanup() {
 	//enable kernel vsync
 	ioctl(fb, PS3FB_IOCTL_OFF, 0);
