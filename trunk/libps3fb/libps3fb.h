@@ -53,6 +53,14 @@ int ps3fb_getXoff();
 int ps3fb_getYoff();
 
 /**
+  * Get the number of frames in the framebuffer
+  *
+  * @return int number of frame buffers
+  */
+
+int ps3fb_getnum_frames();
+
+/**
   * Swap the FrameBuffer immediately
   *
   * @return address of the BackBuffer
