@@ -1,7 +1,7 @@
 PPU_CC=gcc
 SPU_CC=spu-elf-gcc
-PPU_CFLAGS=-fno-exceptions -I../libfb -Iyuv2rgb -Iyuvscaler -Ispu_utils -I../../libfb/asm -O2 -Wall
-PPU_CFLAGS64= -m64 $(PPU_CFLAGS)
+PPU_CFLAGS=-fno-exceptions -Iyuv2rgb -Iyuvscaler -Ispu_utils -O2 -Wall
+#PPU_CFLAGS64= -m64 $(PPU_CFLAGS)
 SPU_CFLAGS=-std=c99 -O2 -fno-exceptions -g -Ispu_utils -Wall
 
 SPU_BIN0=spu_yuv2rgb
@@ -35,9 +35,9 @@ embed:
 	embedspu $(SPU_HANDLE2) $(SPU_BIN2) $(SPU_CSF2)
 
 lib:
-	$(PPU_CC) $(PPU_CFLAGS64) -c yuvscaler/yuvscaler.c -o yuvscaler.o
-	$(PPU_CC) $(PPU_CFLAGS64) -c yuv2rgb/yuv2rgb.c -o yuv2rgb.o
-	$(PPU_CC) $(PPU_CFLAGS64) -c yuv420scaler2argb/yuv2argb_scaler.c -o yuv2argb_scaler.o
+	$(PPU_CC) $(PPU_CFLAGS) -c yuvscaler/yuvscaler.c -o yuvscaler.o
+	$(PPU_CC) $(PPU_CFLAGS) -c yuv2rgb/yuv2rgb.c -o yuv2rgb.o
+	$(PPU_CC) $(PPU_CFLAGS) -c yuv420scaler2argb/yuv2argb_scaler.c -o yuv2argb_scaler.o
 	
 	ar rcs libspu-medialib.a yuvscaler.o yuv2rgb.o yuv2argb_scaler.o $(SPU_CSF0) $(SPU_CSF1) $(SPU_CSF2)
 
@@ -47,15 +47,15 @@ clean:
 install: install-lib install-inc
 
 install-lib: lib
-	install -d "$(PREFIX)/lib64"
-	install -m 644 $(INS_LIB) "$(PREFIX)/lib64"
+	install -d "$(PREFIX)/lib"
+	install -m 644 $(INS_LIB) "$(PREFIX)/lib"
 
 install-inc:
 	install -d "$(PREFIX)/include/spu-medialib"
 	install -m 644 $(INS_INC) "$(PREFIX)/include/spu-medialib"
 
 uninstall:
-	rm -f $(addprefix $(PREFIX)/lib64/, $(notdir $(INS_LIB)))
+	rm -f $(addprefix $(PREFIX)/lib/, $(notdir $(INS_LIB)))
 	rm -f $(addprefix $(PREFIX)/include/spu-medialib/, $(notdir $(INS_INC)))
 	-rmdir "$(PREFIX)/include/spu-medialib/"
 

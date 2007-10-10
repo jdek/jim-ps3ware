@@ -94,18 +94,40 @@ yuvscaler2argb_t * yuvscsc_init_yuv2argb_scaler(int srcW,int srcH,int dstW,int d
 	yuvcsc->iargs->dstW=dstW;
 	yuvcsc->iargs->offset=offset;
 	yuvcsc->iargs->maxwidth=maxwidth;
-	yuvcsc->iargs->Ystart[0]=(unsigned long long)front_inYBuffer;
-	yuvcsc->iargs->Ystart[1]=(unsigned long long)back_inYBuffer;
 
-	yuvcsc->iargs->Ustart[0]=(unsigned long long)front_inUBuffer;
-	yuvcsc->iargs->Ustart[1]=(unsigned long long)back_inUBuffer;
-	yuvcsc->iargs->Vstart[0]=(unsigned long long)front_inVBuffer;
-	yuvcsc->iargs->Vstart[1]=(unsigned long long)back_inVBuffer;
+	#ifndef __powerpc64__
+		printf("powerpc64 not detected\n manipulating adress space\n");
+		yuvcsc->iargs->Ystart[0]=((unsigned long long)front_inYBuffer)&0xFFFFFFFF;
+		yuvcsc->iargs->Ystart[1]=((unsigned long long)back_inYBuffer)&0xFFFFFFFF;
+	
+		yuvcsc->iargs->Ustart[0]=((unsigned long long)front_inUBuffer)&0xFFFFFFFF;
+		yuvcsc->iargs->Ustart[1]=((unsigned long long)back_inUBuffer)&0xFFFFFFFF;
+		yuvcsc->iargs->Vstart[0]=((unsigned long long)front_inVBuffer)&0xFFFFFFFF;
+		yuvcsc->iargs->Vstart[1]=((unsigned long long)back_inVBuffer)&0xFFFFFFFF;
+	
+		yuvcsc->iargs->Output[0]=((unsigned long long)front_outBuffer)&0xFFFFFFFF;
+		yuvcsc->iargs->Output[1]=((unsigned long long)back_outBuffer)&0xFFFFFFFF;
+		yuvcsc->argp=((unsigned long long)yuvcsc->iargs)&0xFFFFFFFF;
+	#endif
 
-	yuvcsc->iargs->Output[0]=(unsigned long long)front_outBuffer;
-	yuvcsc->iargs->Output[1]=(unsigned long long)back_outBuffer;
+	#ifdef __powerpc64__
+		printf("powerpc64 detected\n");
+		yuvcsc->iargs->Ystart[0]=(unsigned long long)front_inYBuffer;
+		yuvcsc->iargs->Ystart[1]=(unsigned long long)back_inYBuffer;
+	
+		yuvcsc->iargs->Ustart[0]=(unsigned long long)front_inUBuffer;
+		yuvcsc->iargs->Ustart[1]=(unsigned long long)back_inUBuffer;
+		yuvcsc->iargs->Vstart[0]=(unsigned long long)front_inVBuffer;
+		yuvcsc->iargs->Vstart[1]=(unsigned long long)back_inVBuffer;
+	
+		yuvcsc->iargs->Output[0]=(unsigned long long)front_outBuffer;
+		yuvcsc->iargs->Output[1]=(unsigned long long)back_outBuffer;
+		yuvcsc->argp=yuvcsc->iargs;
+
+	#endif
+
 	yuvcsc->envp=(void*)sizeof(struct img_args);
-	yuvcsc->argp=yuvcsc->iargs;	
+		
 	yuvcsc->createflags=SPE_EVENTS_ENABLE;
 	yuvcsc->entry=SPE_DEFAULT_ENTRY;
 	yuvcsc->runflags=0;
