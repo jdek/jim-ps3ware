@@ -36,7 +36,6 @@
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-#include <libspe2.h>
 #include <pthread.h>
 #include <malloc.h>
 #include <yuv_datastructs.h>
