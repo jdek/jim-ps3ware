@@ -39,6 +39,8 @@
 #ifndef __YUV2ARGB_SCALER_H
 #define __YUV2ARGB_SCALER_H
 
+#include <libspe2.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

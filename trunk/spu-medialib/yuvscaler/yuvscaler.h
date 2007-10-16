@@ -39,6 +39,8 @@
 #ifndef __YUVSCALER_H
 #define __YUVSCALER_H
 
+#include <libspe2.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
