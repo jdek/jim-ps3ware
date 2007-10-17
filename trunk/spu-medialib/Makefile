@@ -34,7 +34,7 @@ install-inc:
 	for a in $(PROG); do install -m 644 $(SRCDIR)/$${a}.h "$(PREFIX)/include/spu-medialib";done
 	
 uninstall:
-	rm -f $(addprefix $(PREFIX)/lib/, $(notdir $(INS_LIB)))
+	rm -f $(addprefix $(PREFIX)/lib/, $(notdir $(LIB)))
 	rm -f $(addprefix $(PREFIX)/include/spu-medialib/, $(notdir spu_control.h))
 	for a in $(PROG); do rm -f $(addprefix $(PREFIX)/include/spu-medialib/, $(notdir $${a}.h));done
 	-rmdir "$(PREFIX)/include/spu-medialib/"
