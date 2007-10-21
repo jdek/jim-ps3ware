@@ -1,6 +1,6 @@
 Index: libvo/video_out.c
 ===================================================================
---- libvo/video_out.c	(revision 24815)
+--- libvo/video_out.c	(revision 24824)
 +++ libvo/video_out.c	(working copy)
 @@ -98,6 +98,9 @@
  #ifdef HAVE_DXR2
@@ -26,7 +26,7 @@ Index: libvo/vo_ps3.c
 ===================================================================
 --- libvo/vo_ps3.c	(revision 0)
 +++ libvo/vo_ps3.c	(revision 0)
-@@ -0,0 +1,834 @@
+@@ -0,0 +1,858 @@
 +/*
 + * vo_ps3.c - video out interface utilizing spu-medialib
 + *                   to offload scaling and yuv2rgb colorspace
@@ -358,8 +358,8 @@ Index: libvo/vo_ps3.c
 +
 +   mpi->priv = buf_plane_ptr[0];
 +
-+   if (mp_msg_test(MSGT_VO, MSGL_DBG2)) {
-+      mp_msg(MSGT_VO, MSGL_DBG2, "[vo_ps3] get_image: page=%i, inbuf_y[]={%p,%p}, parking_lot[]={%p,%p}\n"
++   if (debug) {
++      mp_msg(MSGT_VO, MSGL_INFO, "[vo_ps3] get_image: page=%i, inbuf_y[]={%p,%p}, parking_lot[]={%p,%p}\n"
 +                                 "                        mpi: planes[]={%p,%p,%p}, strides[]={%i,%i,%i}, chroma=%ix%i, bpp=%i\n"
 +                                 "                        imgfmt=0x%x, type=%u, flags=%u, priv=%p\n",
 +                                 page, inbuf_y[0], inbuf_y[1], parking_lot[0], parking_lot[1],
@@ -373,14 +373,14 @@ Index: libvo/vo_ps3.c
 +static uint32_t draw_image(mp_image_t *mpi) {
 +
 +   int i;
-+   int mpi_p_siz[3];
++   int mpi_p_siz[3], mpi_p_w[3], mpi_p_h[3];
 +
 +   draw_image_count++;
 +
 +   if (mpi->flags & MP_IMGFLAG_DIRECT) {  // best case - already in buffer (direct rendered),
 +                                          //             nothing to do but convert it
-+      if (mp_msg_test(MSGT_VO, MSGL_DBG2))
-+         mp_msg(MSGT_VO, MSGL_DBG2, "[vo_ps3] draw_image: MP_IMGFLAG_DIRECT set => image is already in buffer,"
++      if(debug)
++         mp_msg(MSGT_VO, MSGL_INFO, "[vo_ps3] draw_image: MP_IMGFLAG_DIRECT set => image is already in buffer,"
 +                                    " so just convert it.\n"
 +                                    "mpi->planes[]={%p,%p,%p}, mpi->stride[]={%i,%i,%i}. wxh=%ix%i\n",
 +                                    mpi->planes[0], mpi->planes[1], mpi->planes[2], mpi->stride[0], mpi->stride[1],
@@ -396,39 +396,54 @@ Index: libvo/vo_ps3.c
 +      // Just drawing them as called makes a mess of the video.
 +      if ((mpi->flags & MP_IMGFLAG_READABLE) &&
 +            (mpi->type == MP_IMGTYPE_IPB || mpi->type == MP_IMGTYPE_IP)) {
-+         buf_plane_ptr[0] = inbuf_y[page]; //todo
-+      } else
 +         buf_plane_ptr[0] = inbuf_y[page];
++         buf_plane_ptr[1] = inbuf_u[page];
++         buf_plane_ptr[2] = inbuf_v[page];
++      } else {
++         buf_plane_ptr[0] = inbuf_y[page];
++         buf_plane_ptr[1] = inbuf_u[page];
++         buf_plane_ptr[2] = inbuf_v[page];
++      }
 +
-+      buf_plane_ptr[1] = inbuf_u[page];
-+      buf_plane_ptr[2] = inbuf_v[page];
-+      
 +      mpi_p_siz[0] = mpi->stride[0] * mpi->height;
 +      mpi_p_siz[1] = mpi->stride[1] * mpi->chroma_height;
 +      mpi_p_siz[2] = mpi->stride[2] * mpi->chroma_height;
++
++      mpi_p_w[0] = mpi->w;
++      mpi_p_w[1] = mpi_p_w[2] = mpi->chroma_width;
++
++      mpi_p_h[0] = mpi->h;
++      mpi_p_h[1] = mpi_p_h[2] = mpi->chroma_height;
 +      
-+      if (mp_msg_test(MSGT_VO, MSGL_DBG2)) {
-+         mp_msg(MSGT_VO, MSGL_DBG2, "[vo_ps3] draw_image: page=%i, mpi: strides[]={%i,%i,%i}, chroma=%ix%i, "
++      if(debug) {
++         mp_msg(MSGT_VO, MSGL_INFO, "[vo_ps3] draw_image: page=%i, mpi: strides[]={%i,%i,%i}, chroma=%ix%i, "
 +                                    "bpp=%i, imgfmt=0x%x, type=%u, flags=%u, priv=%p, buf_plane_ptr[0]=%p, mpi_p_siz[0]=%i,"
 +                                    " mpi_p_siz[1]=%i\n",
 +                                    page, mpi->stride[0], mpi->stride[1], mpi->stride[2], mpi->chroma_width,
 +                                    mpi->chroma_height, mpi->bpp, mpi->imgfmt, mpi->type, mpi->flags, mpi->priv,
 +                                    buf_plane_ptr[0], mpi_p_siz[0], mpi_p_siz[1]); 
-+         mp_msg(MSGT_VO, MSGL_DBG2, "[vo_ps3] draw_image: mpi:pict_type:%i, stored:%ix%i, visible=%ix%i,%ix%i, "
++         mp_msg(MSGT_VO, MSGL_INFO, "[vo_ps3] draw_image: mpi:pict_type:%i, stored:%ix%i, visible=%ix%i,%ix%i, "
 +                                    "MP_IMGFLAG_PRESERVE:%i, MP_IMGFLAG_READABLE:%i, MP_IMGFLAG_DIRECT:%i, "
 +                                    "MP_IMGFLAG_DRAW_CALLBACK:%i\n",
 +                                    mpi->pict_type, mpi->width, mpi->height, mpi->x, mpi->y, mpi->w, mpi->h,
 +                                    mpi->flags & MP_IMGFLAG_PRESERVE, mpi->flags & MP_IMGFLAG_READABLE,
 +                                    mpi->flags & MP_IMGFLAG_DIRECT, mpi->flags & MP_IMGFLAG_DRAW_CALLBACK);
 +      }
-+
++      
 +      for(i=0; i<3; i++) {    //planes y,u,v
-+         if (mpi->stride[i] == src_stride[i])   //that's what we expect, just copy it
++         if (mpi->stride[i] == src_stride[i]) {    //that's what we expect, just copy it
++            if(debug)
++               mp_msg(MSGT_VO, MSGL_INFO, "[vo_ps3] draw_image: strides are same - copying\n");
 +            fast_memcpy(buf_plane_ptr[i], mpi->planes[i], mpi_p_siz[i]);
-+
-+         else //mpi image is padded (why?) so convert strides (slower?)
-+            memcpy_pic(buf_plane_ptr[i], mpi->planes[i], mpi->width, mpi->height, src_stride[i], mpi->stride[i]);
++         }
++         else {   //mpi image is padded (why?) so convert strides (slower?)
++            if(debug)
++               mp_msg(MSGT_VO, MSGL_INFO, "[vo_ps3] draw_image: strides are different - copying\n");
++            //memcpy_pic(buf_plane_ptr[i], mpi->planes[i], mpi->w * (mpi->bpp/8), mpi->h, src_stride[i], mpi->stride[i]);
++            memcpy_pic(buf_plane_ptr[i], mpi->planes[i], mpi_p_w[i], mpi_p_h[i], src_stride[i], mpi->stride[i]);
++         }
 +      }
++   
 +   }
 +
 +   //now scale/convert
@@ -440,8 +455,8 @@ Index: libvo/vo_ps3.c
 +static int draw_frame(uint8_t *src[]) {
 +   draw_frame_count++;
 +   
-+   if(mp_msg_test(MSGT_VO, MSGL_DBG2))
-+      mp_msg(MSGT_VO, MSGL_DBG2, "[vo_ps3] draw_frame: src[0]=%p,src[1]=%p,src[2]=%p\n", src[0], src[1], src[2]);
++   if(debug)
++      mp_msg(MSGT_VO, MSGL_INFO, "[vo_ps3] draw_frame: src[0]=%p,src[1]=%p,src[2]=%p\n", src[0], src[1], src[2]);
 +   
 +   //int stride[] = {srcW * src_bpp, 0, 0};     //read somewhere in mplayer doc this should be the stride if
 +                                                //you do VFCAP_ACCEPT_STRIDE, but it's not what we're getting
@@ -454,14 +469,14 @@ Index: libvo/vo_ps3.c
 +
 +   int mpi_p_siz[3];
 +   
-+   if (mp_msg_test(MSGT_VO, MSGL_DBG2)) { //all for debug output. nothing really to do?
++   if(debug) { //all for debug output. nothing really to do?
 +      buf_plane_ptr[0] = inbuf_y[page];
 +   
 +      mpi_p_siz[0] = mpi->stride[0] * mpi->height;
 +      mpi_p_siz[1] = mpi->stride[1] * mpi->chroma_height;
 +      mpi_p_siz[2] = mpi->stride[2] * mpi->chroma_height;
 +
-+      mp_msg(MSGT_VO, MSGL_DBG2, "[vo_ps3] draw_image: page=%i, mpi: strides[]={%i,%i,%i}, chroma=%ix%i, bpp=%i, "
++      mp_msg(MSGT_VO, MSGL_INFO, "[vo_ps3] draw_image: page=%i, mpi: strides[]={%i,%i,%i}, chroma=%ix%i, bpp=%i, "
 +                                 "imgfmt=0x%x, type=%i, priv=%p, buf_plane_ptr[0]=%p, mpi_p_siz[0]=%i, mpi_p_siz[1]=%i\n",
 +                                 page, mpi->stride[0], mpi->stride[1], mpi->stride[2], mpi->chroma_width,
 +                                 mpi->chroma_height, mpi->bpp, mpi->imgfmt, mpi->type, mpi->priv, buf_plane_ptr[0],
@@ -479,7 +494,7 @@ Index: libvo/vo_ps3.c
 +static int draw_slice(uint8_t *src[], int stride[], int w,int h,int x,int y) {
 +
 +   int i;
-+   int slice_siz[3], offset[3];
++   int slice_siz[3], slice_p_w[3], slice_p_h[3], offset[3];
 +   
 +   draw_slice_count++;
 +
@@ -494,29 +509,38 @@ Index: libvo/vo_ps3.c
 +   slice_siz[1] = stride[1] * h/2;
 +   slice_siz[2] = stride[2] * h/2;
 +   
++   slice_p_w[0] = w;
++   slice_p_w[1] = slice_p_w[2] = w/2;
++
++   slice_p_h[0] = h;
++   slice_p_h[1] = slice_p_h[2] = h/2;
++
 +   offset[0] = y * src_stride[0] + x;        //offset in dst buffer based on x,y
 +   offset[1] = y/2 * src_stride[1] + x/2;
 +   offset[2] = y/2 * src_stride[2] + x/2;    //should be same as u plane
 +   
-+   if (mp_msg_test(MSGT_VO, MSGL_DBG2))
-+      mp_msg(MSGT_VO, MSGL_DBG2, "[vo_ps3] draw_slice: page=%i, stride[]={%i,%i,%i}, w=%i, h=%i, x=%i, y=%i, "
++   if(debug)
++      mp_msg(MSGT_VO, MSGL_INFO, "[vo_ps3] draw_slice: page=%i, stride[]={%i,%i,%i}, w=%i, h=%i, x=%i, y=%i, "
 +                                 "buf_plane_ptr[0]=%p, offset[0]=%i, offset[1]=%i\n",
 +                                 page, stride[0], stride[1], stride[2], w, h, x, y, buf_plane_ptr[0], offset[0],
 +                                 offset[1]); 
 +   
 +   for(i=0; i<3; i++)  //planes y,u,v
-+      if (stride[i] == src_stride[i])     //that's what we expect, just copy it
++      if (stride[i] == src_stride[i]) {   //that's what we expect, just copy it
++         if(debug)
++            mp_msg(MSGT_VO, MSGL_INFO, "[vo_ps3] draw_slice: strides are same - copying\n");
 +         fast_memcpy(buf_plane_ptr[i]+offset[i], src[i], slice_siz[i]);
-+      else                                //slice image is padded (stride>normal) (why?) whatever, convert strides
-+         memcpy_pic(buf_plane_ptr[i]+offset[i], src[i], w, h, src_stride[i], stride[i]);
-+   
++      } else {                               //slice image is padded (stride>normal) (why?) whatever, convert strides
++         if(debug)
++            mp_msg(MSGT_VO, MSGL_INFO, "[vo_ps3] draw_slice: strides are different - copying\n");
++         memcpy_pic(buf_plane_ptr[i]+offset[i], src[i], slice_p_w[i], slice_p_h[i], src_stride[i], stride[i]);
++   }
 +   return 0;
 +}
 +
 +
 +static void draw_osd(void) {
 +
-+   //Need to implement this
 +   vo_draw_text(srcW, srcH, draw_alpha);
 +
 +}
@@ -527,7 +551,7 @@ Index: libvo/vo_ps3.c
 +      case IMGFMT_I420:    //Planar I420 0x30323449 
 +      case IMGFMT_YV12:    //Planar YV12 0x32315659
 +      case IMGFMT_IYUV:    //Planar IYUV 0x56555949
-+         vo_draw_alpha_yv12(w, h, src, srca, stride, inbuf_y[page] + (y0 * src_stride[0] + x0), srcW);
++         vo_draw_alpha_yv12(w, h, src, srca, stride, inbuf_y[page] + (y0 * src_stride[0] + x0), src_stride[0]);
 +   }
 +}
 +
@@ -539,8 +563,8 @@ Index: libvo/vo_ps3.c
 +   ps3fb_swapVsync();      //and show it
 +   page=page^1;
 +
-+   if (mp_msg_test(MSGT_VO, MSGL_DBG2))
-+      mp_msg(MSGT_VO, MSGL_DBG2, "[vo_ps3] flip_page: Swapping fb.  Next write to inbuf_y[%i]=%p\n", page, inbuf_y[page]);
++   if(debug)
++      mp_msg(MSGT_VO, MSGL_INFO, "[vo_ps3] flip_page: Swapping fb.  Next write to inbuf_y[%i]=%p\n", page, inbuf_y[page]);
 +}
 +
 +
@@ -550,8 +574,8 @@ Index: libvo/vo_ps3.c
 + */
 +static void check_events(void) {
 +
-+   //if (mp_msg_test(MSGT_VO, MSGL_DBG2))
-+   //   mp_msg(MSGT_VO, MSGL_DBG2, "[vo_ps3] check_events: called\n");
++   //if(debug)
++   //   mp_msg(MSGT_VO, MSGL_INFO, "[vo_ps3] check_events: called\n");
 +}
 +
 +
@@ -647,8 +671,8 @@ Index: libvo/vo_ps3.c
 +
 +   yuvcsc_check();   //confirm last run finished
 +   wait_yuvcsc = 1;
-+   if (mp_msg_test(MSGT_VO, MSGL_DBG2))
-+      mp_msg(MSGT_VO, MSGL_DBG2, "[vo_ps3] yuvcsc_run: sending RUN to spu_yuv2argb_scaler\n");
++   if(debug)
++      mp_msg(MSGT_VO, MSGL_INFO, "[vo_ps3] yuvcsc_run: sending RUN to spu_yuv2argb_scaler\n");
 +   yuvscsc_send_message(yuvcsc, RUN);
 +}
 +
@@ -660,8 +684,8 @@ Index: libvo/vo_ps3.c
 +static void yuvcsc_check() {
 +
 +   if (wait_yuvcsc) {                                 //make sure last run finished
-+      if (mp_msg_test(MSGT_VO, MSGL_DBG2))
-+         mp_msg(MSGT_VO, MSGL_DBG2, "[vo_ps3] yuvs_check: asking for msg from yuvc\n");
++      if(debug)
++         mp_msg(MSGT_VO, MSGL_INFO, "[vo_ps3] yuvcsc_check: asking for msg from yuvc\n");
 +      yuvcsc_msg = yuvscsc_receive_message(yuvcsc);   //get status
 +      while (yuvcsc_msg != RDY) {
 +         yuvcsc_not_ready++;                          //*shouldn't* get here
@@ -849,9 +873,9 @@ Index: libvo/vo_ps3.c
 +   mp_msg(MSGT_VO, MSGL_INFO, "[vo_ps3] clear: Clearing buffers\n");
 +
 +   for(i=0; i<NUM_BUFFERS; i++) { 
-+      memset(inbuf_y[i], 0, src_p_siz[0]);
-+      memset(inbuf_u[i], 0, src_p_siz[1]);
-+      memset(inbuf_v[i], 0, src_p_siz[2]);
++      memset(inbuf_y[i], 16, src_p_siz[0]);
++      memset(inbuf_u[i], 128, src_p_siz[1]);
++      memset(inbuf_v[i], 128, src_p_siz[2]);
 +      memset(parking_lot[i], 0, src_buf_siz);
 +   }
 +
@@ -863,7 +887,7 @@ Index: libvo/vo_ps3.c
 +}
 Index: configure
 ===================================================================
---- configure	(revision 24815)
+--- configure	(revision 24824)
 +++ configure	(working copy)
 @@ -373,6 +373,7 @@
    --enable-x11             enable X11 video output [autodetect]
@@ -919,7 +943,7 @@ Index: configure
  
  echocheck "DVB"
  if test "$_dvb" = auto ; then
-@@ -8476,6 +8502,7 @@
+@@ -8477,6 +8503,7 @@
  $_def_mga
  $_def_xmga
  $_def_fbdev
