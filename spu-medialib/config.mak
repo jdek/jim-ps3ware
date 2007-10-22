@@ -4,7 +4,7 @@ CC=gcc
 
 SPU_CFLAGS= -O3 -fno-exceptions -g -Wall
 
-CFLAGS= -O3 -fno-exceptions -g -Wall
+CFLAGS= -O3 -fno-exceptions -fPIC -g -Wall
 
 PPU_CC=gcc
 
@@ -31,5 +31,7 @@ SPU_CESOF=spu/cesof/
 LIBDIR=lib
 
 LIB=libspu-medialib.a
+
+LIBSO=libspu-medialib.so
 
 PREFIX=/usr
