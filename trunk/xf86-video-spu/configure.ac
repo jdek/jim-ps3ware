@@ -22,7 +22,7 @@
 
 AC_PREREQ(2.57)
 AC_INIT([xf86-video-spu],
-        0.3.1,
+        0.0.1,
         [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg],
         xf86-video-spu)
 
@@ -55,9 +55,12 @@ XORG_DRIVER_CHECK_EXT(XV, videoproto)
 # Checks for pkg-config packages
 PKG_CHECK_MODULES(XORG, [xorg-server >= 1.0.99.901 xproto fontsproto $REQUIRED_MODULES])
 sdkdir=$(pkg-config --variable=sdkdir xorg-server)
+PKG_CHECK_MODULES(LIBSPE2, [libspe2 >= 2.2.0])
+CFLAGS="$CFLAGS $LIBSPE2_CFLAGS"
+LIBS="$LIBS $LIBSPE2_LIBS"
 
 # Checks for libraries. grr for some reason this fails.
-#AC_CHECK_LIB(spu-medialib, csc_init_yuv2rgb)
+AC_CHECK_LIB(spu-medialib, csc_init_yuv2rgb)
 
 # Checks for header files.
 AC_HEADER_STDC

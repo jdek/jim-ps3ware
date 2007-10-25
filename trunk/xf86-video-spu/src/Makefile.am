@@ -27,7 +27,6 @@ AM_CFLAGS = @XORG_CFLAGS@
 spu_fbdev_drv_la_LTLIBRARIES = spu_fbdev_drv.la
 spu_fbdev_drv_la_LDFLAGS = -module -avoid-version
 spu_fbdev_drv_ladir = @moduledir@/drivers
-spu_fbdev_drv_libadd =spu-medialib spe2 pthread
 
 spu_fbdev_drv_la_SOURCES = \
          spu_fbdev.c \
