@@ -461,9 +461,9 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			else if (msg == UPDATE)
 			{
 				dmaGetnWait(iargs,(unsigned int)argp,(int)envp,tag); //getting neccesary data to process the new image	
-				first=0; // update filters to reflect the new image!
-				selOut=0;
-				selIn=0;
+				first=1; // update filters to reflect the new image!
+			//	selOut=0; // no need to change these. that can be done by the run.
+			//	selIn=0;
 			}
 		}
 		
