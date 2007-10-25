@@ -93,10 +93,20 @@ unsigned int yuvscsc_get_maxwidth(const yuvscaler2argb_t*);
 /**
 * set functions for image sizes (only takes effect if followed by an update!)
 */
-void yuvscsc_set_srcW(yuvscaler2argb_t*,int dstw);
-void yuvscsc_set_srcH(yuvscaler2argb_t*,int srcw);
+void yuvscsc_set_srcW(yuvscaler2argb_t*,int srcw);
+void yuvscsc_set_srcH(yuvscaler2argb_t*,int srch);
+void yuvscsc_set_dstW(yuvscaler2argb_t*,int dstw);
+void yuvscsc_set_dstH(yuvscaler2argb_t*,int dsth);
 void yuvscsc_set_offset(yuvscaler2argb_t*,int offset);
 void yuvscsc_set_maxwidth(yuvscaler2argb_t*,int maxwidth);
+
+/**
+* functions for setting buffer pointers (only takes effect if followed by an update!)
+*/
+
+void yuvscsc_set_Buffers(yuvscaler2argb_t*, ea_t inYBuffer,ea_t inUBuffer,ea_t inVBuffer,ea_t outBuffer,int currentbuff);
+//void yuvscsc_set_backBuffers(yuvscaler2argb_t*, ea_t back_inYBuffer,ea_t back_inUBuffer,ea_t back_inVBuffer,ea_t back_outBuffer);
+
 #ifdef __cplusplus
 }
 #endif

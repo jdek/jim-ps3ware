@@ -224,6 +224,21 @@ unsigned int yuvscsc_get_maxwidth(const yuvscaler2argb_t* arg)
 	return arg->iargs->maxwidth;
 }
 
+
+void yuvscsc_set_srcW(yuvscaler2argb_t* arg,int srcw)
+{
+	struct yuvscaler2argb_s * arg_ptr;
+	arg_ptr=(struct yuvscaler2argb_s *) arg;
+	arg->iargs->srcW=srcw;
+}
+
+void yuvscsc_set_srcH(yuvscaler2argb_t* arg,int srch)
+{
+	struct yuvscaler2argb_s * arg_ptr;
+	arg_ptr=(struct yuvscaler2argb_s *) arg;
+	arg->iargs->srcH=srch;
+}
+
 void yuvscsc_set_dstW(yuvscaler2argb_t* arg,int dstw)
 {
 	struct yuvscaler2argb_s * arg_ptr;
@@ -231,11 +246,11 @@ void yuvscsc_set_dstW(yuvscaler2argb_t* arg,int dstw)
 	arg->iargs->dstW=dstw;
 }
 
-void yuvscsc_set_srcW(yuvscaler2argb_t* arg,int srcw)
+void yuvscsc_set_dstH(yuvscaler2argb_t* arg,int dsth)
 {
 	struct yuvscaler2argb_s * arg_ptr;
 	arg_ptr=(struct yuvscaler2argb_s *) arg;
-	arg->iargs->srcW=srcw;
+	arg->iargs->dstH=dsth;
 }
 
 void yuvscsc_set_offset(yuvscaler2argb_t* arg,int offset)
@@ -250,4 +265,66 @@ void yuvscsc_set_maxwidth(yuvscaler2argb_t* arg,int maxwidth)
 	struct yuvscaler2argb_s * arg_ptr;
 	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	arg->iargs->maxwidth=maxwidth;
+}
+
+// void yuvscsc_set_frontBuffers(yuvscaler2argb_t* arg, ea_t front_inYBuffer,ea_t front_inUBuffer,ea_t front_inVBuffer,ea_t front_outBuffer)
+// {
+// 	struct yuvscaler2argb_s * arg_ptr;
+// 	arg_ptr=(struct yuvscaler2argb_s *) arg;
+// 	
+// 	#ifndef __powerpc64__
+// 
+// 		arg_ptr->iargs->Ystart[0]=((unsigned long long)front_inYBuffer)&0xFFFFFFFF;
+// 		
+// 		arg_ptr->iargs->Ustart[0]=((unsigned long long)front_inUBuffer)&0xFFFFFFFF;
+// 
+// 		arg_ptr->iargs->Vstart[0]=((unsigned long long)front_inVBuffer)&0xFFFFFFFF;
+// 
+// 	
+// 		arg_ptr->iargs->Output[0]=((unsigned long long)front_outBuffer)&0xFFFFFFFF;
+// 	#endif
+// 
+// 	#ifdef __powerpc64__
+// 
+// 		arg_ptr->iargs->Ystart[0]=(unsigned long long)front_inYBuffer;
+// 
+// 	
+// 		arg_ptr->iargs->Ustart[0]=(unsigned long long)front_inUBuffer;
+// 
+// 		arg_ptr->iargs->Vstart[0]=(unsigned long long)front_inVBuffer;
+// 
+// 	
+// 		arg_ptr->iargs->Output[0]=(unsigned long long)front_outBuffer;
+// 
+// 
+// 	#endif
+// }
+void yuvscsc_set_Buffers(yuvscaler2argb_t* arg, ea_t inYBuffer,ea_t inUBuffer,ea_t inVBuffer,ea_t outBuffer,int currentBuffer)
+{
+	struct yuvscaler2argb_s * arg_ptr;
+	arg_ptr=(struct yuvscaler2argb_s *) arg;
+	
+	#ifndef __powerpc64__
+
+		arg_ptr->iargs->Ystart[currentBuffer]=((unsigned long long)inYBuffer)&0xFFFFFFFF;
+	
+		arg_ptr->iargs->Ustart[currentBuffer]=((unsigned long long)inUBuffer)&0xFFFFFFFF;
+
+		arg_ptr->iargs->Vstart[currentBuffer]=((unsigned long long)inVBuffer)&0xFFFFFFFF;
+
+		arg_ptr->iargs->Output[currentBuffer]=((unsigned long long)outBuffer)&0xFFFFFFFF;
+
+	#endif
+
+	#ifdef __powerpc64__
+
+		arg_ptr->iargs->Ystart[currentBuffer]=(unsigned long long)inYBuffer;
+
+		arg_ptr->iargs->Ustart[currentBuffer]=(unsigned long long)inUBuffer;
+
+		arg_ptr->iargs->Vstart[currentBuffer]=(unsigned long long)inVBuffer;
+	
+		arg_ptr->iargs->Output[currentBuffer]=(unsigned long long)outBuffer;
+
+	#endif
 }
