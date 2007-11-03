@@ -39,6 +39,9 @@
 #ifndef __YUV_DATASTRUCTS_H
 #define __YUV_DATASTRUCTS_H
 
+enum format { YUY2, YUYV422, YUV420 ,YV12 , YUV444, ARGB };
+enum msg_form {INTR,HARD,SOFT};
+
 struct img_args {
 	int srcW;
 	int srcH;
@@ -46,7 +49,12 @@ struct img_args {
 	int offset;
 	int dstW;
 	int dstH;
- 	unsigned long long  Ystart[2];
+	
+	int SourceFormat;
+	int TargetFormat;
+	int MessageForm;
+ 	
+	unsigned long long  Ystart[2];
 	unsigned long long  Ustart[2];
 	unsigned long long  Vstart[2];
 	unsigned long long  Output[2];

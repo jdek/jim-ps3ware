@@ -70,7 +70,7 @@ spe_context_ptr_t yuvscsc_getCTX(yuvscaler2argb_t*);
 * recive_message waits for a interrupt message from the spu notifying a loop completion
 */
 unsigned int yuvscsc_receive_message(yuvscaler2argb_t*);
-
+unsigned int yuvscsc_receive_message_hard(yuvscaler2argb_t*);
 
 /**
 * sends a message to the spu telling it what to do options are RDY UPDATE and STOP defined in spu_control.h
@@ -106,6 +106,8 @@ void yuvscsc_set_maxwidth(yuvscaler2argb_t*,int maxwidth);
 
 void yuvscsc_set_Buffers(yuvscaler2argb_t*, ea_t inYBuffer,ea_t inUBuffer,ea_t inVBuffer,ea_t outBuffer,int currentbuff);
 //void yuvscsc_set_backBuffers(yuvscaler2argb_t*, ea_t back_inYBuffer,ea_t back_inUBuffer,ea_t back_inVBuffer,ea_t back_outBuffer);
+
+void yuvscsc_set_messageform(yuvscaler2argb_t*,int msgform);
 
 #ifdef __cplusplus
 }
