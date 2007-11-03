@@ -14,6 +14,7 @@
 #include <X11/extensions/Xv.h>
 #include <spu-medialib/yuv2argb_scaler.h>
 #include <spu-medialib/spu_control.h>
+#include <spu-medialib/yuv_datastructs.h>
 
 #include "fourcc.h"
 //FIXME USE THE TIMER LUKE..
@@ -252,21 +253,21 @@ SPUStopVideo(ScrnInfoPtr pScrn, pointer data, Bool cleanup)
     //  if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
 
       //}
-      if(pPriv->linear) {
- 	free(pPriv->linear);
- 	pPriv->linear = NULL;
-      }
+//       if(pPriv->linear) {
+//  	free(pPriv->linear);
+//  	pPriv->linear = NULL;
+//       }
      	 pPriv->videoStatus = 0;
 	 pPriv->running=0;
      	 yuvscsc_send_message(pPriv->yuv4202argb,STOP);
       
-   } else {
+   } /*else {
       if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
- 	pPriv->videoStatus |= OFF_TIMER;
-	pPriv->videoStatus = 0;
+//  	pPriv->videoStatus |= OFF_TIMER;
+// 	pPriv->videoStatus = 0;
 // 	pPriv->offTime = currentTime.milliseconds + OFF_DELAY; //FIXME fix timing issues.. 
-      }
-   }
+      }*/
+//    }
 }
 
 static int //FIXME this can probably be reduced to next to nothing
@@ -459,7 +460,7 @@ SPUPutImage(
 								(ea_t)pPriv->Vpointer[pPriv->currentBuffer], (ea_t)pPriv->Vpointer[pPriv->currentBuffer], 
 								pPriv->Opointer[pPriv->currentBuffer],pPriv->Opointer[pPriv->currentBuffer]);
 
-		
+		yuvscsc_set_messageform(pPriv->yuv4202argb,HARD);
 		yuvscsc_send_message(pPriv->yuv4202argb,RUN);
 
 
@@ -468,6 +469,7 @@ SPUPutImage(
 		// FIXME ALLWAYS SEND UPDATE ??
 
 		yuvscsc_set_Buffers(pPriv->yuv4202argb, pPriv->Ypointer[pPriv->currentBuffer], pPriv->Upointer[pPriv->currentBuffer], pPriv->Vpointer[pPriv->currentBuffer], pPriv->Opointer[pPriv->currentBuffer],pPriv->currentBuffer);
+	
 		yuvscsc_send_message(pPriv->yuv4202argb,UPDATE);
 	
 		yuvscsc_send_message(pPriv->yuv4202argb,RUN);
@@ -485,16 +487,17 @@ SPUPutImage(
 
 
 	pPriv->currentBuffer ^= 1; //may become  useful when spu'ing  flip the buffer please
-	pPriv->videoStatus = CLIENT_VIDEO_ON;
+// 	pPriv->videoStatus = CLIENT_VIDEO_ON;
 	
 	if (pPriv->running)
 	{
 		int spu_msg=0;
-		spu_msg=yuvscsc_receive_message(pPriv->yuv4202argb);	 //cmon man this will run forever..FIX INTERRUPT STUFF	
+		spu_msg=yuvscsc_receive_message_hard(pPriv->yuv4202argb);	 //cmon man this will run forever..FIX INTERRUPT STUFF	
+		
 		if (spu_msg == RDY)
 		{
-			xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Message Recieved\n");
-			pPriv->videoStatus = 0;	
+			xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Image Processed\n");
+		//	pPriv->videoStatus = 0;	
 		} else {
 			return -1;
 		}
