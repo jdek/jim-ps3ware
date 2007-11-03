@@ -50,7 +50,7 @@ static Bool debug = 0;
 /* -------------------------------------------------------------------- */
 /* prototypes                                                           */
 
-static const OptionInfoRec * SPU_FBDevAvailableOptions(int chipid, int busid);
+static const    OptionInfoRec * SPU_FBDevAvailableOptions(int chipid, int busid);
 static void	SPU_FBDevIdentify(int flags);
 static Bool	SPU_FBDevProbe(DriverPtr drv, int flags);
 #ifdef XSERVER_LIBPCIACCESS
