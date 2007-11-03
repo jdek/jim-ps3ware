@@ -78,7 +78,9 @@ static void * yuvscsc_spe_thread(void * arg)
 
 
 	spe_context_run(arg_ptr->ctx, &arg_ptr->entry, arg_ptr->runflags,arg_ptr->argp,arg_ptr->envp, NULL);
-
+	
+	spe_context_destroy(arg_ptr->ctx);
+	
 	pthread_exit(NULL);
 }
 
@@ -93,7 +95,7 @@ yuvscaler2argb_t * yuvscsc_init_yuv2argb_scaler(int srcW,int srcH,int dstW,int d
 	yuvcsc->iargs->dstW=dstW;
 	yuvcsc->iargs->offset=offset;
 	yuvcsc->iargs->maxwidth=maxwidth;
-
+	yuvcsc->iargs->MessageForm=INTR;//FIXME DEFAULT TO WHAT ?
 	#ifndef __powerpc64__
 		printf("powerpc64 not detected\n manipulating adress space\n");
 		yuvcsc->iargs->Ystart[0]=((unsigned long long)front_inYBuffer)&0xFFFFFFFF;
@@ -127,6 +129,8 @@ yuvscaler2argb_t * yuvscsc_init_yuv2argb_scaler(int srcW,int srcH,int dstW,int d
 
 	yuvcsc->envp=(void*)sizeof(struct img_args);
 		
+	
+//	yuvcsc->createflags=0;
 	yuvcsc->createflags=SPE_EVENTS_ENABLE;
 	yuvcsc->entry=SPE_DEFAULT_ENTRY;
 	yuvcsc->runflags=0;
@@ -171,6 +175,26 @@ unsigned int yuvscsc_receive_message(yuvscaler2argb_t *arg)
 	}
 
 	spe_out_intr_mbox_read(arg_ptr->ctx,&message,1,SPE_MBOX_ANY_NONBLOCKING);	
+	return message;
+
+}
+
+unsigned int yuvscsc_receive_message_hard(yuvscaler2argb_t *arg)
+{
+	unsigned int message;
+	struct yuvscaler2argb_s * arg_ptr;
+	arg_ptr=(struct yuvscaler2argb_s *) arg;
+	int status;
+	int i=0;
+	for (i=0;i<25;i++)
+	{
+	  if(spe_out_mbox_status(arg_ptr->ctx) > 0)
+		break;
+		sleep(1);
+	}
+	
+	spe_out_mbox_read(arg_ptr->ctx,&message,1);
+		
 	return message;
 
 }
@@ -266,7 +290,11 @@ void yuvscsc_set_maxwidth(yuvscaler2argb_t* arg,int maxwidth)
 	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	arg->iargs->maxwidth=maxwidth;
 }
-
+void yuvscsc_set_messageform(yuvscaler2argb_t* arg,int msgform) {
+	struct yuvscaler2argb_s * arg_ptr;
+	arg_ptr=(struct yuvscaler2argb_s *) arg;
+	arg->iargs->MessageForm=msgform;
+}
 // void yuvscsc_set_frontBuffers(yuvscaler2argb_t* arg, ea_t front_inYBuffer,ea_t front_inUBuffer,ea_t front_inVBuffer,ea_t front_outBuffer)
 // {
 // 	struct yuvscaler2argb_s * arg_ptr;

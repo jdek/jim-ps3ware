@@ -109,6 +109,12 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
  	static	int crblockdst1;
 	static	int crblockdst0;
 	scaler_settings_t sc;
+	
+	while (spu_stat_in_mbox() == 0);
+		msg=spu_read_in_mbox();
+	if (msg==RUN){	
+		fprintf(stderr,"spu_yuv2argb_scaler: Starting Up\n");
+	}
 
 	dmaGetnWait(iargs,(unsigned int)argp,(int)envp,tag); //getting neccesary data to process image
 	printf("spu_yuv2argb_scaler: SRC width %d,DST width %d\n",iargs->srcW,iargs->dstW);
@@ -177,11 +183,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	Output1[0]=(vector unsigned char*)memalign(128,MAXWIDTH*4);	// 1line output
 	Output1[1]=(vector unsigned char*)memalign(128,MAXWIDTH*4);	// 1line output
 	
-	while (spu_stat_in_mbox() == 0);
-		msg=spu_read_in_mbox();
-	if (msg==RUN){	
-		printf("spu_yuv2argb_scaler: Starting Up\n");
-	}
+
 	
 	while (msg!=STOP) 
 	{
@@ -437,11 +439,22 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 		dmaWaitTag(tgo1[LineSelOut^1]); //wait for last write.
 
 	//	printf("Image done\n");
-		
-		while (spu_stat_out_intr_mbox() == 0);
-		msg=RDY;
-		spu_writech(SPU_WrOutIntrMbox, msg);
-		waiting=1;
+		if (iargs->MessageForm==INTR)
+		{
+			while (spu_stat_out_intr_mbox() == 0);
+			msg=RDY;
+			spu_writech(SPU_WrOutIntrMbox, msg);
+			waiting=1;
+		}
+
+		if (iargs->MessageForm==HARD)
+		{
+			while (spu_stat_out_mbox() == 0);
+			msg=RDY;
+			spu_write_out_mbox(msg);
+			waiting=1;
+		}		
+// 		fprintf(stderr,"spu_yuvscaler: Waiting\n");
 		
 		while (waiting){
 			
@@ -455,11 +468,12 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			}
 			else if (msg == STOP)
 			{
-				printf("spu_yuvscaler: Stopping\n");
+// 				fprintf(stderr,"spu_yuvscaler: Stopping\n");
 				waiting=0;
 			}
 			else if (msg == UPDATE)
 			{
+// 				fprintf(stderr,"spu_yuvscaler: Update\n");
 				dmaGetnWait(iargs,(unsigned int)argp,(int)envp,tag); //getting neccesary data to process the new image	
 				first=1; // update filters to reflect the new image!
 			//	selOut=0; // no need to change these. that can be done by the run.
