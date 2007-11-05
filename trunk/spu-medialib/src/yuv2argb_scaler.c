@@ -95,7 +95,7 @@ yuvscaler2argb_t * yuvscsc_init_yuv2argb_scaler(int srcW,int srcH,int dstW,int d
 	yuvcsc->iargs->dstW=dstW;
 	yuvcsc->iargs->offset=offset;
 	yuvcsc->iargs->maxwidth=maxwidth;
-	yuvcsc->iargs->MessageForm=INTR;//FIXME DEFAULT TO WHAT ?
+ 	yuvcsc->iargs->MessageForm=INTR; //FIXME DEFAULT TO WHAT ?
 	#ifndef __powerpc64__
 		printf("powerpc64 not detected\n manipulating adress space\n");
 		yuvcsc->iargs->Ystart[0]=((unsigned long long)front_inYBuffer)&0xFFFFFFFF;
@@ -130,7 +130,7 @@ yuvscaler2argb_t * yuvscsc_init_yuv2argb_scaler(int srcW,int srcH,int dstW,int d
 	yuvcsc->envp=(void*)sizeof(struct img_args);
 		
 	
-//	yuvcsc->createflags=0;
+// 	yuvcsc->createflags=0;
 	yuvcsc->createflags=SPE_EVENTS_ENABLE;
 	yuvcsc->entry=SPE_DEFAULT_ENTRY;
 	yuvcsc->runflags=0;
@@ -186,11 +186,15 @@ unsigned int yuvscsc_receive_message_hard(yuvscaler2argb_t *arg)
 	arg_ptr=(struct yuvscaler2argb_s *) arg;
 	int status;
 	int i=0;
-	for (i=0;i<25;i++)
+	for (i=0;i<10000;i++)
 	{
-	  if(spe_out_mbox_status(arg_ptr->ctx) > 0)
-		break;
+	    if( spe_out_mbox_status(arg_ptr->ctx) == 0)
+	    {
 		sleep(1);
+	    } else {
+		break;
+	    }
+		
 	}
 	
 	spe_out_mbox_read(arg_ptr->ctx,&message,1);

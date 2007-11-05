@@ -1,13 +1,12 @@
 /**
- * SPU-MEDIALIB utility
+ * SPU YUV420/YV12 scaler to ARGB conversion kernel
  * --------------------------------
- * Licensed under the BSD license, see LICENSE for details
+ * Licensed under the BSDv2 
  *
- * yuv_datastructs.h - YUV argument structure
+ * scaler_settings.h - local variables used in conversion process
  *
  * Copyright (c) 2007, Kristian Jerpetjøn <kristian.jerpetjoen@gmail.com>
- *
- * $Id: yuv_datastructs.h 26 2007-04-20 01:42:55Z warren $
+ * $Id:
  */
 
 // Copyright (c) 2007, Kristian Jerpetjøn <kristian.jerpetjoen@gmail.com>
@@ -36,59 +35,41 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __YUV_DATASTRUCTS_H
-#define __YUV_DATASTRUCTS_H
+#ifndef __SPU_SCALER_SETTINGS2_H
+#define __SPU_SCALER_SETTINGS2_H
 
-enum format { YUY2, YUYV422, YUV420 ,YV12 , YUV444, ARGB };
-enum msg_form {INTR,HARD,SOFT};
-
-struct img_args {
-	int srcW;
-	int srcH;
-	int maxwidth;
-	int offset;
-	int dstW;
-	int dstH;
-	
- 	
-	unsigned long long  Ystart[2];
-	unsigned long long  Ustart[2];
-	unsigned long long  Vstart[2];
-	unsigned long long  Output[2];
-
-	//New improved datastructs above kept for backwards compatibility union perhaps.
-	int src_x;
-	int src_y;
-	int src_w;
-	int src_h;
-	int drw_x;
-	int drw_y;
-	int drw_w;
-	int drw_h;
-
-	int Istride[2];
-	int Ostride[2];
-
-	int SCALE;
-	float scalefactor;
-	
-	int BLEND;
-	char ALPHA;
-
-	int SourceFormat;
-	int TargetFormat;
-	int MessageForm;
-	
-// 	#ifdef __spe__
-		unsigned long long  Inp0[2];
-		unsigned long long  Inp1[2];
-		unsigned long long  Inp2[2];
-		unsigned long long  Outp0[2];
-		unsigned long long  Outp1[2];
-		unsigned long long  Outp2[2];
-	//NEW stuff end
-
+//struct scaler_settings_s;
+typedef struct scaler_settings_s scaler_settings_t;
+struct scaler_settings_s {
+	int *wfilterpos; //position of the filter in the buffer
+	int *crfilterpos;
+	int width;
+	int smallcroma;
+	int smallcromaline0;
+	int smallcromaline1;
+	vector unsigned char *sWfilter0;// shufflefilter0
+	vector unsigned char *sWfilter1;//shufflefilter1 0+1
+	vector unsigned char *crsWfilter0;
+	vector unsigned char *crsWfilter1;
+	vector short *wWfilter0;//weghtfilter0
+	vector short *wWfilter1;//weightfilter1 (1-wWfilter0)
+	vector float *wWfilterf0;//weghtfilter0
+	vector float *wWfilterf1;//weightfilter1 (1-wWfilter0)
+	short wHfilter;
+	vector float wHfilter0;
+	vector float wHfilter1;
+	vector float wHfilterf0;
+	vector float wHfilterf1;
+	vector unsigned char *source00; //sourcepointer0
+	vector unsigned char *source01; //sourcepointer1 0+1
+//	vector float *fbuff00;
+//	vector float *fbuff01;
+//	vector float *fbuff10;
+//	vector float *fbuff11;
+	vector short *Output;
+	vector float *Outputf;
 } __attribute__((aligned(128)));
 
-#endif
 
+
+#endif
