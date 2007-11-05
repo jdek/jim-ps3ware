@@ -1,4 +1,5 @@
 CFLAGS=-W -Wall -lm  -I/lib/modules/`uname -r`/build/include
 
-ps3gpu: ps3gpu.c
-	$(CC) $(CFLAGS) -o ps3gpu ps3gpu.c 
+ps3gpu: ps3gpu.c ../../src/fifo/utils.c
+
+	$(CC) $(CFLAGS) -o ps3gpu ps3gpu.c ../../src/fifo/utils.c
