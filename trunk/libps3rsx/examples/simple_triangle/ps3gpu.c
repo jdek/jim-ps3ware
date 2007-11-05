@@ -15,292 +15,15 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <math.h>
-//#include "nouveau_reg.h"
-//#include "nv30_fpinst.h"
-//#include "nv40_vpinst.h"
-#include "nouveau_class.h"
+
+#include "../../include/nouveau_class.h"
+#include "../../src/fifo/utils.h"
 #include "nv_shaders.h"
-
-
 
 #include <linux/types.h>
 #include <linux/fb.h>
 #include <asm/ps3fb.h>
 
-#define dbg(...)
-
-#define DEV_MEM		"/dev/mem"
-#define DEV_VFB		"/dev/fb0"
-#define DEV_GPU_VRAM	"/dev/ps3gpu_vram"
-#define DEV_GPU_FIFO	"/dev/ps3gpu_fifo"
-#define DEV_GPU_CTRL	"/dev/ps3gpu_ctrl"
-
-#define barrier() asm volatile ("" : : : "memory");
-
-
-
-static unsigned int endian( unsigned int v )
-{
-  return ( ( ( v >> 24 ) & 0xff ) << 0 ) |
-         ( ( ( v >> 16 ) & 0xff ) << 8 ) |
-         ( ( ( v >> 8 ) & 0xff ) << 16 ) |
-         ( ( ( v >> 0 ) & 0xff ) << 24 );
-}
-
-static unsigned int endian_fp( unsigned int v )
-{
-  return ( ( ( v >> 16 ) & 0xffff ) << 0 ) |
-         ( ( ( v >> 0 ) & 0xffff ) << 16 );
-
-}
-
-struct resource
-{
-  void *virt;
-  size_t len;
-};
-
-struct gpu
-{
-  struct resource xram;
-  struct resource vram;
-  struct resource fifo;
-  struct resource ctrl;
-};
-
-
-static int gpu_get_info(struct gpu *gpu)
-{
-  struct ps3fb_ioctl_gpu_info info;
-  int ret = -1;
-  int fd;
-
-
-  if ((fd = open(DEV_VFB, O_RDWR)) < 0)
-  {
-    perror("open");
-    return -1;
-  }
-
-  if ((ret = ioctl(fd, PS3FB_IOCTL_GPU_INFO, &info)) < 0)
-  {
-    perror("ioctl");
-    goto out;
-  }
-
-  printf("vram %d fifo %d ctrl %d\n",
-         info.vram_size, info.fifo_size, info.ctrl_size);
-
-  gpu->xram.len = 16 * 1024 * 1024;
-  gpu->vram.len = info.vram_size;
-  gpu->fifo.len = info.fifo_size;
-  gpu->ctrl.len = info.ctrl_size;
-
-  ret = 0;
-out:
-  close(fd);
-
-  return ret;
-}
-
-int map_resource(char const *name, struct resource *res)
-{
-  void *virt;
-  int fd;
-
-  if ((fd = open(name, O_RDWR)) < 0)
-  {
-    perror("open");
-    return -1;
-  }
-
-  // TEMP
-  printf("mmap: %s len %d\n", name, res->len);
-
-  virt = mmap(0, res->len, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-
-  if (virt == MAP_FAILED)
-    return -1;
-
-  res->virt = virt;
-
-  close(fd);
-
-  return 0;
-}
-
-int unmap_resource(struct resource *res)
-{
-  munmap(res->virt, res->len);
-  res->virt = NULL;
-
-  return 0;
-}
-
-int map_gpu(struct gpu *gpu)
-{
-
-  
-  if (map_resource(DEV_VFB, &gpu->xram) < 0)
-  {
-    fprintf(stderr, "failed to map vram\n");
-    return -1;
-  }
-
-  if (map_resource(DEV_GPU_VRAM, &gpu->vram) < 0)
-  {
-    fprintf(stderr, "failed to map vram\n");
-    return -1;
-  }
-
-  if (map_resource(DEV_GPU_FIFO, &gpu->fifo) < 0)
-  {
-    fprintf(stderr, "failed to map fifo\n");
-    goto err_unmap_vram;
-  }
-
-  if (map_resource(DEV_GPU_CTRL, &gpu->ctrl) < 0)
-  {
-    fprintf(stderr, "failed to map ctrl\n");
-    goto err_unmap_fifo;
-  }
-
-  return 0;
-
-err_unmap_fifo:
-  unmap_resource(&gpu->fifo);
-err_unmap_vram:
-  unmap_resource(&gpu->vram);
-  return -1;
-}
-
-int unmap_gpu(struct gpu *gpu)
-{
-  unmap_resource(&gpu->fifo);
-
-  return 0;
-}
-
-#define OUT_RING(data) *(ptr)++ = (data)
-
-
-union f2i
-{
-  float f;
-  uint32_t i;
-};
-
-#define OUT_RINGf(data) { union f2i temp; temp.f = data;  *(ptr)++ = temp.i; }
-
-#define BEGIN_RING(chan, tag, size)   OUT_RING(((size) << 18) | ((chan) << 13) | (tag))
-
-
-
-int prepare_ramin_read_line256( uint32_t *fifo, unsigned int addr)
-{
-  uint32_t *ptr = fifo;
-
-  /* 2MB DDR->DDR blit */
-  BEGIN_RING( 6,  0x184, 1 );
-  OUT_RING( 0xfeed0000 );
-  BEGIN_RING( 6, 0x198, 1 );
-  OUT_RING( 0x313371c3 );
-  BEGIN_RING( 3, 0x300, 1 );
-  OUT_RING( 0x0000000a );
-  BEGIN_RING(3, 0x30c, 1);
-  OUT_RING( 0 );
-  BEGIN_RING( 3, 0x304, 1 );
-  OUT_RING( 0x01000100 );
-  BEGIN_RING( 6, 0x2fc, 9 );
-  OUT_RING( 0x00000001 );
-  OUT_RING( 0x00000003 );
-  OUT_RING( 0x00000003 );
-  OUT_RING( 0x00000000 );
-  OUT_RING( 0x00010040 ); /* 1x1 */
-  OUT_RING( 0x00000000 );
-  OUT_RING( 0x00010040 ); /* 1x1 */
-  OUT_RING( 0x00100000 );
-  OUT_RING( 0x00100000 );
-  BEGIN_RING( 6, 0x400, 4 );
-  OUT_RING( 0x00010040 ); /* 1x4 */
-  OUT_RING( 0x00020100 ); /* pitch = 4, corner */
-  OUT_RING( 1024 * 1024 * 254 + addr * 4 );
-  OUT_RING( 0x00000000 );
-
-  return ptr - fifo;
-}
-
-int prepare_ramin_vram_copy(uint32_t *fifo)
-{
-  uint32_t *ptr = fifo;
-
-  /* 2MB DDR->DDR blit */
-  BEGIN_RING( 6,  0x184, 1 );
-  OUT_RING( 0xfeed0000 );
-  BEGIN_RING( 6, 0x198, 1 );
-  OUT_RING( 0x313371c3 );
-  BEGIN_RING( 3, 0x300, 1 );
-  OUT_RING( 0x0000000a );
-  BEGIN_RING(3, 0x30c, 1);
-  OUT_RING( 0 );
-  BEGIN_RING( 3, 0x304, 1 );
-  OUT_RING( 0x10001000 );
-  BEGIN_RING( 6, 0x2fc, 9 );
-  OUT_RING( 0x00000001 );
-  OUT_RING( 0x00000003 );
-  OUT_RING( 0x00000003 );
-  OUT_RING( 0x00000000 );
-  OUT_RING( 0x02000400 );
-  OUT_RING( 0x00000000 );
-  OUT_RING( 0x02000400 );
-  OUT_RING( 0x00100000 );
-  OUT_RING( 0x00100000 );
-  BEGIN_RING( 6, 0x400, 4 );
-  OUT_RING( 0x02000400 );
-  OUT_RING( 0x00021000 );
-  OUT_RING( 1024 * 1024 * 254 );
-  OUT_RING( 0x00000000 );
-
-
-  return ptr - fifo;
-}
-
-
-
-
-int prepare_ramin_write_line256(uint32_t *fifo, unsigned int addr)
-{
-  uint32_t *ptr = fifo;
-
-  /* 2MB DDR->DDR blit */
-  BEGIN_RING( 6,  0x184, 1 );
-  OUT_RING( 0xfeed0000 );
-  BEGIN_RING( 6, 0x198, 1 );
-  OUT_RING( 0x313371c3 );
-  BEGIN_RING( 3, 0x300, 1 );
-  OUT_RING( 0x0000000a );
-  BEGIN_RING(3, 0x30c, 1);
-  OUT_RING( addr * 4 + 1024 * 1024 * 254 );
-  BEGIN_RING( 3, 0x304, 1 );
-  OUT_RING( 0x01000100 );
-  BEGIN_RING( 6, 0x2fc, 9 );
-  OUT_RING( 0x00000001 );
-  OUT_RING( 0x00000003 );
-  OUT_RING( 0x00000003 );
-  OUT_RING( 0x00000000 );
-  OUT_RING( 0x00010040 ); /* 1x1 */
-  OUT_RING( 0x00000000 );
-  OUT_RING( 0x00010040 ); /* 1x1 */
-  OUT_RING( 0x00100000 );
-  OUT_RING( 0x00100000 );
-  BEGIN_RING( 6, 0x400, 4 );
-  OUT_RING( 0x00010040 ); /* 1x4 */
-  OUT_RING( 0x00020100 ); /* pitch = 4, corner */
-  OUT_RING( 0x00000000 );
-  OUT_RING( 0x00000000 );
-
-  return ptr - fifo;
-}
 
 #define Nv3D 7
 int NV40_LoadVtxProg( uint32_t *fifo,  nv_vshader_t *shader)
@@ -338,8 +61,6 @@ int NV40_LoadVtxProg( uint32_t *fifo,  nv_vshader_t *shader)
 }
 
 
-
-
 uint32_t width = 1024;
 uint32_t height = 768;
 uint32_t pitch = 1280 * 4;
@@ -361,9 +82,9 @@ int NV40_LoadTex( uint32_t *fifo, uint8_t *fbmem )
   for( i = 0; i < width * height * 4; i += 4 )
   {
     fbmem[i + offset + 0] = 255;
-    fbmem[i + offset + 1] = 200;
+    fbmem[i + offset + 1] = 50;
     fbmem[i + offset + 2] = 100;
-    fbmem[i + offset + 3] = rand();
+    fbmem[i + offset + 3] = ( rand() % 100 ) + 150;
 
   }
 
@@ -730,7 +451,7 @@ int bind3d(  uint32_t *fifo, uint32_t *fbmem, uint8_t *xdrmem, uint32_t obj )
   OUT_RING  (pitch);
   OUT_RING  (0);
   BEGIN_RING(Nv3D, NV40TCL_CLEAR_VALUE_COLOR, 1 );
-  OUT_RING( 0x0 );
+  OUT_RING( ( 250 << 16 ) + ( 150 << 8 ) + 50  );
 
   BEGIN_RING(Nv3D, NV40TCL_CLEAR_VALUE_DEPTH, 1 );
   OUT_RING( 0xffff );
@@ -758,22 +479,6 @@ int bind3d(  uint32_t *fifo, uint32_t *fbmem, uint8_t *xdrmem, uint32_t obj )
 }
 
 
-
-static void fifo_push(struct gpu *gpu, int len)
-{
-  uint32_t *ctrl = gpu->ctrl.virt;
-
-  ctrl[0x10] += 4 * len;
-}
-
-static void fifo_wait(struct gpu *gpu)
-{
-  volatile uint32_t *ctrl = gpu->ctrl.virt;
-
-  while (ctrl[0x10] != ctrl[0x11]);
-}
-
-
 static void gfx_test(struct gpu *gpu, unsigned int obj )
 {
   uint32_t *fifo = gpu->fifo.virt;
@@ -793,147 +498,6 @@ static void gfx_test(struct gpu *gpu, unsigned int obj )
 
 }
 
-/*
-static void memcpy_from_ramin(struct gpu *gpu, void *data, int len)
-{
-  uint32_t *fifo = gpu->fifo.virt;
-  uint32_t *ctrl = gpu->ctrl.virt;
-  int wptr;
-  int ret;
-  int i;
- 
-  wptr = (ctrl[0x10] & (gpu->fifo.len - 1)) / 4;
- 
-  ret = prepare_ramin_vram_copy(&fifo[wptr]);
-  fifo_push(gpu, ret);
-  fifo_wait(gpu);
- 
-  memcpy(data, gpu->vram.virt, len);
-  char *data_char = (char *)data;
-  for( i = 0; i < len; i += 4 )
-  {
-    char a = data_char[i + 0];
-    char b = data_char[i + 1];
-    char c = data_char[i + 2];
-    char d = data_char[i + 3];
- 
-    data_char[i + 0] = d;
-    data_char[i + 1] = c;
-    data_char[i + 2] = b;
-    data_char[i + 3] = a;
- 
-  }
-}*/
-
-
-static void ramin_write_dword_to_dword_offset( struct gpu *gpu, uint32_t addr, uint32_t data )
-{
-  uint32_t *fifo = gpu->fifo.virt;
-  uint32_t *ctrl = gpu->ctrl.virt;
-  uint32_t *vram = gpu->vram.virt;
-  uint32_t off = addr & 63;
-
-
-  //copy aligned line to the begin of framebuffer
-  {
-    int wptr;
-    int ret;
-    wptr = (ctrl[0x10] & (gpu->fifo.len - 1)) / 4;
-    ret = prepare_ramin_read_line256(&fifo[wptr], addr - off );
-    fifo_push(gpu, ret);
-    fifo_wait(gpu);
-
-  }
-  //wait...
-  usleep( 1000 );
-  //patch with data
-  vram[off] = endian( data );
-  //wait...
-  usleep( 1000 );
-  //copy data back
-  {
-    int wptr;
-    int ret;
-
-    wptr = (ctrl[0x10] & (gpu->fifo.len - 1)) / 4;
-
-    ret = prepare_ramin_write_line256(&fifo[wptr], addr - off );
-    fifo_push(gpu, ret);
-    fifo_wait(gpu);
-
-  }
-
-
-}
-
-
-
-static int enter_direct(void)
-{
-  struct fb_fix_screeninfo fix;
-  int ret = 0;
-  int fd;
-  int val = 0;
-
-  if ((fd = open("/dev/fb0", O_RDWR)) < 0)
-  {
-    perror("open");
-    return -1;
-  }
-
-  /* get framebuffer size */
-  if ((ret = ioctl(fd, FBIOGET_FSCREENINFO, &fix)) < 0)
-  {
-    perror("ioctl");
-    goto out;
-  }
-
-
-  /* stop that incessant blitting! */
-  if ((ret = ioctl(fd, PS3FB_IOCTL_ON, 0)) < 0)
-  {
-    perror("ioctl");
-    goto out;
-  }
-
-  /* wait for vsync */
-  if ((ret = ioctl(fd, FBIO_WAITFORVSYNC, &val)) < 0)
-  {
-    perror("ioctl");
-    goto out;
-  }
-
-  /* wait for vsync */
-  if ((ret = ioctl(fd, PS3FB_IOCTL_GPU_SETUP, &val)) < 0)
-  {
-    perror("ioctl");
-    goto out;
-  }
-
-  /* keep open */
-  return fd;
-
-out:
-  close(fd);
-
-  return ret;
-}
-
-static int leave_direct(int fd)
-{
-  int ret = 0;
-
-  if ((ret = ioctl(fd, PS3FB_IOCTL_OFF, 0)) < 0)
-  {
-    perror("ioctl");
-    goto out;
-  }
-
-out:
-  close(fd);
-
-  return ret;
-}
 
 int fb_fd = -1;
 
@@ -947,7 +511,6 @@ void sigint_handler(int sig)
   }
 }
 
-uint32_t RAMIN1[1024 * 1024 / 2];
 
 int main(void)
 {
@@ -971,37 +534,6 @@ int main(void)
 
   fb_fd = enter_direct();
   signal(SIGINT, sigint_handler);
-
-
-  /*
-  memcpy_from_ramin(&gpu, RAMIN1, sizeof(RAMIN1));
-
-  FILE *fp = fopen( "test1", "w" );
-  for( i = 0x0; i < 1024 * 1024 / 2; ++i )
-  {
-    //if( RAMIN1[i] == 0xb0bab0ba )
-    fprintf( fp, "%8x %8x \n", i, RAMIN1[i] );
-  }
-  fclose( fp );*/
-  //object ID = 0xfeed0003
-
-  ramin_write_dword_to_dword_offset( &gpu, 0x64cb8, 0xfeed0003 );
-  //engine zero, offset
-  ramin_write_dword_to_dword_offset( &gpu, 0x64cb9, 0x00105020 );
-
-  //0x40 for NV40, 0x97 - 3D engine
-  ramin_write_dword_to_dword_offset( &gpu, 0x1d020 * 4 + 0, 0x00004097 );
-  ramin_write_dword_to_dword_offset( &gpu, 0x1d020 * 4 + 1, 0x00000000 );
-  //endianness
-
-  ramin_write_dword_to_dword_offset( &gpu, 0x1d020 * 4 + 2, 0x01000000 );
-  ramin_write_dword_to_dword_offset( &gpu, 0x1d020 * 4 + 3, 0x00000000 );
-  ramin_write_dword_to_dword_offset( &gpu, 0x1d020 * 4 + 4, 0x00000000 );
-  ramin_write_dword_to_dword_offset( &gpu, 0x1d020 * 4 + 5, 0x00000000 );
-  ramin_write_dword_to_dword_offset( &gpu, 0x1d020 * 4 + 6, 0x00000000 );
-  ramin_write_dword_to_dword_offset( &gpu, 0x1d020 * 4 + 7, 0x00000000 );
-
-
 
   gfx_test( &gpu, 0xfeed0003 );
 
