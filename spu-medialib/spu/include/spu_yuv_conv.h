@@ -1,5 +1,44 @@
+/**
+ * SPU YUV conversion kernel
+ * --------------------------------
+ * Licensed under the BSDv2 
+ *
+ * spu_yuv_conv.h - YUV colorspace conversions for the spu
+ *
+ * Copyright (c) 2007, Kristian Jerpetjøn <kristian.jerpetjoen@gmail.com>
+ * $Id:
+ */
+
+// Copyright (c) 2007, Kristian Jerpetjøn <kristian.jerpetjoen@gmail.com>
+
+// All rights reserved.
+// 
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions
+// are met:
+// 1. Redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+// 2. Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+// 3. The names of the authors may not be used to endorse or promote products
+//    derived from this software without specific prior written permission.
+// 
+// THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS OR
+// IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+// OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+// IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+// INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+// NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+// THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #ifndef __SPU_YUV_CONV_H
 #define __SPU_YUV_CONV_H
+
+#include <spu_intrinsics.h>
 
 static inline void yuv420_to_yuyv422(vector unsigned char *InputY0,vector unsigned char *InputY1,vector unsigned char *InputU,vector unsigned char *InputV, vector unsigned char *Output0,vector unsigned char *Output1, int width,int high)
 {
@@ -441,7 +480,7 @@ static inline void yuv420_to_argb(vector unsigned char *InputY0,vector unsigned 
 
 }
 
-static inline void yuv420_vs_to_argb(vector short *InputY0,vector short*InputY1,vector short *InputU,vector short *InputV, vector unsigned char *Output0,vector unsigned char *Output1, int width)
+static inline void yuv420_vs_to_argb(vector signed short *InputY0,vector signed short*InputY1,vector signed short *InputU,vector signed short *InputV, vector unsigned char *Output0,vector unsigned char *Output1, int width)
 {
 	int i=0;
 	static const vector signed short max={255,255,255,255,255,255,255,255};
@@ -721,9 +760,9 @@ static inline void global_blend(vector unsigned char *Input,vector unsigned char
 		newOut2=spu_rlmaska(newOut2,-8);
 		newOut3=spu_rlmaska(newOut3,-8);			
 
-		vector unsigned char tmpOut0=(vector unsigned char)spu_shuffle(newOut0,newOut1,((vector unsigned char){3,19,7,23,8,11,27,15,31,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80}));
-		vector unsigned char tmpOut1=(vector unsigned char)spu_shuffle(newOut2,newOut3,((vector unsigned char){3,19,7,23,8,11,27,15,31,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80}));
-		Output[i]=spu_shuffle(tmpOut0,tmpOut1,((vector unsigned char){0,1,2,3,4,5,6,7,15,16,17,18,19,20,21,22,23}));
+		vector unsigned char tmpOut0=(vector unsigned char)spu_shuffle(newOut0,newOut1,((vector unsigned char){3,19,7,23,11,27,15,31,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80}));
+		vector unsigned char tmpOut1=(vector unsigned char)spu_shuffle(newOut2,newOut3,((vector unsigned char){3,19,7,23,11,27,15,31,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80}));
+		Output[i]=spu_shuffle(tmpOut0,tmpOut1,((vector unsigned char){0,1,2,3,4,5,6,7,16,17,18,19,20,21,22,23}));
 
 
 	}

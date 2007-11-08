@@ -2,7 +2,11 @@ SUBDIRS = src spu
 
 libincludedir = $(includedir)/spu-medialib
 libinclude_HEADERS =    include/spu_control.h \
-			include/yuv_datastructs.h
+			include/yuv_datastructs.h \
+			src/yuv2argb_scaler.h \
+			src/yuv2rgb.h \
+			src/yuvscaler.h
+
 lib_LTLIBRARIES = libspu-medialib.la
 libspu_medialib_la_LIBADD = src/libscaler.la spu/src/*.eo.o
 libspu_medialib_la_SOURCES =

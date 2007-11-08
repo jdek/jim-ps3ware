@@ -35,6 +35,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <spu_intrinsics.h>
 #include <spu_mfcio.h>
 #include <malloc.h>
 #include <stdio.h>
@@ -129,8 +130,8 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	vector unsigned char *crwidthfilter0=(vector unsigned char*)memalign(128,MAXWIDTH*2+16);
 	vector unsigned char *crwidthfilter1=(vector unsigned char*)memalign(128,MAXWIDTH*2+16);	
 
-	vector short * weightWfilter0=(vector int*)memalign(128,MAXWIDTH*4+16);
-	vector short * weightWfilter1=(vector int*)memalign(128,MAXWIDTH*4+16);
+	vector signed short * weightWfilter0=(vector signed int*)memalign(128,MAXWIDTH*4+16);
+	vector signed short * weightWfilter1=(vector signed int*)memalign(128,MAXWIDTH*4+16);
 
 	int weightHfilter[MAXHEIGHT+1];
 
@@ -138,10 +139,10 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 	unsigned long long dmacromapos[MAXHEIGHT+2];
 
 	
-	vector short * Ytemp0=(vector short *)memalign(128,MAXWIDTH*2+64);
-	vector short * Ytemp1=(vector short *)memalign(128,MAXWIDTH*2+64);
-	vector short * Utemp=(vector short *)memalign(128,MAXWIDTH+64);
-	vector short * Vtemp=(vector short *)memalign(128,MAXWIDTH+64);
+	vector signed short * Ytemp0=(vector signed short *)memalign(128,MAXWIDTH*2+64);
+	vector signed short * Ytemp1=(vector signed short *)memalign(128,MAXWIDTH*2+64);
+	vector signed short * Utemp=(vector signed short *)memalign(128,MAXWIDTH+64);
+	vector signed short * Vtemp=(vector signed short *)memalign(128,MAXWIDTH+64);
 
 	int wfilterpos[MAXWIDTH+2];
 	int hfilterpos0[MAXHEIGHT+2];
