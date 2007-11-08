@@ -38,8 +38,10 @@
 #ifndef __SPU_SCALER_SETTINGS2_H
 #define __SPU_SCALER_SETTINGS2_H
 
+#include <spu_intrinsics.h>
 //struct scaler_settings_s;
 typedef struct scaler_settings_s scaler_settings_t;
+
 struct scaler_settings_s {
 	int *wfilterpos; //position of the filter in the buffer
 	int *crfilterpos;
@@ -51,8 +53,8 @@ struct scaler_settings_s {
 	vector unsigned char *sWfilter1;//shufflefilter1 0+1
 	vector unsigned char *crsWfilter0;
 	vector unsigned char *crsWfilter1;
-	vector short *wWfilter0;//weghtfilter0
-	vector short *wWfilter1;//weightfilter1 (1-wWfilter0)
+	vector signed short *wWfilter0;//weghtfilter0
+	vector signed short *wWfilter1;//weightfilter1 (1-wWfilter0)
 	vector float *wWfilterf0;//weghtfilter0
 	vector float *wWfilterf1;//weightfilter1 (1-wWfilter0)
 	short wHfilter;
@@ -66,7 +68,7 @@ struct scaler_settings_s {
 //	vector float *fbuff01;
 //	vector float *fbuff10;
 //	vector float *fbuff11;
-	vector short *Output;
+	vector signed short *Output;
 	vector float *Outputf;
 } __attribute__((aligned(128)));
 

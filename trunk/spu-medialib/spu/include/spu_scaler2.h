@@ -37,6 +37,7 @@
 
 #ifndef __SPU_SCALER_ARGB_H
 #define __SPU_SCALER_ARGB_H
+#include <spu_intrinsics.h>
 #include <spu_pack.h>
 #include <math.h>
 #include "spu_scaler_settings2.h"
@@ -140,7 +141,7 @@ static inline void initHF(int srcW,int srcH, int dstH,int * hfilterpos0,int * hf
 
 }
 
-static inline void initWF(int srcW,int dstW,int type,int *filterpos,vector unsigned char *shufflefilter0 ,vector unsigned char* shufflefilter1,vector short *weightfilter0,vector short *weightfilter1)
+static inline void initWF(int srcW,int dstW,int type,int *filterpos,vector unsigned char *shufflefilter0 ,vector unsigned char* shufflefilter1,vector signed short *weightfilter0,vector signed short *weightfilter1)
 {
 	int i;
 	int j;
@@ -174,8 +175,8 @@ static inline void initWF(int srcW,int dstW,int type,int *filterpos,vector unsig
 		src1[3]=src0[3]+1;
 		shufflefilter0[i]=(vector unsigned char){ 0x80,0x80,0x80,src0[0],0x80,0x80,0x80,src0[1],0x80,0x80,0x80,src0[2],0x80,0x80,0x80,src0[3] };
 		shufflefilter1[i]=(vector unsigned char){ 0x80,0x80,0x80,src1[0],0x80,0x80,0x80,src1[1],0x80,0x80,0x80,src1[2],0x80,0x80,0x80,src1[3] };
-		weightfilter0[i]=(vector short){0,wf0[0],0,wf0[1],0,wf0[2],0,wf0[3]};
-		weightfilter1[i]=(vector short){0,wf1[0],0,wf1[1],0,wf1[2],0,wf1[3]};
+		weightfilter0[i]=(vector signed short){0,wf0[0],0,wf0[1],0,wf0[2],0,wf0[3]};
+		weightfilter1[i]=(vector signed short){0,wf1[0],0,wf1[1],0,wf1[2],0,wf1[3]};
 	}
 
 }
@@ -765,14 +766,14 @@ static inline void scale2(scaler_settings_t *sc)
 {
 	int i;
 	int width=sc->width;
-	vector short wHfilter0={0,sc->wHfilter,0,sc->wHfilter,0,sc->wHfilter,0,sc->wHfilter};
-	vector short wHfilter1={0,2048-sc->wHfilter,0,2048-sc->wHfilter,0,2048-sc->wHfilter,0,2048-sc->wHfilter};
-// 	vector short wHfilter0={0,sc->wHfilter,0,sc->wHfilter,0,sc->wHfilter,0,sc->wHfilter};
-// 	vector short wHfilter1={0,65535-sc->wHfilter,0,65535-sc->wHfilter,0,65535-sc->wHfilter,0,65535-sc->wHfilter};
+	vector signed short wHfilter0={0,sc->wHfilter,0,sc->wHfilter,0,sc->wHfilter,0,sc->wHfilter};
+	vector signed short wHfilter1={0,2048-sc->wHfilter,0,2048-sc->wHfilter,0,2048-sc->wHfilter,0,2048-sc->wHfilter};
+// 	vector signed short wHfilter0={0,sc->wHfilter,0,sc->wHfilter,0,sc->wHfilter,0,sc->wHfilter};
+// 	vector signed short wHfilter1={0,65535-sc->wHfilter,0,65535-sc->wHfilter,0,65535-sc->wHfilter,0,65535-sc->wHfilter};
 	int inc=0;
 	int dest=0;
-	vector int Out0;
-	vector int Out1;
+	vector signed int Out0;
+	vector signed int Out1;
 
 		vector unsigned char shuf00,shuf01,shuf02,shuf03,shuf10,shuf11,shuf12,shuf13;
 		vector unsigned char in00,in01,in02,in03,in10,in11,in12,in13;
@@ -890,53 +891,53 @@ static inline void scale2(scaler_settings_t *sc)
 			vector unsigned char nextshuf13=line1sw1[2*i+3];*/	
 
 
-			vector short input00 = (vector short)spu_shuffle(in00, in01,shuf00); //TODO make this smaller as were not using much space here
-			vector short input01 = (vector short)spu_shuffle(in00, in01,shuf01);	
-			vector short input10 = (vector short)spu_shuffle(in10, in11,shuf10);
-			vector short input11 = (vector short)spu_shuffle(in10, in11,shuf11);
+			vector signed short input00 = (vector signed short)spu_shuffle(in00, in01,shuf00); //TODO make this smaller as were not using much space here
+			vector signed short input01 = (vector signed short)spu_shuffle(in00, in01,shuf01);	
+			vector signed short input10 = (vector signed short)spu_shuffle(in10, in11,shuf10);
+			vector signed short input11 = (vector signed short)spu_shuffle(in10, in11,shuf11);
 			
-			vector int w00=spu_mulo(sc->wWfilter0[2*i],wHfilter0); //px0,0 //first 4 pixel weight values
-			vector int w01=spu_mulo(sc->wWfilter1[2*i],wHfilter0); // px 0,1 aka w(+1)
-			vector int w10=spu_mulo(sc->wWfilter0[2*i],wHfilter1); // px1,0
-			vector int w11=spu_mulo(sc->wWfilter1[2*i],wHfilter1);// px1,1
+			vector signed int w00=spu_mulo(sc->wWfilter0[2*i],wHfilter0); //px0,0 //first 4 pixel weight values
+			vector signed int w01=spu_mulo(sc->wWfilter1[2*i],wHfilter0); // px 0,1 aka w(+1)
+			vector signed int w10=spu_mulo(sc->wWfilter0[2*i],wHfilter1); // px1,0
+			vector signed int w11=spu_mulo(sc->wWfilter1[2*i],wHfilter1);// px1,1
 
 			w00=spu_rlmaska(w00,-11);			
 			w01=spu_rlmaska(w01,-11);
 			w10=spu_rlmaska(w10,-11);
 			w11=spu_rlmaska(w11,-11);
-// 			vector int w00=spu_mulsr(sc->wWfilter0[2*i],wHfilter0); //px0,0 //first 4 pixel weight values
-// 			vector int w01=spu_mulsr(sc->wWfilter1[2*i],wHfilter0); // px 0,1 aka w(+1)
-// 			vector int w10=spu_mulsr(sc->wWfilter0[2*i],wHfilter1); // px1,0
-// 			vector int w11=spu_mulsr(sc->wWfilter1[2*i],wHfilter1);// px1,1
-			vector int newpixel0=spu_mulo((vector short)w00,input00);
-			newpixel0=            spu_madd((vector short)w01,input01,newpixel0);
-			newpixel0=            spu_madd((vector short)w10,input10,newpixel0);
-			Out0=                 spu_madd((vector short)w11,input11,newpixel0);	
+// 			vector signed int w00=spu_mulsr(sc->wWfilter0[2*i],wHfilter0); //px0,0 //first 4 pixel weight values
+// 			vector signed int w01=spu_mulsr(sc->wWfilter1[2*i],wHfilter0); // px 0,1 aka w(+1)
+// 			vector signed int w10=spu_mulsr(sc->wWfilter0[2*i],wHfilter1); // px1,0
+// 			vector signed int w11=spu_mulsr(sc->wWfilter1[2*i],wHfilter1);// px1,1
+			vector signed int newpixel0=spu_mulo((vector signed short)w00,input00);
+			newpixel0=            spu_madd((vector signed short)w01,input01,newpixel0);
+			newpixel0=            spu_madd((vector signed short)w10,input10,newpixel0);
+			Out0=                 spu_madd((vector signed short)w11,input11,newpixel0);	
 			Out0=spu_rlmaska(Out0,-11);
 
 	
-			vector short input02 = (vector short)spu_shuffle(in02, in03,shuf02);
-			vector short input03 = (vector short)spu_shuffle(in02, in03,shuf03);
-			vector short input12 = (vector short)spu_shuffle(in12, in13,shuf12);
-			vector short input13 = (vector short)spu_shuffle(in12, in13,shuf13);
+			vector signed short input02 = (vector signed short)spu_shuffle(in02, in03,shuf02);
+			vector signed short input03 = (vector signed short)spu_shuffle(in02, in03,shuf03);
+			vector signed short input12 = (vector signed short)spu_shuffle(in12, in13,shuf12);
+			vector signed short input13 = (vector signed short)spu_shuffle(in12, in13,shuf13);
 
-//  			vector int w02=spu_mulsr(sc->wWfilter0[2*i+1],wHfilter0); //px0,0 //first 4 pixel weight values
-// 			vector int w03=spu_mulsr(sc->wWfilter1[2*i+1],wHfilter0); // px 0,1 aka w(+1)
-// 			vector int w12=spu_mulsr(sc->wWfilter0[2*i+1],wHfilter1); // px1,0
-// 			vector int w13=spu_mulsr(sc->wWfilter1[2*i+1],wHfilter1);// px1,1
-			vector int w02=spu_mulo(sc->wWfilter0[2*i+1],wHfilter0); //px0,0 //first 4 pixel weight values
-			vector int w03=spu_mulo(sc->wWfilter1[2*i+1],wHfilter0); // px 0,1 aka w(+1)
-			vector int w12=spu_mulo(sc->wWfilter0[2*i+1],wHfilter1); // px1,0
-			vector int w13=spu_mulo(sc->wWfilter1[2*i+1],wHfilter1);// px1,1
+//  			vector signed int w02=spu_mulsr(sc->wWfilter0[2*i+1],wHfilter0); //px0,0 //first 4 pixel weight values
+// 			vector signed int w03=spu_mulsr(sc->wWfilter1[2*i+1],wHfilter0); // px 0,1 aka w(+1)
+// 			vector signed int w12=spu_mulsr(sc->wWfilter0[2*i+1],wHfilter1); // px1,0
+// 			vector signed int w13=spu_mulsr(sc->wWfilter1[2*i+1],wHfilter1);// px1,1
+			vector signed int w02=spu_mulo(sc->wWfilter0[2*i+1],wHfilter0); //px0,0 //first 4 pixel weight values
+			vector signed int w03=spu_mulo(sc->wWfilter1[2*i+1],wHfilter0); // px 0,1 aka w(+1)
+			vector signed int w12=spu_mulo(sc->wWfilter0[2*i+1],wHfilter1); // px1,0
+			vector signed int w13=spu_mulo(sc->wWfilter1[2*i+1],wHfilter1);// px1,1
 
 			w02=spu_rlmaska(w02,-11);			
 			w03=spu_rlmaska(w03,-11);
 			w12=spu_rlmaska(w12,-11);
 			w13=spu_rlmaska(w13,-11);
-			vector int newpixel1=spu_mulo((vector short)w02,input02);
-			newpixel1=            spu_madd((vector short)w03,input03,newpixel1);
-			newpixel1=            spu_madd((vector short)w12,input12,newpixel1);
-			Out1=                 spu_madd((vector short)w13,input13,newpixel1);	
+			vector signed int newpixel1=spu_mulo((vector signed short)w02,input02);
+			newpixel1=            spu_madd((vector signed short)w03,input03,newpixel1);
+			newpixel1=            spu_madd((vector signed short)w12,input12,newpixel1);
+			Out1=                 spu_madd((vector signed short)w13,input13,newpixel1);	
 			Out1=spu_rlmaska(Out1,-11);
 	
 // 			in00=nextin00;
@@ -984,15 +985,15 @@ static inline void scale2(scaler_settings_t *sc)
 // 		ARGB=spu_shuffle(ARGB,(vector unsigned char)Gi,Gff);
 // 		return ARGB;
 // }
-// static inline void yuv420toARGBint(vector int *Y0,vector int *Y1,vector int *U, vector int *V,vector unsigned char *ARGB0,vector unsigned char *ARGB1, int width,int maxwidth)
+// static inline void yuv420toARGBint(vector signed int *Y0,vector signed int *Y1,vector signed int *U, vector signed int *V,vector unsigned char *ARGB0,vector unsigned char *ARGB1, int width,int maxwidth)
 // {
 // 
-// 		vector int Yf0,Yf1,Yf2,Yf3,Yf4,Yf5,Yf6,Yf7;
-// 		vector int Uf0,Uf1;
-// 		vector int Vf0,Vf1;
-// 		vector int R00,R01,R02,R03,R10,R11,R12,R13,G00,G01,G02,G03,G10,G11,G12,G13,B00,B01,B02,B03,B10,B11,B12,B13;
-// 		vector int yfv,ufuv,vfu;
-// 		vector int E,D;
+// 		vector signed int Yf0,Yf1,Yf2,Yf3,Yf4,Yf5,Yf6,Yf7;
+// 		vector signed int Uf0,Uf1;
+// 		vector signed int Vf0,Vf1;
+// 		vector signed int R00,R01,R02,R03,R10,R11,R12,R13,G00,G01,G02,G03,G10,G11,G12,G13,B00,B01,B02,B03,B10,B11,B12,B13;
+// 		vector signed int yfv,ufuv,vfu;
+// 		vector signed int E,D;
 // 
 // 		int i;
 // 
@@ -1016,22 +1017,22 @@ static inline void scale2(scaler_settings_t *sc)
 // 
 // 
 // 		for (i =0;i < width>>4;i++) {
-// 			vector int nextYf0=Y0[4*i+4];
-// 			vector int nextYf1=Y0[4*i+5];
-// 			vector int nextYf2=Y0[4*i+6];
-// 			vector int nextYf3=Y0[4*i+7];
+// 			vector signed int nextYf0=Y0[4*i+4];
+// 			vector signed int nextYf1=Y0[4*i+5];
+// 			vector signed int nextYf2=Y0[4*i+6];
+// 			vector signed int nextYf3=Y0[4*i+7];
 // 			
-// 			vector int nextYf4=Y1[4*i+4];
-// 			vector int nextYf5=Y1[4*i+5];
-// 			vector int nextYf6=Y1[4*i+6];
-// 			vector int nextYf7=Y1[4*i+7];
+// 			vector signed int nextYf4=Y1[4*i+4];
+// 			vector signed int nextYf5=Y1[4*i+5];
+// 			vector signed int nextYf6=Y1[4*i+6];
+// 			vector signed int nextYf7=Y1[4*i+7];
 // 
 // 			
-// 			vector int nextUf0=U[2*i+2];
-// 			vector int nextUf1=U[2*i+3];
+// 			vector signed int nextUf0=U[2*i+2];
+// 			vector signed int nextUf1=U[2*i+3];
 // 			
-// 			vector int nextVf0=V[2*i+2];
-// 			vector int nextVf1=V[2*i+3];
+// 			vector signed int nextVf0=V[2*i+2];
+// 			vector signed int nextVf1=V[2*i+3];
 // 
 // 			E=spu_sub(Vf0,((vector float){128.0,128.0,128.0,128.0}));
 // 			D=spu_sub(Uf0,((vector float){128.0,128.0,128.0,128.0}));
@@ -1294,19 +1295,19 @@ static inline void unpack2(scaler_settings_t *sc)
 	if (!sc->smallcromaline0) {
 		for (i=0;i < sc->width>>5 ;i++) 
 		{
-			sc->Output[4*i]  = (vector short)spu_shuffle(sc->source00[2*i],sc->source00[2*i],((vector unsigned char){0x80,0,0x80,1,0x80,2,0x80,3,0x80,4,0x80,5,0x80,6,0x80,7}));
-			sc->Output[4*i+1]= (vector short)spu_shuffle(sc->source00[2*i],sc->source00[2*i],((vector unsigned char){0x80,8,0x80,9,0x80,10,0x80,11,0x80,12,0x80,13,0x80,14,0x80,15}));
-			sc->Output[4*i+2]  = (vector short)spu_shuffle(sc->source00[2*i+1],sc->source00[2*i+1],((vector unsigned char){0x80,0,0x80,1,0x80,2,0x80,3,0x80,4,0x80,5,0x80,6,0x80,7}));
-			sc->Output[4*i+3]= (vector short)spu_shuffle(sc->source00[2*i+1],sc->source00[2*i+1],((vector unsigned char){0x80,8,0x80,9,0x80,10,0x80,11,0x80,12,0x80,13,0x80,14,0x80,15}));
+			sc->Output[4*i]  = (vector signed short)spu_shuffle(sc->source00[2*i],sc->source00[2*i],((vector unsigned char){0x80,0,0x80,1,0x80,2,0x80,3,0x80,4,0x80,5,0x80,6,0x80,7}));
+			sc->Output[4*i+1]= (vector signed short)spu_shuffle(sc->source00[2*i],sc->source00[2*i],((vector unsigned char){0x80,8,0x80,9,0x80,10,0x80,11,0x80,12,0x80,13,0x80,14,0x80,15}));
+			sc->Output[4*i+2]  = (vector signed short)spu_shuffle(sc->source00[2*i+1],sc->source00[2*i+1],((vector unsigned char){0x80,0,0x80,1,0x80,2,0x80,3,0x80,4,0x80,5,0x80,6,0x80,7}));
+			sc->Output[4*i+3]= (vector signed short)spu_shuffle(sc->source00[2*i+1],sc->source00[2*i+1],((vector unsigned char){0x80,8,0x80,9,0x80,10,0x80,11,0x80,12,0x80,13,0x80,14,0x80,15}));
 // 			sc->Output[4*i+2]= unpackhl(sc->source00[i]);
 // 			sc->Output[4*i+3]= unpackll(sc->source00[i]);
 		}
 	} else {
-		sc->Output[2*i]  =(vector short) spu_shuffle(sc->source00[i],sc->source00[i],((vector unsigned char){0x80,0,0x80,1,0x80,2,0x80,3,0x80,4,0x80,5,0x80,6,0x80,7}));
+		sc->Output[2*i]  =(vector signed short) spu_shuffle(sc->source00[i],sc->source00[i],((vector unsigned char){0x80,0,0x80,1,0x80,2,0x80,3,0x80,4,0x80,5,0x80,6,0x80,7}));
 		for (i=1;i<sc->width/16 + 1;i++)
 		{
-			sc->Output[2*i-1]=(vector short)spu_shuffle(sc->source00[i],sc->source00[i],((vector unsigned char){0x80,0,0x80,1,0x80,2,0x80,3,0x80,4,0x80,5,0x80,6,0x80,7}));
-			sc->Output[2*i]=(vector short)spu_shuffle(sc->source00[i],sc->source00[i],((vector unsigned char){0x80,8,0x80,9,0x80,10,0x80,11,0x80,12,0x80,13,0x80,14,0x80,15}));
+			sc->Output[2*i-1]=(vector signed short)spu_shuffle(sc->source00[i],sc->source00[i],((vector unsigned char){0x80,0,0x80,1,0x80,2,0x80,3,0x80,4,0x80,5,0x80,6,0x80,7}));
+			sc->Output[2*i]=(vector signed short)spu_shuffle(sc->source00[i],sc->source00[i],((vector unsigned char){0x80,8,0x80,9,0x80,10,0x80,11,0x80,12,0x80,13,0x80,14,0x80,15}));
 // 			sc->Output[4*i]	 =unpackhl(sc->source00[i]);
 // 			sc->Output[4*i+1]=unpackll(sc->source00[i]);
 		}
