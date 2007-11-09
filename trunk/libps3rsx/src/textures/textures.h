@@ -1,7 +1,6 @@
 /*
  * PS3 GPU blitting test program
  *
- * Copyright 2007 Vivien Chappelier <vivien.chappelier@free.fr>
  * Copyright 2007 Peter Popov <IronSPeter@gmail.com>
  *
  */
@@ -23,8 +22,7 @@ tex_format_t   	format;
 }
 texture_desc_t;
 
-uint32_t get_gpu_texture_size( const texture_desc_t *desc );
-void convert_texture( const texture_desc_t *desc, const uint32_t *user_rgba, void *out );
+
 
 typedef enum
 {
@@ -50,4 +48,6 @@ LINEAR_MIPMAP_LINEAR=0x6
 }
 tex_filter_t;
 
-void SetTexture2D( uint32_t offset, const texture_desc_t *desc, tex_wrap_t wrap, tex_filter_t filter );
+uint32_t get_gpu_texture_2D_size( const texture_desc_t *desc );
+void convert_texture_2D( const texture_desc_t *desc, const uint32_t *user_rgba, void *out );
+void set_texture_2D( const texture_desc_t *desc, uint32_t offset, tex_wrap_t wrap, tex_filter_t filter );
