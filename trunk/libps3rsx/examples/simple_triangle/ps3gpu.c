@@ -65,10 +65,10 @@ uint32_t width = 1024;
 uint32_t height = 768;
 uint32_t pitch = 1280 * 4;
 
-uint32_t fp_offset = 60 * 1024 * 1024;
-uint32_t vb_offset = 61 * 1024 * 1024;
-uint32_t ib_offset = 62 * 1024 * 1024;
-uint32_t tx_offset = 63 * 1024 * 1024;
+uint32_t fp_offset = 30 * 1024 * 1024;
+uint32_t vb_offset = 31 * 1024 * 1024;
+uint32_t ib_offset = 32 * 1024 * 1024;
+uint32_t tx_offset = 33 * 1024 * 1024;
 
 
 
@@ -243,17 +243,17 @@ int NV40_EmitBufferGeometry( uint32_t *fifo, uint8_t *mem )
   
   
 
-  uint32_t vnum = 9;
+  uint32_t vnum = 90;
   float pi = atan( 1.0f ) * 4.0f;
-  for( i = 0; i < 3; ++i )
+  for( i = 0; i < 30; ++i )
   {
   
     index_data[i * 3 + 0] = i * 3 + 0;
     index_data[i * 3 + 1] = i * 3 + 1;
     index_data[i * 3 + 2] = i * 3 + 2;
  
-    float si = sin( i * pi / 1.5f ) * 2.0f;
-    float co = cos( i * pi / 1.5f ) * 2.0f;
+    float si = sin( i * pi / 15.0f ) * 2.0f;
+    float co = cos( i * pi / 15.0f ) * 2.0f;
 
     float x1 = 200.0f, y1 = 80.0f;
     float x2 = -200.0f, y2 = 10.0f;
