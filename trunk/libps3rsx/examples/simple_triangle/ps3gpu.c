@@ -84,7 +84,7 @@ int NV40_LoadTex( uint32_t *fifo, uint8_t *fbmem )
   {
     fbmem[i + offset + 0] = 255;
     fbmem[i + offset + 1] = 50;
-    fbmem[i + offset + 2] = 100;
+    fbmem[i + offset + 2] = i / 2;
     fbmem[i + offset + 3] = ( rand() % 100 ) + 150;
 
   }
@@ -263,7 +263,7 @@ int NV40_EmitBufferGeometry( uint32_t *fifo, uint8_t *mem )
     float cy = 1024.0f / 2.0f;
     
     CV_OUT0( cx + x1 * co + y1 * si, cy - x1 * si + y1 * co, 1.0f, 0.5f, 0.0f  );
-    CV_OUT0( cx + x2 * co + y2 * si, cy - x2 * si + y2 * co, 0.0f, 0.0f, 1.0f  );
+    CV_OUT0( cx + x2 * co + y2 * si, cy - x2 * si + y2 * co, 1.0f, 0.0f, 1.0f  );
     CV_OUT0( cx + x3 * co + y3 * si, cy - x3 * si + y3 * co, 0.0f, 1.0f, 1.0f  );
 
   }
