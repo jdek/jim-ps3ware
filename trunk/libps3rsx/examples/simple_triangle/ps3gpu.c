@@ -67,7 +67,8 @@ uint32_t pitch = 1280 * 4;
 
 uint32_t fp_offset = 60 * 1024 * 1024;
 uint32_t vb_offset = 61 * 1024 * 1024;
-uint32_t tx_offset = 62 * 1024 * 1024;
+uint32_t ib_offset = 62 * 1024 * 1024;
+uint32_t tx_offset = 63 * 1024 * 1024;
 
 
 
@@ -176,6 +177,7 @@ int NV40_EmitBufferGeometry( uint32_t *fifo, uint8_t *mem )
   uint32_t i;
 
   uint32_t offset = vb_offset;
+  uint32_t indices = ib_offset;
   uint32_t xdrmem = 0xfeed0000;
   uint32_t stride = 24;
   //uint32_t pos = 0;
@@ -226,13 +228,30 @@ int NV40_EmitBufferGeometry( uint32_t *fifo, uint8_t *mem )
   OUT_RING  ( offset | ( 0 << 31 ) );
   OUT_RING  ( ( offset + 16 ) | ( 0 << 31 ) );
   
+  #define NV40TCL_INDEX_ADDRESS 0x181c
+  #define NV40TCL_INDEX_CONTROL 0x1820
+  #define NV40TCL_INDEX_DATA    0x1824
+  
+  BEGIN_RING(Nv3D, NV40TCL_INDEX_ADDRESS, 1 );
+  OUT_RING( indices | ( 0 << 31 ) );
+  
+  BEGIN_RING(Nv3D, NV40TCL_INDEX_CONTROL, 1 );
+  OUT_RING( 0x11 );
   
   float *data = (float *)( mem + offset );
+  uint16_t *index_data = (uint16_t *)( mem + indices );
+  
+  
 
   uint32_t vnum = 9;
   float pi = atan( 1.0f ) * 4.0f;
   for( i = 0; i < 3; ++i )
   {
+  
+    index_data[i * 3 + 0] = i * 3 + 0;
+    index_data[i * 3 + 1] = i * 3 + 1;
+    index_data[i * 3 + 2] = i * 3 + 2;
+ 
     float si = sin( i * pi / 1.5f ) * 2.0f;
     float co = cos( i * pi / 1.5f ) * 2.0f;
 
@@ -254,7 +273,7 @@ int NV40_EmitBufferGeometry( uint32_t *fifo, uint8_t *mem )
   BEGIN_RING(Nv3D, NV40TCL_BEGIN_END, 1);
   OUT_RING  (NV40TCL_BEGIN_END_TRIANGLES);
 
-  BEGIN_RING(Nv3D, NV40TCL_VB_VERTEX_BATCH, 1 );
+  BEGIN_RING(Nv3D, NV40TCL_INDEX_DATA, 1 );
   OUT_RING( ( 0 << NV40TCL_VB_VERTEX_BATCH_START_SHIFT ) | ( vnum << NV40TCL_VB_VERTEX_BATCH_COUNT_SHIFT ) );
   
   BEGIN_RING(Nv3D, NV40TCL_BEGIN_END, 1);
