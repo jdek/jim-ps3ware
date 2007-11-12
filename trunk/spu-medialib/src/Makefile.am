@@ -7,6 +7,8 @@ libscaler_la_SOURCES = yuv2rgb.c \
 		       yuv2argb_scaler.c \
 		       yuv2argb_scaler.h
 		       blitter.c \
-		       blitter.h
+		       blitter.h \
+		       draw_rect.c \
+		       draw_rect.h
 
 INCLUDES = -I$(top_srcdir)/include 
