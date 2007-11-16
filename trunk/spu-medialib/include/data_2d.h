@@ -12,7 +12,7 @@ typedef struct {
 	uint8_t G;
  	uint8_t B;
  	uint8_t A;
- }Pixel;
+ }Spu_Pixel;
 
 struct data_2 {
 	int alu;
@@ -35,8 +35,8 @@ struct data_2 {
 	int dst_x;
 	int dst_y;
 
-	Pixel Fg;
-	Pixel planemask;
+	Spu_Pixel Fg;
+	Spu_Pixel planemask;
 	
 	unsigned long long Inp;
 	unsigned long long Outp;

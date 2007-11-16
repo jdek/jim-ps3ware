@@ -116,7 +116,7 @@ draw_rect_t* init_draw_rect()
 	return local;
 }
 
-void prepare_solid(draw_rect_t *arg, ea_t outpoiter,int pitchOut,int bppO,int alu, Pixel planemask, Pixel Fg) { //initiate a solid fill operation
+void prepare_solid(draw_rect_t *arg, ea_t outpoiter,int pitchOut,int bppO,int alu, Spu_Pixel planemask, Spu_Pixel Fg) { //initiate a solid fill operation
 
 	struct draw_rect_s * arg_ptr;
 	arg_ptr=(struct draw_rect_s *) arg;
@@ -142,7 +142,7 @@ void solid(draw_rect_t *arg, ea_t outpointer,int x1, int x2 , int y1 , int y2) {
 	draw_rect_send_message(arg_ptr,RUN);
 }
 
-void prepare_copy(draw_rect_t *arg, ea_t outpoiter,ea_t inpointer,int pitchIn,int pitchOut,int bppO,int alu, Pixel planemask) { //initiate a copy operation
+void prepare_copy(draw_rect_t *arg, ea_t outpoiter,ea_t inpointer,int pitchIn,int pitchOut,int bppO,int alu, Spu_Pixel planemask) { //initiate a copy operation
 
 	struct draw_rect_s * arg_ptr;
 	arg_ptr=(struct draw_rect_s *) arg;
