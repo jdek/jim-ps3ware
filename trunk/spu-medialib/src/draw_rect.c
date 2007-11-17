@@ -211,7 +211,7 @@ void draw_rect_destroy(draw_rect_t* arg)
 	spe_in_mbox_write(arg_ptr->ctx,&message,1,SPE_MBOX_ALL_BLOCKING);
 	
 	pthread_join(arg_ptr->pts,NULL);
-	spe_context_destroy(arg_ptr->ctx);
+//	spe_context_destroy(arg_ptr->ctx);
 	
 }
 

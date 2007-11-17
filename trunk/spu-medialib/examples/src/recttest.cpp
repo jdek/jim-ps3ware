@@ -141,8 +141,8 @@ int main (int nArg, char* cArg[]) {
 	
 
 	
-	Pixel planemask;
-	Pixel color;
+	Spu_Pixel planemask;
+	Spu_Pixel color;
  	color.A=255;
  	color.R=50;
  	color.G=100;
@@ -385,7 +385,7 @@ int main (int nArg, char* cArg[]) {
 // 		destroy(bt[i]);
 // 	}
 	ps3fb_cleanup();
-//	destroy(bt);
+	draw_rect_destroy(draw);
 
 	return(0) ;
 }
