@@ -35,7 +35,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
+#include <libspe2.h>
 #include <pthread.h>
 #include <malloc.h>
 #include <sys/types.h>
@@ -120,7 +120,7 @@ blitter_t* blitt(img_argt* iargs_arg)
 	bs->runflags=0;
 	if ((bs->iargs->SourceFormat == YUY2 || bs->iargs->SourceFormat == YUYV422) && (bs->iargs->TargetFormat == ARGB))
 	{
-		bs->run_handle=spu_blit_yuv422_to_argb_handle;
+		bs->run_handle=spu_blit_yuv422_handle;
 		printf("SPU_Blitter: YUV422(YUY2) to ARGB conversion \n");
 	}
 
