@@ -18,6 +18,7 @@ typedef struct
 uint32_t 	width;
 uint32_t	height;
 uint32_t 	mips;
+uint32_t        length;
 tex_format_t   	format;
 }
 texture_desc_t;
@@ -48,11 +49,13 @@ LINEAR_MIPMAP_LINEAR=0x6
 }
 tex_filter_t;
 
-//Get size of texture in video memory.
-uint32_t get_gpu_texture_2D_size( const texture_desc_t *desc );
-//Convert texture from plain RGBA data to mipmapped DXT form
-void convert_texture_2D( const texture_desc_t *desc, const uint32_t *user_rgba, void *out );
-//Get size in fifo buffer for texture packet
-uint32_t get_texture_2D_fifo_size( );
-//Construct texture packet in the user memory
-void set_texture_2D( const texture_desc_t *desc, uint32_t offset, tex_wrap_t wrap, tex_filter_t filter, void *fifo_buffer );
+int set_texture_2D( 
+const texture_desc_t *desc, 
+uint32_t offset, 
+uint32_t unit, 
+tex_wrap_t wrap, 
+tex_filter_t mag_filter,
+tex_filter_t min_filter,
+uint32_t *fifo_buffer, 
+uint32_t hw_sub );
+
