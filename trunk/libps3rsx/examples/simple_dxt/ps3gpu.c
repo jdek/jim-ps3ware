@@ -12,10 +12,12 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
+#include <sys/stat.h>
 #include <signal.h>
 #include <fcntl.h>
 #include <math.h>
 
+#include "../../src/types.h"
 #include "../../include/nouveau_class.h"
 #include "../../src/fifo/utils.h"
 #include "../../src/textures/textures.h"
@@ -66,7 +68,7 @@ uint32_t width = 1024;
 uint32_t height = 768;
 uint32_t pitch = 1280 * 4;
 
-#define  BB 68
+#define  BB 31
 
 uint32_t fp_offset = ( BB + 0 ) * 1024 * 1024;
 uint32_t vb_offset = ( BB + 1 ) * 1024 * 1024;
@@ -77,141 +79,39 @@ uint8_t data[256][256][4];
 
 int NV40_LoadTexDXT( uint32_t *fifo, uint8_t *fbmem )
 {
-  uint32_t *ptr = fifo;
-  uint32_t i, j;
-  uint32_t unit = 0;
-  uint32_t offset = tx_offset;
-
-  uint32_t width = 256, height = 256;
   
-  for( i = 0; i < 256; ++i )
+  int fp = open( "../../data/p512.dxt3", O_RDONLY );
+  
+  if( fp != -1 )
   {
-    for( j = 0; j < 256; ++j )
-    {
-	float x = ( i - 127.5f ) / 127.5f;
-	float y = ( j - 127.5f ) / 127.5f;
-	float r =  ( 1.0f - x * x - y * y );
-	if( r < 0.0f )
-	{
-	    r = 0.0f;
-	}
-	uint8_t v = (uint8_t)( r * r * 255.0f );
-	data[i][j][0] = i * 128;
-	data[i][j][1] = i * 128;
-	data[i][j][2] = i * 128;
-	data[i][j][3] = 255;
-	
+    int status;
+    struct stat buffer;
+    status = fstat( fp, &buffer );
+
+    void *file = mmap( 0, buffer.st_size, PROT_READ, MAP_PRIVATE, fp, 0 );
+    texture_desc_t *desc = file;    
+    if( desc )
+    {	
+	printf( "%d\n", desc->length );
+	uint8 *data = file;
+	data += sizeof( *desc ); 
+	memcpy( fbmem + tx_offset, data, desc->length );
+	close( fp ); 
+	return set_texture_2D( desc, tx_offset, 0, CLAMP, LINEAR, LINEAR_MIPMAP_LINEAR, fifo, Nv3D ); 
+  	
     }
+    
+    close( fp );
+    
+  
   }
   
-  texture_desc_t desc;
-  desc.width = 256;
-  desc.height = 256;
-  desc.format = DXT1;
-  desc.mips = 0;
+  return 0;
   
-  convert_texture_2D( &desc, &data[0][0], &fbmem[offset], 1.2f );
-
-  uint32_t swz =
-    NV40TCL_TEX_SWIZZLE_S0_X_S1 | NV40TCL_TEX_SWIZZLE_S0_Y_S1 |
-    NV40TCL_TEX_SWIZZLE_S0_Z_S1 | NV40TCL_TEX_SWIZZLE_S0_W_S1 |
-    NV40TCL_TEX_SWIZZLE_S1_X_X | NV40TCL_TEX_SWIZZLE_S1_Y_Y |
-    NV40TCL_TEX_SWIZZLE_S1_Z_Z | NV40TCL_TEX_SWIZZLE_S1_W_W;
-
-
-  BEGIN_RING(Nv3D, NV40TCL_TEX_OFFSET(unit), 8);
-  OUT_RING  ( offset );
-
-  uint32_t tex_fmt = NV40TCL_TEX_FORMAT_FORMAT_DXT1 |
-    NV40TCL_TEX_FORMAT_DIMS_2D |
-    NV40TCL_TEX_FORMAT_DMA0 |
-    NV40TCL_TEX_FORMAT_NO_BORDER | 
-    (0x8000) |
-    (8 << NV40TCL_TEX_FORMAT_MIPMAP_COUNT_SHIFT);
-
-  OUT_RING  ( tex_fmt );
-  
-  
-  OUT_RING  (
-    NV40TCL_TEX_WRAP_S_REPEAT |
-    NV40TCL_TEX_WRAP_T_REPEAT |
-    NV40TCL_TEX_WRAP_R_REPEAT);
-
-  OUT_RING  (NV40TCL_TEX_ENABLE_ENABLE | 0x78000 );
-  OUT_RING  (swz);
-
-  OUT_RING  (
-    NV40TCL_TEX_FILTER_MIN_LINEAR_MIPMAP_LINEAR |
-    NV40TCL_TEX_FILTER_MAG_LINEAR | 0x3fd6);
-  OUT_RING  ((width << 16) | height);
-  OUT_RING  (0); /* border ARGB */
-  BEGIN_RING(Nv3D, NV40TCL_TEX_SIZE1(unit), 1);
-
-  OUT_RING  ( (1 << NV40TCL_TEX_SIZE1_DEPTH_SHIFT) | 0 );
-
-  return ptr - fifo;
 
 }
 
 
-int NV40_LoadTex( uint32_t *fifo, uint8_t *fbmem )
-{
-  uint32_t *ptr = fifo;
-  uint32_t i;
-  uint32_t unit = 0;
-  uint32_t offset = tx_offset;
-
-  uint32_t width = 128, height = 128;
-  for( i = 0; i < width * height * 4; i += 4 )
-  {
-    fbmem[i + offset + 0] = 255;
-    fbmem[i + offset + 1] = 50;
-    fbmem[i + offset + 2] = i / 2;
-    fbmem[i + offset + 3] = ( rand() % 100 ) + 150;
-
-  }
-
-  uint32_t swz =
-    NV40TCL_TEX_SWIZZLE_S0_X_S1 | NV40TCL_TEX_SWIZZLE_S0_Y_S1 |
-    NV40TCL_TEX_SWIZZLE_S0_Z_S1 | NV40TCL_TEX_SWIZZLE_S0_W_S1 |
-    NV40TCL_TEX_SWIZZLE_S1_X_X | NV40TCL_TEX_SWIZZLE_S1_Y_Y |
-    NV40TCL_TEX_SWIZZLE_S1_Z_Z | NV40TCL_TEX_SWIZZLE_S1_W_W;
-
-
-
-  BEGIN_RING(Nv3D, NV40TCL_TEX_OFFSET(unit), 8);
-  OUT_RING  ( offset );
-
-  OUT_RING  (
-    NV40TCL_TEX_FORMAT_FORMAT_A8R8G8B8 |
-    NV40TCL_TEX_FORMAT_LINEAR  | 
-    NV40TCL_TEX_FORMAT_DIMS_2D |
-    NV40TCL_TEX_FORMAT_DMA0 |
-    NV40TCL_TEX_FORMAT_NO_BORDER | (0x8000) |
-    (1 << NV40TCL_TEX_FORMAT_MIPMAP_COUNT_SHIFT));
-
-  OUT_RING  (
-    NV40TCL_TEX_WRAP_S_REPEAT |
-    NV40TCL_TEX_WRAP_T_REPEAT |
-    NV40TCL_TEX_WRAP_R_REPEAT);
-
-  OUT_RING  (NV40TCL_TEX_ENABLE_ENABLE);
-  OUT_RING  (swz);
-
-  OUT_RING  (
-    NV40TCL_TEX_FILTER_MIN_LINEAR |
-    NV40TCL_TEX_FILTER_MAG_LINEAR | 0x3fd6);
-  OUT_RING  ((width << 16) | height);
-  OUT_RING  (0); /* border ARGB */
-  BEGIN_RING(Nv3D, NV40TCL_TEX_SIZE1(unit), 1);
-
-  OUT_RING  (
-    (1 << NV40TCL_TEX_SIZE1_DEPTH_SHIFT) |
-    width * 4 );
-
-  return ptr - fifo;
-
-}
 
 int NV40_LoadFragProg( uint32_t *fifo, uint32_t *fbmem, nv_pshader_t *shader)
 {
@@ -326,7 +226,7 @@ int NV40_EmitBufferGeometry( uint32_t *fifo, uint8_t *mem )
   
 
   uint32_t vnum = 120;
-  int o = 100;
+  int o = 0;
   
   for( i = 0; i < 30; ++i )
   {
@@ -338,10 +238,8 @@ int NV40_EmitBufferGeometry( uint32_t *fifo, uint8_t *mem )
     index_data[i * 6 + 4] = i * 4 + 1;
     index_data[i * 6 + 5] = i * 4 + 3;
       
-    int j = pow( 1.5, i );
-    
-    
-     
+    int j = pow( 1.6, i );
+         
     CV_OUT0( o,     100,     	0.0f, 0.0f, 0.0f  );
     CV_OUT0( o,     100 + j, 	0.0f, 0.0f, 1.0f  );
     CV_OUT0( o + j, 100, 	0.0f, 1.0f, 0.0f  );
@@ -616,9 +514,7 @@ void sigint_handler(int sig)
 int main(void)
 {
   struct gpu gpu;
-
-
-
+  
   memset(&gpu, 0, sizeof(gpu));
 
   if (gpu_get_info(&gpu) < 0)
