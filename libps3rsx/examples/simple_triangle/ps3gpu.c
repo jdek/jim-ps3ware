@@ -66,92 +66,13 @@ uint32_t width = 1024;
 uint32_t height = 768;
 uint32_t pitch = 1280 * 4;
 
-#define  BB 68
+#define  BB 41
 
 uint32_t fp_offset = ( BB + 0 ) * 1024 * 1024;
 uint32_t vb_offset = ( BB + 1 ) * 1024 * 1024;
 uint32_t ib_offset = ( BB + 2 ) * 1024 * 1024;
 uint32_t tx_offset = ( BB + 3 ) * 1024 * 1024;
 
-uint8_t data[256][256][4];
-
-int NV40_LoadTexDXT( uint32_t *fifo, uint8_t *fbmem )
-{
-  uint32_t *ptr = fifo;
-  uint32_t i, j;
-  uint32_t unit = 0;
-  uint32_t offset = tx_offset;
-
-  uint32_t width = 256, height = 256;
-  
-  for( i = 0; i < 256; ++i )
-  {
-    for( j = 0; j < 256; ++j )
-    {
-	float x = ( i - 127.5f ) / 127.5f;
-	float y = ( j - 127.5f ) / 127.5f;
-	float r =  ( 1.0f - x * x - y * y );
-	if( r < 0.0f )
-	{
-	    r = 0.0f;
-	}
-	uint8_t v = (uint8_t)( r * r * 255.0f );
-	data[i][j][0] = i * 128;
-	data[i][j][1] = i * 128;
-	data[i][j][2] = i * 128;
-	data[i][j][3] = 255;
-	
-    }
-  }
-  
-  texture_desc_t desc;
-  desc.width = 256;
-  desc.height = 256;
-  desc.format = DXT1;
-  desc.mips = 0;
-  
-  convert_texture_2D( &desc, &data[0][0], &fbmem[offset], 1.2f );
-
-  uint32_t swz =
-    NV40TCL_TEX_SWIZZLE_S0_X_S1 | NV40TCL_TEX_SWIZZLE_S0_Y_S1 |
-    NV40TCL_TEX_SWIZZLE_S0_Z_S1 | NV40TCL_TEX_SWIZZLE_S0_W_S1 |
-    NV40TCL_TEX_SWIZZLE_S1_X_X | NV40TCL_TEX_SWIZZLE_S1_Y_Y |
-    NV40TCL_TEX_SWIZZLE_S1_Z_Z | NV40TCL_TEX_SWIZZLE_S1_W_W;
-
-
-  BEGIN_RING(Nv3D, NV40TCL_TEX_OFFSET(unit), 8);
-  OUT_RING  ( offset );
-
-  uint32_t tex_fmt = NV40TCL_TEX_FORMAT_FORMAT_DXT1 |
-    NV40TCL_TEX_FORMAT_DIMS_2D |
-    NV40TCL_TEX_FORMAT_DMA0 |
-    NV40TCL_TEX_FORMAT_NO_BORDER | 
-    (0x8000) |
-    (8 << NV40TCL_TEX_FORMAT_MIPMAP_COUNT_SHIFT);
-
-  OUT_RING  ( tex_fmt );
-  
-  
-  OUT_RING  (
-    NV40TCL_TEX_WRAP_S_REPEAT |
-    NV40TCL_TEX_WRAP_T_REPEAT |
-    NV40TCL_TEX_WRAP_R_REPEAT);
-
-  OUT_RING  (NV40TCL_TEX_ENABLE_ENABLE | 0x78000 );
-  OUT_RING  (swz);
-
-  OUT_RING  (
-    NV40TCL_TEX_FILTER_MIN_LINEAR_MIPMAP_LINEAR |
-    NV40TCL_TEX_FILTER_MAG_LINEAR | 0x3fd6);
-  OUT_RING  ((width << 16) | height);
-  OUT_RING  (0); /* border ARGB */
-  BEGIN_RING(Nv3D, NV40TCL_TEX_SIZE1(unit), 1);
-
-  OUT_RING  ( (1 << NV40TCL_TEX_SIZE1_DEPTH_SHIFT) | 0 );
-
-  return ptr - fifo;
-
-}
 
 
 int NV40_LoadTex( uint32_t *fifo, uint8_t *fbmem )
@@ -323,32 +244,32 @@ int NV40_EmitBufferGeometry( uint32_t *fifo, uint8_t *mem )
   float *data = (float *)( mem + offset );
   uint16_t *index_data = (uint16_t *)( mem + indices );
   
-  
+  float pi = atan( 1.0f ) * 4.0f;
 
-  uint32_t vnum = 120;
-  int o = 100;
+
+  uint32_t vnum = 90;
+  
   
   for( i = 0; i < 30; ++i )
   {
-  
-    index_data[i * 6 + 0] = i * 4 + 0;
-    index_data[i * 6 + 1] = i * 4 + 1;
-    index_data[i * 6 + 2] = i * 4 + 2;
-    index_data[i * 6 + 3] = i * 4 + 2;
-    index_data[i * 6 + 4] = i * 4 + 1;
-    index_data[i * 6 + 5] = i * 4 + 3;
-      
-    int j = pow( 1.5, i );
-    
-    
-     
-    CV_OUT0( o,     100,     	0.0f, 0.0f, 0.0f  );
-    CV_OUT0( o,     100 + j, 	0.0f, 0.0f, 1.0f  );
-    CV_OUT0( o + j, 100, 	0.0f, 1.0f, 0.0f  );
-    CV_OUT0( o + j, 100 + j,    0.0f, 1.0f, 1.0f  );
-    o += j;
+    index_data[i * 3 + 0] = i * 3 + 0;
+    index_data[i * 3 + 1] = i * 3 + 1;
+    index_data[i * 3 + 2] = i * 3 + 2;
+
+    float si = sin( i * pi / 15.0f );
+    float co = cos( i * pi / 15.0f );
+
+    float x1 = 200.0f, y1 = 80.0f;
+    float x2 = -200.0f, y2 = 10.0f;
+    float x3 = -200.0f, y3 = 150.0f;
+
+
+    CV_OUT0( 256.0f + x1 * co + y1 * si, 256.0f - x1 * si + y1 * co, 1.0f, 0.5f, 0.0f  );
+    CV_OUT0( 256.0f + x2 * co + y2 * si, 256.0f - x2 * si + y2 * co, 0.0f, 0.0f, 1.0f  );
+    CV_OUT0( 256.0f + x3 * co + y3 * si, 256.0f - x3 * si + y3 * co, 0.0f, 1.0f, 1.0f  );
 
   }
+  
 
   
   
@@ -569,7 +490,7 @@ int bind3d(  uint32_t *fifo, uint32_t *fbmem, uint8_t *xdrmem, uint32_t obj )
     NV40TCL_CLEAR_BUFFERS_DEPTH
   );
 
-  ptr += NV40_LoadTexDXT( ptr, (uint8_t *)fbmem );
+  ptr += NV40_LoadTex( ptr, (uint8_t *)fbmem );
   ptr += NV40_LoadVtxProg( ptr,  &nv40_vp );
   ptr += NV40_LoadFragProg( ptr, fbmem,  &nv30_fp );
   //ptr += NV40_EmitGeometry( ptr );
