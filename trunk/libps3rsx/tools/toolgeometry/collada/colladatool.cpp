@@ -16,11 +16,11 @@
 #include "ColladaAnimation.h"
 
 
-struct mini_cache_t
+struct cache_opt_t
 {
 	uint16 entries[4 + 3];
 	
-	mini_cache_t( )
+	cache_opt_t( )
 	{
 		entries[0] = 0xffff;
 		entries[1] = 0xffff;
@@ -93,7 +93,7 @@ void re_arrange( const std::vector<uint16> &_indices, std::vector<uint16> &dst )
 	std::vector<uint16> indices = _indices;
 	dst.clear();
 
-	mini_cache_t cache;
+	cache_opt_t cache;
 
 	for( size_t j = 0; j < indices.size(); j += 3 )
 	{
