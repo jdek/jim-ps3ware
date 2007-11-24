@@ -1,0 +1,7 @@
+
+
+
+Copyright (c) <2007> <Peter S. Popov>
+
+Content of this directory is protected by copyrights.
+You can not distrubute these files outside "libps3rsx" package. 
