@@ -2,16 +2,16 @@
 
 #include "XMLUtils.h"
 
-class ÑColladaIDREFArray : public CAutoContainer<ÑColladaIDREFArray>
+class CColladaIDREFArray : public CAutoContainer<CColladaIDREFArray>
 {
-	std::vector<SStrng>  body;
-	std::vector<xmlChar> content;
+  std::vector<SStrng>  body;
+  std::vector<xmlChar> content;
 public:
-	ÑColladaIDREFArray(void);
+  CColladaIDREFArray(void);
 public:
-	const std::vector<SStrng> &GetArray() const;
-	virtual ~ÑColladaIDREFArray(void);
-	void BuildContent(){};
-	static const xmlChar *GetName() { return _X"IDREF_array"; };
-	static ÑColladaIDREFArray *CreateInstance( xmlNode *node );
+  const std::vector<SStrng> &GetNameArray() const;
+  virtual ~CColladaIDREFArray(void);
+  void BuildContent(){};
+  static const xmlChar *GetName() { return _X"IDREF_array"; };
+  static CColladaIDREFArray *CreateInstance( xmlNode *node );
 };

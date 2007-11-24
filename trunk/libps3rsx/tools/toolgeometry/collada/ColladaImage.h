@@ -4,12 +4,12 @@
 
 class CColladaImage : public CAutoContainer<CColladaImage>
 {
-	SStrng fileName;
+  SStrng fileName;
 public:
-	CColladaImage(void);
+  CColladaImage(void);
 public:
-	virtual ~CColladaImage(void);
-	static const xmlChar *GetName() { return _X"image"; };
-	static CColladaImage *CreateInstance( const xmlNode *node );
-	SStrng &GetFileName(){ return fileName; };
+  virtual ~CColladaImage(void);
+  static const xmlChar *GetName() { return _X"image"; };
+  static CColladaImage *CreateInstance( const xmlNode *node );
+  SStrng &GetFileName(){ return fileName; };
 };

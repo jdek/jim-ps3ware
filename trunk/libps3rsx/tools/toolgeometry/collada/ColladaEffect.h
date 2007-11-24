@@ -3,13 +3,15 @@
 
 class CColladaEffect : public CAutoContainer<CColladaEffect>
 {
-	CColladaImage *diffuseImage;
+  CColladaImage *diffuseImage;
 public:
-	CColladaEffect(void);
+  CColladaEffect(void);
 public:
-	virtual ~CColladaEffect(void);
-    static const xmlChar *GetName() { return _X"effect"; };
-	static CColladaEffect *CreateInstance( const xmlNode *node );
-	CColladaImage *GetDiffuse() const { return diffuseImage; };
+  virtual ~CColladaEffect(void);
+  static const xmlChar *GetName() { return _X"effect"; };
+  static CColladaEffect *CreateInstance( const xmlNode *node );
+  CColladaImage *GetDiffuse() const { return diffuseImage; };
 
 };
+
+
