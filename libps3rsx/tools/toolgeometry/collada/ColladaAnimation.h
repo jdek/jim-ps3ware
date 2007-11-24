@@ -5,13 +5,13 @@ class CColladaSource;
 
 class CColladaAnimation : public CAutoContainer<CColladaAnimation>
 {
-	CColladaSource *matrixAnim;
-	void InitInput( const  xmlNode * input );
+  CColladaSource *matrixAnim;
+  void InitInput( const  xmlNode * input );
 public:
-	CColladaAnimation(void);
+  CColladaAnimation(void);
 public:
-	virtual ~CColladaAnimation(void);
+  virtual ~CColladaAnimation(void);
   static const xmlChar *GetName() { return _X"animation"; };
-	static CColladaAnimation *CreateInstance( const xmlNode *node );
-	static void Freeeezzzze( const xmlChar *animName );
+  static CColladaAnimation *CreateInstance( const xmlNode *node );
+
 };

@@ -2,12 +2,12 @@
 
 #include "XMLUtils.h"
 class CColladaFloatArray;
-class ÑColladaIDREFArray;
+class CColladaIDREFArray;
 
 class CColladaSource : public CAutoContainer<CColladaSource>
 {
 	CColladaFloatArray  *fArray;
-	ÑColladaIDREFArray  *sArray;
+	CColladaIDREFArray  *sArray;
 	size_t              floatStride;
 public:
 	CColladaSource(void);

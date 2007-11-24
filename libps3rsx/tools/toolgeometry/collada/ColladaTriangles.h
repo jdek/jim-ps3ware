@@ -1,7 +1,7 @@
 #pragma once
 
-#include "XMLUtils.h"
-#include "..//Math//AABox.h"
+#include "aabb.h"
+
 
 class CColladaSource;
 class CColladaEffect;
@@ -27,7 +27,7 @@ class CColladaTriangles :  public CAutoContainer<CColladaTriangles>
 	void InitInput( const  xmlNode * input );
 	CColladaController *bindController;
 public:
-	CAABox            box;   
+	aabb            box;   
 	CColladaTriangles(void);
 public:
 	void SetBindController( CColladaController * controller );

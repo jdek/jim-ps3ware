@@ -27,13 +27,13 @@ void CColladaSource::BuildContent()
 const std::vector<float> &CColladaSource::GetFloatArray() const 
 { 
 	static std::vector<float> aux; 
-	return fArray ? fArray->GetArray() : aux; 
+	return fArray ? fArray->GetFloatArray() : aux; 
 };
 
 const std::vector<SStrng> &CColladaSource::GetIDREFArray() const
 {
 	static std::vector<SStrng> aux; 
-	return sArray ? sArray->GetArray() : aux; 
+	return sArray ? sArray->GetNameArray() : aux; 
 }
 
 
@@ -56,7 +56,7 @@ CColladaSource *CColladaSource::CreateInstance( xmlNode *node )
 		CColladaFloatArray *fArray = CColladaFloatArray::Get( source );
 		colladaSource->fArray = fArray;
 
-		ÑColladaIDREFArray *sArray = ÑColladaIDREFArray::Get( source );
+		CColladaIDREFArray *sArray = CColladaIDREFArray::Get( source );
 		colladaSource->sArray = sArray;
 
 

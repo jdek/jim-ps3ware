@@ -38,14 +38,14 @@ public:
 		container[SStrng(id)] = obj;
 	};
 
-	static const std::vector<T*> GetArrayContainer()
+	static const std::vector<T*> &GetArrayContainer()
 	{
 		return arrayContainer;
 	}
 
 	static T *Get(  const xmlChar * id )
 	{
-		std::map<SStrng, T*>::iterator it = container.find( id );
+		class std::map<SStrng, T*>::iterator it = container.find( id );
 		if( it != container.end() )
 			return it->second;
 		return 0;
@@ -54,7 +54,7 @@ public:
 
 	static void Clear()
 	{
-		for( std::map< SStrng, T*>::iterator it = container.begin();
+		for( class std::map< SStrng, T*>::iterator it = container.begin();
 			it != container.end();
 			++it)
 		{

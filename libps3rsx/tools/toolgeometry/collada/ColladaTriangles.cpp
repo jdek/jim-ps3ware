@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include "XMLUtils.h"
 #include "ColladaTriangles.h"
 #include "ColladaSource.h"
 #include "ColladaVertices.h"
@@ -163,7 +164,7 @@ void CColladaTriangles::GetFatVertices( std::vector<SFatVertex> *vertices, std::
 				return;
 			}
 
-			SFatVertex vertex = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+			SFatVertex vertex = { { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f } };
 			FillPointer( positions, 3, pos, vertex.coo );
 			FillPointer( normals, 3, nor, vertex.nor );
 			FillPointer( texcoords[0], 2, tx0, vertex.tx0 );
