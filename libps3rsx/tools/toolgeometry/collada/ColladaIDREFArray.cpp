@@ -25,7 +25,8 @@ CColladaIDREFArray *CColladaIDREFArray::CreateInstance( xmlNode *node )
     for( size_t i = 0; i < arrayIDREF->content.size(); ++i )
     {
       xmlChar &v = arrayIDREF->content[i];
-      if( v == (xmlChar)' '  || v == (xmlChar)'/n' )
+	//printf( "%c %i\n", v, v );
+      if( v == (xmlChar)' ' )
       {
         v = 0;
         dumped = true;
@@ -40,11 +41,13 @@ CColladaIDREFArray *CColladaIDREFArray::CreateInstance( xmlNode *node )
       }
     }
 
-    //#define ASSERT( condition, msg, blame_canada ) assert(condition)
+    size_t cnt = (size_t)atoi( (char *)count );
 
-    assert( (size_t)atoi( (char *)count ) == arrayIDREF->body.size() );
+    //printf( "sizes %i %i \n", cnt, arrayIDREF->body.size() );
 
-    //std::replace( arrayIDREF->content.begin(), arrayIDREF->content.end(),
+    assert(  cnt == arrayIDREF->body.size() );
+
+
     return arrayIDREF;
   }
 

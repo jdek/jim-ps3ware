@@ -26,9 +26,7 @@ CColladaTriangles::CColladaTriangles(void) : bindController( 0 )
 }
 
 CColladaTriangles::~CColladaTriangles(void)
-{
-
-}
+{}
 
 void CColladaTriangles::SetBindController( CColladaController * controller )
 {
@@ -43,10 +41,10 @@ void CColladaTriangles::InitInput( const  xmlNode * input )
 	const xmlChar *offset;
 
 	if
-	( 
-		( semantic = LoadStrAttr( input, _X"semantic" ) ) &&
-		( source = LoadStrAttr( input, _X"source" ) ) &&
-		( offset = LoadStrAttr( input, _X"offset" ) ) 
+	(
+	    ( semantic = LoadStrAttr( input, _X"semantic" ) ) &&
+	    ( source = LoadStrAttr( input, _X"source" ) ) &&
+	    ( offset = LoadStrAttr( input, _X"offset" ) )
 	)
 	{
 		CColladaSource *sourceArray = CColladaSource::Get( source );
@@ -68,12 +66,12 @@ void CColladaTriangles::InitInput( const  xmlNode * input )
 			{
 				const xmlChar *set = LoadStrAttr( input, _X"set" );
 				if( set )
-				{
-					size_t index = atoi((const char * )set);
-					texcoords[index] = sourceArray;
-					sourceArray->BuildContent();
-					texcoordsIB[index] = numslice;
-				}
+					{
+						size_t index = atoi((const char * )set);
+						texcoords[index] = sourceArray;
+						sourceArray->BuildContent();
+						texcoordsIB[index] = numslice;
+					}
 			}
 		}
 
@@ -104,9 +102,9 @@ void CColladaTriangles::InitInput( const  xmlNode * input )
 uint64 Cook( uint16 pos, uint16 nor, uint16 tex, uint16 aux = 0 )
 {
 	return ( uint64( pos ) << 0  ) +
-		   ( uint64( nor ) << 16 ) +
-		   ( uint64( tex ) << 32 ) +
-		   ( uint64( aux ) << 48 );
+	       ( uint64( nor ) << 16 ) +
+	       ( uint64( tex ) << 32 ) +
+	       ( uint64( aux ) << 48 );
 };
 
 void FillPointer( CColladaSource *source, size_t stride, uint16 pos, float *dst  )
@@ -169,7 +167,7 @@ void CColladaTriangles::GetFatVertices( std::vector<SFatVertex> *vertices, std::
 			FillPointer( normals, 3, nor, vertex.nor );
 			FillPointer( texcoords[0], 2, tx0, vertex.tx0 );
 
-		    SWeightInfo info;
+			SWeightInfo info;
 
 			if( positions && bindController )
 			{
@@ -186,7 +184,7 @@ void CColladaTriangles::GetFatVertices( std::vector<SFatVertex> *vertices, std::
 				}
 				for( size_t j = 0; j < 3; ++j )
 				{
-					vertex.coo[j] = mat.vec[j][0] * dst[0] + mat.vec[j][1] * dst[1] + mat.vec[j][2] * dst[2] + mat.vec[j][3]; 
+					vertex.coo[j] = mat.vec[j][0] * dst[0] + mat.vec[j][1] * dst[1] + mat.vec[j][2] * dst[2] + mat.vec[j][3];
 				}
 			};
 
@@ -213,8 +211,8 @@ void CColladaTriangles::GetFatVertices( std::vector<SFatVertex> *vertices, std::
 			maxV.maximize( coo );
 
 			vertex.tx0[1] = 1.0f - vertex.tx0[1];
-			
-			
+
+
 			///std::swap( vertex.tx0[0], vertex.tx0[1] );
 			vertices->push_back( vertex );
 		}
@@ -244,7 +242,7 @@ CColladaTriangles *CColladaTriangles::CreateInstance( const xmlNode * root )
 
 	p = Find( root->children, _X"p" );
 	count = LoadStrAttr( root, _X"count" ) ;
-	
+
 	if( p && count )
 	{
 		size_t nCount = atoi((char *)count) * triangles->stride * 3;
@@ -253,9 +251,9 @@ CColladaTriangles *CColladaTriangles::CreateInstance( const xmlNode * root )
 		const xmlChar *v = p->children->content;
 		for( size_t i = 0; i < nCount; ++i )
 		{
-			while( IsSpace(*v) )v++; 
+			while( IsSpace(*v) )v++;
 			int val = atoi( (const char *)v );
-			while( !IsSpace(*v) )v++; 
+			while( !IsSpace(*v) )v++;
 			triangles->body[i] = (uint16)val;
 		}
 

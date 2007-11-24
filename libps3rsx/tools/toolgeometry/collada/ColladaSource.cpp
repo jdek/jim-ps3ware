@@ -4,12 +4,10 @@
 #include "ColladaIDREFArray.h"
 
 CColladaSource::CColladaSource()
-{
-}
+{}
 
 CColladaSource::~CColladaSource()
-{
-}
+{}
 
 void CColladaSource::BuildContent()
 {
@@ -24,16 +22,16 @@ void CColladaSource::BuildContent()
 	}
 }
 
-const std::vector<float> &CColladaSource::GetFloatArray() const 
-{ 
-	static std::vector<float> aux; 
-	return fArray ? fArray->GetFloatArray() : aux; 
+const std::vector<float> &CColladaSource::GetFloatArray() const
+{
+	static std::vector<float> aux;
+	return fArray ? fArray->GetFloatArray() : aux;
 };
 
 const std::vector<SStrng> &CColladaSource::GetIDREFArray() const
 {
-	static std::vector<SStrng> aux; 
-	return sArray ? sArray->GetNameArray() : aux; 
+	static std::vector<SStrng> aux;
+	return sArray ? sArray->GetNameArray() : aux;
 }
 
 
@@ -45,13 +43,14 @@ CColladaSource *CColladaSource::CreateInstance( xmlNode *node )
 	const xmlChar *source;
 	const xmlChar *stride;
 	if
-	( 
-		( common = Find( node->children, _X"technique_common" ) )  && 
-		( accessor = Find( common->children, _X"accessor" ) )  && 
-		( source = LoadStrAttr( accessor, _X"source" ) ) 
+	(
+	    ( common = Find( node->children, _X"technique_common" ) )  &&
+	    ( accessor = Find( common->children, _X"accessor" ) )  &&
+	    ( source = LoadStrAttr( accessor, _X"source" ) )
 
 	)
 	{
+
 		CColladaSource *colladaSource = new CColladaSource;
 		CColladaFloatArray *fArray = CColladaFloatArray::Get( source );
 		colladaSource->fArray = fArray;
