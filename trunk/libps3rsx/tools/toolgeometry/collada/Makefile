@@ -1,4 +1,4 @@
-CPPFLAGS=-Wall -O3 -I/usr/include/libxml2
+CPPFLAGS=-Wall -g -I/usr/include/libxml2
 
 SOURCE= colladatool.cpp ColladaNode.cpp ColladaSource.cpp ColladaTriangles.cpp ColladaVertices.cpp ColladaAnimation.cpp ColladaMaterial.cpp ColladaBindMaterial.cpp ColladaController.cpp ColladaEffect.cpp ColladaFloatArray.cpp ColladaGeometry.cpp ColladaImage.cpp ColladaIDREFArray.cpp
 
@@ -6,15 +6,15 @@ SOURCE= colladatool.cpp ColladaNode.cpp ColladaSource.cpp ColladaTriangles.cpp C
 OBJ = $(SOURCE:%.cpp=%.o)
 
 
-all:colladatool
+all:collada
 
 objc: $(SOURCE)
 	$(CXX) $(CPPFLAGS) $(SOURCE) -c 
 
 
-colladatool: $(OBJ) 
-	$(CXX) -lxml2 $(CPPFLAGS) $(OBJ) -o colladatool
+collada: $(OBJ) 
+	$(CXX) -lxml2 $(CPPFLAGS) $(OBJ) -o collada
 
 
 clean:
-	$(RM) *.o *~ colladatool
+	$(RM) *.o *~ collada

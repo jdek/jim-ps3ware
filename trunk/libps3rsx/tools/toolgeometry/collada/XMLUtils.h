@@ -14,56 +14,77 @@ struct SStrng
 };
 
 
-template<typename T> class CAutoContainer 
+template<typename T> class CAutoContainer
 {
-	static std::map< SStrng, T*> container;
-	static std::vector<T*>       arrayContainer;
-	const xmlChar *myId;
-public:
-	void SetId( const xmlChar *id )
-	{
-		myId = id;
-	}
-	static void Add( const xmlChar * id, T *obj )
-	{
-		if( obj == 0 )
+		static std::map< SStrng, T*> container;
+		static std::map< SStrng, T*> containersid;
+		static std::vector<T*>       arrayContainer;
+
+
+		const xmlChar *myId;
+	public:
+		void SetId( const xmlChar *id )
 		{
-			return;
+			myId = id;
+		}
+
+		static void Addsid( const xmlChar * id, T *obj )
+		{
+			if( obj == 0 || id == 0 )
+			{
+				return;
+			}
+			containersid[SStrng(id)] = obj;
 		};
-		arrayContainer.push_back( obj );
-		if( id == 0 )
+		static void Add( const xmlChar * id, T *obj )
 		{
-			return;
-		}
-		container[SStrng(id)] = obj;
-	};
+			if( obj == 0 )
+			{
+				return;
+			};
+			arrayContainer.push_back( obj );
+			if( id == 0 )
+			{
+				return;
+			}
+			container[SStrng(id)] = obj;
+		};
 
-	static const std::vector<T*> &GetArrayContainer()
-	{
-		return arrayContainer;
-	}
-
-	static T *Get(  const xmlChar * id )
-	{
-		class std::map<SStrng, T*>::iterator it = container.find( id );
-		if( it != container.end() )
-			return it->second;
-		return 0;
-
-	};
-
-	static void Clear()
-	{
-		for( class std::map< SStrng, T*>::iterator it = container.begin();
-			it != container.end();
-			++it)
+		static const std::vector<T*> &GetArrayContainer()
 		{
-			delete it->second;
+			return arrayContainer;
 		}
 
-		container.clear();
-		arrayContainer.clear();
-	}
+		static T *Get(  const xmlChar * id )
+		{
+			class std::map<SStrng, T*>::iterator it = container.find( id );
+			if( it != container.end() )
+				return it->second;
+			return 0;
+
+		};
+
+		static T *Getsid(  const xmlChar * id )
+		{
+			class std::map<SStrng, T*>::iterator it = containersid.find( id );
+			if( it != containersid.end() )
+				return it->second;
+			return 0;
+
+		};
+
+		static void Clear()
+		{
+			for( class std::map< SStrng, T*>::iterator it = container.begin();
+			        it != container.end();
+			        ++it)
+			{
+				delete it->second;
+			}
+
+			container.clear();
+			arrayContainer.clear();
+		}
 };
 
 #define _X (const xmlChar *)
@@ -82,7 +103,7 @@ inline const xmlAttr *Find( const xmlAttr *root, const xmlChar *name )
 
 inline const xmlNode *Find( const  xmlNode * root, const xmlChar *name )
 {
-    for ( ;root ;root = root->next ) 
+	for ( ;root ;root = root->next )
 	{
 		if( !xmlStrcmp( name, root->name ) )
 		{
@@ -110,46 +131,47 @@ bool inline IsSpace( xmlChar v )
 
 template<typename T> class CXMLLoader
 {
-public:
-	~CXMLLoader()
-	{
-		T::Clear();
-	}
-	
-	void Load( xmlNode *root, bool recursive, bool silent = true )
-	{
-		xmlNode *node = root;
-		for( ;node ;node = node->next )
+	public:
+		~CXMLLoader()
 		{
-			if( xmlStrcmp( T::GetName(), node->name ) )
+			T::Clear();
+		}
+
+		void Load( xmlNode *root, bool recursive, bool silent = true )
+		{
+			xmlNode *node = root;
+			for( ;node ;node = node->next )
 			{
-				Load( node->children, recursive, silent );
-			}
-			else
-			{
-				T *result = T::CreateInstance( node );
-				if( result )
+				if( xmlStrcmp( T::GetName(), node->name ) )
 				{
-					const xmlChar *id  = LoadStrAttr( node, _X"id" );
-
-					result->SetId( id );
-
-
-					if( !silent )
-					{
-						printf( "%s %s\n", id, typeid( T ).name() );
-					}
-					T::Add( id, result );
-
+					Load( node->children, recursive, silent );
 				}
-
-				if( recursive )
+				else
 				{
-					Load( node->children, recursive, silent  );
+					T *result = T::CreateInstance( node );
+					if( result )
+					{
+						const xmlChar *id  = LoadStrAttr( node, _X"id" );
+						const xmlChar *sid  = LoadStrAttr( node, _X"sid" );
+						result->SetId( id );
+
+
+						if( !silent )
+						{
+							printf( "%s %s\n", id, typeid( T ).name() );
+						}
+						T::Add( id, result );
+						T::Addsid( sid, result );
+
+					}
+
+					if( recursive )
+					{
+						Load( node->children, recursive, silent  );
+					}
 				}
 			}
 		}
-	}
 };
 
 struct itbl
@@ -163,16 +185,16 @@ struct itbl
 			int res = -1;
 			switch( c )
 			{
-			case('0'):res = 0;break;
-			case('1'):res = 1;break;
-			case('2'):res = 2;break;
-			case('3'):res = 3;break;
-			case('4'):res = 4;break;
-			case('5'):res = 5;break;
-			case('6'):res = 6;break;
-			case('7'):res = 7;break;
-			case('8'):res = 8;break;
-			case('9'):res = 9;break;
+					case('0'):res = 0;break;
+					case('1'):res = 1;break;
+					case('2'):res = 2;break;
+					case('3'):res = 3;break;
+					case('4'):res = 4;break;
+					case('5'):res = 5;break;
+					case('6'):res = 6;break;
+					case('7'):res = 7;break;
+					case('8'):res = 8;break;
+					case('9'):res = 9;break;
 			};
 			table[i] = res;
 		};
@@ -230,12 +252,12 @@ inline float parse_float( const xmlChar *&ptr )
 
 inline void flush_str( const xmlChar *&ptr )
 {
-	 while( ( *ptr == '\n' ) || ( *ptr == ' ' ) )
-	 {
-		 xmlChar *fuck = const_cast<xmlChar *>( ptr );
-		 *fuck = 0;
-		 ptr++;
-	 }
+	while( ( *ptr == '\n' ) || ( *ptr == ' ' ) )
+	{
+		xmlChar *fuck = const_cast<xmlChar *>( ptr );
+		*fuck = 0;
+		ptr++;
+	}
 }
 
 inline void parse_str( const xmlChar *&ptr )
@@ -245,6 +267,7 @@ inline void parse_str( const xmlChar *&ptr )
 };
 
 template< class T > std::map<SStrng, T*> CAutoContainer<T>::container;
+template< class T > std::map<SStrng, T*> CAutoContainer<T>::containersid;
 template< class T > std::vector<T*>      CAutoContainer<T>::arrayContainer;
 
 
