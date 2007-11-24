@@ -1,5 +1,4 @@
-CFLAGS=-O2 
-CPPFLAGS=-O2 -I ../../vendors/squish/
+CPPFLAGS=-O3 -I ../../vendors/squish/
 
 SQ=../../vendors/squish/
 
