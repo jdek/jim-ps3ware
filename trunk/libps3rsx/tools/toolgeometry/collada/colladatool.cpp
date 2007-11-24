@@ -128,7 +128,7 @@ void re_arrange( const std::vector<uint16> &_indices, std::vector<uint16> &dst )
 
 	
 	misses = 3.0f * misses / (float)indices.size();
-	printf( "mini cache misses per tri %f \n", misses );
+	printf( "cache misses per tri %f \n", misses );
 	
 }
 
