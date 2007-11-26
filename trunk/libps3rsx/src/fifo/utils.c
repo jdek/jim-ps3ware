@@ -81,7 +81,7 @@ int map_resource(char const *name, struct resource *res)
   }
 
   // TEMP
-  printf("mmap: %s len %d\n", name, res->len);
+  printf("mmap: %s len %ld\n", name, res->len);
 
   virt = mmap(0, res->len, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
