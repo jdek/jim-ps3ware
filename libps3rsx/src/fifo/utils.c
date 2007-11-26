@@ -164,7 +164,7 @@ void fifo_wait(struct gpu *gpu)
 
 
 
-int enter_direct(void)
+int enter_direct(struct ps3fb_ioctl_res * res)
 {
   struct fb_fix_screeninfo fix;
   int ret = 0;
@@ -184,6 +184,15 @@ int enter_direct(void)
     goto out;
   }
 
+  /* get the screen res info */
+  if( res )
+  {
+    if ((ret = ioctl(fd, PS3FB_IOCTL_SCREENINFO, res)) < 0)
+    {
+      perror("ioctl");
+      goto out;
+    }
+  }
 
   /* stop that incessant blitting! */
   if ((ret = ioctl(fd, PS3FB_IOCTL_ON, 0)) < 0)
