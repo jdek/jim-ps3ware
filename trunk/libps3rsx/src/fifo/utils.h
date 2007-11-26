@@ -53,7 +53,7 @@ int map_gpu(struct gpu *gpu);
 int unmap_gpu(struct gpu *gpu);
 void fifo_push(struct gpu *gpu, int len);
 void fifo_wait(struct gpu *gpu);
-int enter_direct(void);
+int enter_direct(struct ps3fb_ioctl_res *res);
 int leave_direct(int fd);
 uint32_t endian( uint32_t v );
 uint32_t endian_fp( uint32_t v );

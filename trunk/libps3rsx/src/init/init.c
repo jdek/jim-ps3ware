@@ -203,7 +203,7 @@ int main(void)
     return -1;
   }
 
-  fb_fd = enter_direct();
+  fb_fd = enter_direct( 0 );
   signal(SIGINT, sigint_handler);
 
   ramin_write_dword_to_dword_offset( &gpu, 0x64cb8, 0xfeed0003 );
