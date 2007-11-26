@@ -64,9 +64,9 @@ int NV40_LoadVtxProg( uint32_t *fifo,  nv_vshader_t *shader)
 }
 
 
-uint32_t width = 1024;
-uint32_t height = 768;
-uint32_t pitch = 1280 * 4;
+uint32_t width;
+uint32_t height;
+uint32_t pitch;
 
 #define  BB 31
 
@@ -423,21 +423,21 @@ int bind3d(  uint32_t *fifo, uint32_t *fbmem, uint8_t *xdrmem, uint32_t obj )
   OUT_RING  (NV40TCL_RT_ENABLE_COLOR0);
 
   BEGIN_RING(Nv3D, NV40TCL_RT_HORIZ, 2);
-  OUT_RING  ((1280 << 16));
-  OUT_RING  ((1024 << 16));
+  OUT_RING  ((width << 16));
+  OUT_RING  ((height << 16));
   BEGIN_RING(Nv3D, NV40TCL_SCISSOR_HORIZ, 2);
-  OUT_RING  ((1280 << 16));
-  OUT_RING  ((1024 << 16));
+  OUT_RING  ((width << 16));
+  OUT_RING  ((height << 16));
   BEGIN_RING(Nv3D, NV40TCL_VIEWPORT_HORIZ, 2);
-  OUT_RING  ((1280 << 16));
-  OUT_RING  ((1024 << 16));
+  OUT_RING  ((width << 16));
+  OUT_RING  ((height << 16));
   BEGIN_RING(Nv3D, NV40TCL_VIEWPORT_CLIP_HORIZ(0), 2);
-  OUT_RING  ((1280 << 16));
-  OUT_RING  ((1024 << 16));
+  OUT_RING  ((width << 16));
+  OUT_RING  ((height << 16));
 
 
   BEGIN_RING(Nv3D, NV40TCL_ZETA_OFFSET, 1 );
-  OUT_RING( 1280 * 1024 * 4 );
+  OUT_RING( pitch * height );
   BEGIN_RING(Nv3D, NV40TCL_ZETA_PITCH, 1 );
   OUT_RING( pitch );
 
@@ -514,7 +514,8 @@ void sigint_handler(int sig)
 int main(void)
 {
   struct gpu gpu;
-  
+  struct ps3fb_ioctl_res resinfo;  
+
   memset(&gpu, 0, sizeof(gpu));
 
   if (gpu_get_info(&gpu) < 0)
@@ -529,7 +530,10 @@ int main(void)
     return -1;
   }
 
-  fb_fd = enter_direct();
+  fb_fd = enter_direct(&resinfo);
+  width = resinfo.xres;
+  height = resinfo.yres;
+  pitch = width * 4;
   signal(SIGINT, sigint_handler);
 
   gfx_test( &gpu, 0xfeed0003 );
