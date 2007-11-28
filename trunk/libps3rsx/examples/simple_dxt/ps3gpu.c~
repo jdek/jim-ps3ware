@@ -17,7 +17,6 @@
 #include <fcntl.h>
 #include <math.h>
 
-#include "../../include/matrix.h"
 #include "../../src/types.h"
 #include "../../include/nouveau_class.h"
 #include "../../src/fifo/utils.h"
@@ -124,30 +123,14 @@ int NV40_LoadFragProg( uint32_t *fifo, uint32_t *fbmem, nv_pshader_t *shader)
 int NV40_SetVSConsts(  uint32_t *fifo )
 {
 
-	uint32_t i, j;
 	uint32_t *ptr = fifo;
-	
-	float matrix[16];
-	
-	identity( matrix );
-	float w = 0.4;
-	float h = 0.3;
-	
-	frustrum( -w, +w, -h, +h, 1.0f, 100.0f, matrix );
-	translatef( 0.0f, 1.5f, -8.0f, matrix );
-	
-	rotatef( 180.0f, 0.0f, 1.0f, 0.0f, matrix );
-	rotatef( 90.0f, 1.0f, 0.0f, 0.0f, matrix );
-	
 
-	BEGIN_RING( Nv3D, NV40TCL_VP_UPLOAD_CONST_ID, 17 );
+	BEGIN_RING( Nv3D, NV40TCL_VP_UPLOAD_CONST_ID, 5 );
 	OUT_RING( 0 );
-	
-	for( i = 0; i < 16; ++i )
-	{
-	    OUT_RINGf( matrix[i] );
-	}
-	
+	OUT_RINGf( 1.0f );
+	OUT_RINGf( 1.0f );
+	OUT_RINGf( 1.0f );
+	OUT_RINGf( 1.0f );
 	return ptr - fifo;
 
 }
@@ -155,27 +138,26 @@ int NV40_SetVSConsts(  uint32_t *fifo )
 
 void  *map_file( const char *file, int *fd, int *size )
 {
+	;
 	*size = 0;
-	*fd = open( file, O_RDONLY );
+	*fd = open( "../../data/troll.dxt1", O_RDONLY );
 	if( (*fd) != -1 )
 	{
 		int status;
 		struct stat buffer;
 		status = fstat( *fd, &buffer );
 		*size = buffer.st_size;
-		printf( "mmaped 0x%x bytes from %s \n", (uint32_t)buffer.st_size, file );
 		return mmap( 0, buffer.st_size, PROT_READ, MAP_PRIVATE, *fd, 0 );
 	}
 	return 0;
 
 }
 
-void  unmap_file( void *data, int fd, int size )
+void  unmap_file( void *data, int fd )
 {
-	
 	if( data != 0 )
 	{
-		munmap( data, size );
+		munmap( data );
 	}
 	if( fd != -1 )
 	{
@@ -193,9 +175,8 @@ int NV40_LoadTexDXT( uint32_t *fifo, uint8_t *fbmem )
 	{
 		texture_desc_t *desc = file;
 		memcpy( fbmem + tx_offset, sizeof( *desc ) + (uint8_t *)file, desc->length );
-		int res = set_texture_2D( desc, tx_offset, 0, REPEAT, LINEAR, LINEAR_MIPMAP_LINEAR, fifo, Nv3D );
-		unmap_file( file, fd, size );
-		return res;
+		unmap_file( file, fd );
+		return set_texture_2D( desc, tx_offset, 0, REPEAT, LINEAR, LINEAR_MIPMAP_LINEAR, fifo, Nv3D );
 	}
 
 	return 0;
@@ -210,42 +191,63 @@ int NV40_EmitBufferGeometry( uint32_t *fifo, uint8_t *mem )
 
 	ptr += set_geometry_pipe( 0xfeed0000, 0xfeed0001, ptr, Nv3D );
 
-	{
-		int fd, size;
-		void *file = map_file( "../../data/troll.0.model", &fd, &size );
+	int mod = open( "../../data/troll.0.model", O_RDONLY );
+	int ib = open( "../../data/troll.0.ib", O_RDONLY );
+	int vb = open( "../../data/troll.0.vb", O_RDONLY );
 
-		if( size && file )
+
+	if( mod != -1 && ib != -1 && vb != -1 )
+	{
+		ptr += set_index_source( DDR, ib_offset, ptr, Nv3D );
+
 		{
+			int status;
+			struct stat buffer;
+			status = fstat( mod, &buffer );
+			void *file = mmap( 0, buffer.st_size, PROT_READ, MAP_PRIVATE, mod, 0 );
 			model_desc_t *model = file;
 			ptr += set_geometry_source( &model->position, DDR, vb_offset, ptr, Nv3D );
 			ptr += set_geometry_source( &model->texcoord, DDR, vb_offset, ptr, Nv3D );
-			ptr += set_index_source( DDR, ib_offset, ptr, Nv3D );
 			ptr += draw_indexed_primitives( model->indices, 0, model->indices_num, ptr, Nv3D );
-			unmap_file( file, fd, size );
+
 		}
-	}
 
-	{
-		int fd, size;
-		void *file = map_file( "../../data/troll.0.ib", &fd, &size );
-
-		if( size && file )
 		{
-			memcpy( mem + ib_offset, file, size );
-			unmap_file( file, fd, size );
+			int status;
+			struct stat buffer;
+			status = fstat( ib, &buffer );
+			void *file = mmap( 0, buffer.st_size, PROT_READ, MAP_PRIVATE, ib, 0 );
+			model_desc_t *indices = file;
+			memcpy( mem + ib_offset, indices, buffer.st_size );
 		}
-	}
 
-	{
-		int fd, size;
-		void *file = map_file( "../../data/troll.0.vb", &fd, &size );
 
-		if( size && file )
 		{
-			memcpy( mem + vb_offset, file, size );
-			unmap_file( file, fd, size );
+			int status;
+			struct stat buffer;
+			status = fstat( vb, &buffer );
+			void *file = mmap( 0, buffer.st_size, PROT_READ, MAP_PRIVATE, vb, 0 );
+			model_desc_t *vertices = file;
+			memcpy( mem + vb_offset, vertices, buffer.st_size );
 		}
+
+		close( mod );
+		close( ib );
+		close( vb );
+		return ptr - fifo;
 	}
+
+	return 0;
+	/*
+	geom_desc_t position = { .format = FLOAT, .type = POS0, .stride = sizeof( vtxdata ), .components = 3, .offset = 0 };
+	geom_desc_t texcoord = { .format = SHORT, .type = TEX0, .stride = sizeof( vtxdata ), .components = 2, .offset = 12 };
+
+	ptr += set_geometry_source( &position, DDR, vb_offset, ptr, Nv3D );
+	ptr += set_geometry_source( &texcoord, DDR, vb_offset, ptr, Nv3D );
+	ptr += set_index_source( DDR, ib_offset, ptr, Nv3D );
+	ptr += draw_indexed_primitives( TRIANGLES, 0, 120, ptr, Nv3D ); 
+	*/
+
 
 	return ptr - fifo;
 
@@ -473,8 +475,6 @@ int main(void)
 	signal(SIGINT, sigint_handler);
 
 	gfx_test( &gpu, 0xfeed0003 );
-	
-	
 
 	sleep( 3 );
 
