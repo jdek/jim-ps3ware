@@ -15,12 +15,40 @@
 #include "ColladaNode.h"
 #include "ColladaAnimation.h"
 
+#include "../../../src/geometry/geometry.h"
+#include "../../../src/geometry/model.h"
+
 
 struct cache_opt_t
 {
 	uint16 entries[4 + 3];
-	
-	cache_opt_t( )
+
+	uint16 cache[256];
+	uint16 cache_ptr;
+	uint16 vertices;
+	uint16 parts;
+
+
+	void add_pt( uint16 value )
+	{
+		for( uint16 i = 0; i < cache_ptr; ++i )
+		{
+			if( cache[i] == value )
+			{
+				return;
+			}
+		}
+		cache[cache_ptr++] = value;
+		++vertices;
+		if( cache_ptr == 256 )
+		{
+			memcpy( &cache[0], &cache[128], 256 );
+			++parts;
+			cache_ptr = 128;
+		}
+	}
+
+	cache_opt_t( ) : cache_ptr( 0 ), vertices( 0 )
 	{
 		entries[0] = 0xffff;
 		entries[1] = 0xffff;
@@ -40,12 +68,16 @@ struct cache_opt_t
 				{
 					goto skip;
 				}
-		
+
 			}
+
+
 
 			entries[ptr++] = trn[j];
 
-			skip:;
+		skip:
+
+			add_pt( trn[j] );
 		}
 
 		ptr -= 4;
@@ -53,7 +85,7 @@ struct cache_opt_t
 		for( size_t i = 0; i < 4; ++i )
 		{
 			entries[i] = entries[i + ptr];
-			
+
 		}
 
 		return ptr;
@@ -99,7 +131,7 @@ void re_arrange( const std::vector<uint16> &_indices, std::vector<uint16> &dst )
 	{
 		int quality = -1;
 		int index = -1;
-		
+
 		for( size_t i = 0; i < indices.size(); i += 3 )
 		{
 			if( indices[i] != 0xffff )
@@ -126,34 +158,36 @@ void re_arrange( const std::vector<uint16> &_indices, std::vector<uint16> &dst )
 		}
 	}
 
-	
+	printf( "vertices %d parts %d \n", cache.vertices, cache.parts );
+
+
 	misses = 3.0f * misses / (float)indices.size();
 	printf( "cache misses per tri %f \n", misses );
-	
+
 }
 
-
-#define FLOAT 0
-#define SHORT 1
-#define BYTE 2
-
-struct geom_type_t
+struct FOpen
 {
-	uint8 format;
-	uint8 ncomp;	
-};
-
-struct spu_geometry_chunk_t
-{
-	geom_type_t coo;
-	geom_type_t col;
-	geom_type_t nor;
-	geom_type_t tx0;
-	
+	FILE *fp;
+	FOpen( const char *file, bool read )
+	{
+		fp = fopen( file, read ? "rb" : "wb" );
+	}
+	~FOpen()
+	{
+		fclose( fp );
+	}
 };
 
 
-		
+struct local_vertex_t
+{
+	float coo[3];
+	float tex[2];
+}
+;
+
+
 void convert_model( const char *fileNameOut, const char *fileNameIn )
 {
 	xmlDoc *doc = NULL;
@@ -198,14 +232,94 @@ void convert_model( const char *fileNameOut, const char *fileNameIn )
 
 	const std::vector<CColladaTriangles *> &triangles = CColladaTriangles::GetArrayContainer();
 
+
 	for( size_t i = 0; i < triangles.size(); ++i )
 	{
 		std::vector<SFatVertex> vertices;
 		std::vector<uint16> indices;
-			
+
 		triangles[i]->GetFatVertices( &vertices, &indices );
-		re_arrange( indices, indices );
+		//re_arrange( indices, indices );
 		printf( "%s %i %i\n", triangles[i]->GetEffect()->GetDiffuse()->GetFileName().ptr, vertices.size(), indices.size() );
+
+
+
+		{
+			char buff[1024];
+			memset( buff, 0, sizeof( buff ) );
+			sprintf( buff, "%s.%d.model", fileNameOut, i );
+
+			model_desc_t model;
+
+			FOpen fp( buff, false );
+			if( fp.fp )
+			{
+				model.position.format = FLOAT;
+				model.position.type = POS0;
+				model.position.components = 3;
+				model.position.offset = 0;
+				model.position.stride = sizeof( local_vertex_t );
+
+				model.texcoord.format = FLOAT;
+				model.texcoord.type = TEX0;
+				model.texcoord.components = 2;
+				model.texcoord.offset = 12;
+				model.texcoord.stride = sizeof( local_vertex_t );
+
+				model.indices = TRIANGLES;
+				model.vertices_num = vertices.size();
+				model.indices_num = indices.size();
+
+				fwrite( &model, sizeof( model ), 1,  fp.fp );
+			}
+
+		}
+
+		{
+			char buff[1024];
+			memset( buff, 0, sizeof( buff ) );
+			sprintf( buff, "%s.%d.vb", fileNameOut, i );
+
+
+
+			FOpen fp( buff, false );
+			if( fp.fp )
+			{
+				std::vector<local_vertex_t> lvertices;
+				lvertices.resize( vertices.size() );
+				for( size_t j = 0; j < vertices.size(); ++j )
+				{
+					lvertices[j].coo[0] = vertices[j].coo[0];
+					lvertices[j].coo[1] = vertices[j].coo[1];
+					lvertices[j].coo[2] = vertices[j].coo[2];
+					lvertices[j].tex[0] = vertices[j].tx0[0];
+					lvertices[j].tex[1] = 1.0f - vertices[j].tx0[1];
+
+
+				}
+				fwrite( &lvertices[0], sizeof( local_vertex_t ) * lvertices.size(), 1, fp.fp );
+			}
+
+
+		}
+
+
+		{
+			char buff[1024];
+			memset( buff, 0, sizeof( buff ) );
+			sprintf( buff, "%s.%d.ib", fileNameOut, i );
+
+
+
+			FOpen fp( buff, false );
+			if( fp.fp )
+			{
+				fwrite( &indices[0], sizeof( uint16_t ) * indices.size(), 1, fp.fp );
+			}
+
+
+		}
+
 	}
 
 
