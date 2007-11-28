@@ -1,3 +1,3 @@
 make
-./collada ../../../art/licensed/Troll.dae ../../../data/troll.model
+./collada ../../../art/licensed/Troll.dae ../../../data/troll
 
