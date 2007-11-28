@@ -124,7 +124,7 @@ int NV40_LoadFragProg( uint32_t *fifo, uint32_t *fbmem, nv_pshader_t *shader)
 int NV40_SetVSConsts(  uint32_t *fifo )
 {
 
-	uint32_t i, j;
+	uint32_t i;
 	uint32_t *ptr = fifo;
 	
 	float matrix[16];
