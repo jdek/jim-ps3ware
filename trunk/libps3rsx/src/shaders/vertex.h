@@ -23,3 +23,13 @@ int set_vertex_shader
     uint32_t hw_sub 
 );
 
+int set_vertex_shader_constants
+(
+    const float *data,
+    uint32_t start_index,
+    uint32_t number_of_floats,
+    uint32_t *fifo_buffer,
+    uint32_t hw_sub 
+);
+
+
