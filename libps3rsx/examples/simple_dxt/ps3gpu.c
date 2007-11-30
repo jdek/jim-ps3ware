@@ -89,35 +89,23 @@ int NV40_LoadFragProg( uint32_t *fifo, uint32_t *fbmem, nv_pshader_t *shader)
 
 
 
-int NV40_SetVSConsts(  uint32_t *fifo )
+int set_mvp(  uint32_t *fifo )
 {
-
-	uint32_t i;
-	uint32_t *ptr = fifo;
 	
 	float matrix[16];
 	
 	identity( matrix );
-	float w = 0.4;
-	float h = 0.3;
+	float w = 0.4f;
+	float h = 0.3f;
 	
 	frustrum( -w, +w, -h, +h, 1.0f, 100.0f, matrix );
 	translatef( 0.0f, 1.5f, -8.0f, matrix );
 	
 	rotatef( 180.0f, 0.0f, 1.0f, 0.0f, matrix );
 	rotatef( 90.0f, 1.0f, 0.0f, 0.0f, matrix );
-	
 
-	BEGIN_RING( Nv3D, NV40TCL_VP_UPLOAD_CONST_ID, 17 );
-	OUT_RING( 0 );
+	return set_vertex_shader_constants( matrix, 0, 16, fifo, Nv3D );
 	
-	for( i = 0; i < 16; ++i )
-	{
-	    OUT_RINGf( matrix[i] );
-	}
-	
-	return ptr - fifo;
-
 }
 
 
@@ -390,7 +378,7 @@ int bind3d(  uint32_t *fifo, uint32_t *fbmem, uint8_t *xdrmem, uint32_t obj )
 
 	ptr += load_texture( ptr, (uint8_t *)fbmem );
 	ptr += load_vertex_shader( ptr );
-	ptr += NV40_SetVSConsts( ptr );
+	ptr += set_mvp( ptr );
 
 	ptr += NV40_LoadFragProg( ptr, fbmem,  &nv30_fp );
 	//ptr += NV40_EmitGeometry( ptr );
