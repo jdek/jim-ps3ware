@@ -24,6 +24,7 @@
 #include "../../src/textures/textures.h"
 #include "../../src/geometry/geometry.h"
 #include "../../src/geometry/model.h"
+#include "../../src/shaders/vertex.h"
 
 #include "nv_shaders.h"
 
@@ -33,39 +34,6 @@
 
 
 #define Nv3D 7
-int NV40_LoadVtxProg( uint32_t *fifo,  nv_vshader_t *shader)
-{
-	uint32_t *ptr = fifo;
-	uint32_t i;
-
-
-	BEGIN_RING(Nv3D, NV40TCL_VP_UPLOAD_FROM_ID, 1);
-	OUT_RING  (0);
-	for (i=0; i<shader->size; i+=4)
-	{
-		BEGIN_RING(Nv3D, NV40TCL_VP_UPLOAD_INST(0), 4);
-		OUT_RING  (shader->data[i + 0]);
-		OUT_RING  (shader->data[i + 1]);
-		OUT_RING  (shader->data[i + 2]);
-		OUT_RING  (shader->data[i + 3]);
-
-	}
-
-
-	BEGIN_RING(Nv3D, NV40TCL_VP_START_FROM_ID, 1);
-	OUT_RING  (0);
-
-	BEGIN_RING(Nv3D, NV40TCL_VP_ATTRIB_EN, 2);
-	OUT_RING  (shader->vp_in_reg);
-	OUT_RING  (shader->vp_out_reg);
-
-	BEGIN_RING( Nv3D, 0x1478, 1 );
-	OUT_RING  (0);
-
-
-
-	return ptr - fifo;
-}
 
 
 uint32_t width;
@@ -183,7 +151,26 @@ void  unmap_file( void *data, int fd, int size )
 	}
 }
 
-int NV40_LoadTexDXT( uint32_t *fifo, uint8_t *fbmem )
+
+int load_vertex_shader(  uint32_t *fifo )
+{
+	int fd, size;
+	void *file = map_file( "../../data/mvp.vertex", &fd, &size );
+
+	if( size && file )
+	{
+		vertex_shader_desc_t *desc = file;
+		int res = set_vertex_shader( desc, (uint32_t *)( (uint8 *)file + sizeof( *desc ) ), fifo, Nv3D );
+		unmap_file( file, fd, size );
+		return res;
+	}
+
+	return 0;
+}
+
+
+
+int load_texture( uint32_t *fifo, uint8_t *fbmem )
 {
 
 	int fd, size;
@@ -202,7 +189,7 @@ int NV40_LoadTexDXT( uint32_t *fifo, uint8_t *fbmem )
 }
 
 
-int NV40_EmitBufferGeometry( uint32_t *fifo, uint8_t *mem )
+int load_geometry( uint32_t *fifo, uint8_t *mem )
 {
 
 	uint32_t *ptr = fifo;
@@ -401,13 +388,13 @@ int bind3d(  uint32_t *fifo, uint32_t *fbmem, uint8_t *xdrmem, uint32_t obj )
 	    NV40TCL_CLEAR_BUFFERS_DEPTH
 	);
 
-	ptr += NV40_LoadTexDXT( ptr, (uint8_t *)fbmem );
-	ptr += NV40_LoadVtxProg( ptr,  &nv40_vp_mul );
+	ptr += load_texture( ptr, (uint8_t *)fbmem );
+	ptr += load_vertex_shader( ptr );
 	ptr += NV40_SetVSConsts( ptr );
 
 	ptr += NV40_LoadFragProg( ptr, fbmem,  &nv30_fp );
 	//ptr += NV40_EmitGeometry( ptr );
-	ptr += NV40_EmitBufferGeometry( ptr, (uint8_t *)fbmem );
+	ptr += load_geometry( ptr, (uint8_t *)fbmem );
 
 
 	return ptr - fifo;
