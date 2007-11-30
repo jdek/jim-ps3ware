@@ -77,7 +77,6 @@ int set_vertex_shader_constants
 	uint32_t *ptr = fifo;
 	uint32_t Nv3D = hw_subch;
 
-	return ptr - fifo;
 
 	BEGIN_RING( Nv3D, NV40TCL_VP_UPLOAD_CONST_ID, number_of_floats + 1 );
 	OUT_RING( start_index );
