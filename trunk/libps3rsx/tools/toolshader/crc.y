@@ -3,9 +3,14 @@
 #include <stdio.h>
 #include <string.h>
 #include "nv40_shader.h"
-void yyerror(const char *str);
 
 #define uint32 unsigned int
+#define uint32_t unsigned int
+
+#include "../../src/shaders/vertex.h"
+void yyerror(const char *str);
+
+
 
 
 #define NV40_VP_DEST_MASK(x,y,z,w)  ((x<<3)|(y<<2)|(z<<1)|w)
@@ -28,6 +33,8 @@ int src_type;
 int inst_ptr = 0;
 int vp_out = 0;
 int vp_in = 0;
+
+const char *outfile;
 
 #define OUT_REG_COL0   (1<<0)
 #define OUT_REG_COL1   (1<<1)
@@ -193,6 +200,21 @@ void print()
 	}
 	printf( "vp_out %8x \n", vp_out );
 	printf( "vp_in  %8x \n", vp_in );
+	
+	vertex_shader_desc_t desc;
+	
+	FILE *out = fopen( outfile, "wb" );
+	if( out )
+	{
+	    desc.vp_in = vp_in;
+	    desc.vp_out = vp_out;
+	    desc.aux = 0xcafebabe;
+	    desc.dword_length = inst_ptr * 4;
+	    fwrite( &desc, sizeof( desc ), 1, out );
+	    fwrite( &inst_stack[0][0], 4 * desc.dword_length, 1, out );
+	    fclose( out );
+	    	
+	}
 	inst_ptr = 0;
 	vp_out = 0;
 }
@@ -511,9 +533,16 @@ int yywrap()
         return 1;
 } 
   
-main()
+int main( int argn, const char *argv[] )
 {
+	if( argn != 2 )
+	{
+	    printf( "specify outfile \n" );
+	    return 1;
+	}
+	outfile = argv[1];
         yyparse();
+	return 0;
 } 
 
 
