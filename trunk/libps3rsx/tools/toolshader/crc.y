@@ -26,8 +26,22 @@ int numreg;
 int dst_type;
 int src_type;
 int inst_ptr = 0;
+int vp_out = 0;
+int vp_in = 0;
+
+#define OUT_REG_COL0   (1<<0)
+#define OUT_REG_COL1   (1<<1)
+#define OUT_REG_BFC0   (1<<2)
+#define OUT_REG_BFC1   (1<<3)
+#define OUT_REG_FOGC   (1<<4)
+#define OUT_REG_PSIZ    (1<<5)
+#define OUT_REG_TEX(N)   (1<<( 14 + N ) )
 
 
+void out( uint32 feature )
+{
+	vp_out |= feature; 
+}
 
 void set_s0( uint32 src, uint32 abs )
 {
@@ -177,7 +191,10 @@ void print()
 	{
 		printf( "%8x %8x %8x %8x \n", inst_stack[i][0], inst_stack[i][1], inst_stack[i][2], inst_stack[i][3]  );
 	}
+	printf( "vp_out %8x \n", vp_out );
+	printf( "vp_in  %8x \n", vp_in );
 	inst_ptr = 0;
+	vp_out = 0;
 }
 
 void clean()
@@ -349,7 +366,7 @@ dstReg:
         vertexResultReg { dst_type = 1; } ;
 
 vertexAttribReg:      
-	'v' '[' vertexAttribRegNum ']';
+	'v' '[' vertexAttribRegNum ']' { vp_in |= ( 1 << v ); };
 
 vertexAttribRegNum: 
 	decCalc |
@@ -422,20 +439,20 @@ vertexResultReg:
 
 vertexResultRegName: 
 	HPOS { v = 0; } |
-       	COL0 { v = 1; } |
-	COL1 { v = 2; } |
-	BFC0 { v = 3; } |
-	BFC1 { v = 4; } |
-	FOGC { v = 5; } |
-	PSIZ { v = 6; } |
-	TEX0 { v = 7; } |
-	TEX1 { v = 8; } |
-	TEX2 { v = 9; } |
-	TEX3 { v = 11; } |
-	TEX4 { v = 11; } |
-	TEX5 { v = 12; } |
-	TEX6 { v = 13; } |
-	TEX7 { v = 14; };
+       	COL0 { v = 1; out( OUT_REG_COL0 ); } |
+	COL1 { v = 2; out( OUT_REG_COL1 ); } |
+	BFC0 { v = 3; out( OUT_REG_BFC0 ); } |
+	BFC1 { v = 4; out( OUT_REG_BFC1 ); } |
+	FOGC { v = 5; out( OUT_REG_FOGC ); } |
+	PSIZ { v = 6; out( OUT_REG_PSIZ ); }  |
+	TEX0 { v = 7; out( OUT_REG_TEX( 0 ) ); } |
+	TEX1 { v = 8; out( OUT_REG_TEX( 1 ) ); } |
+	TEX2 { v = 9; out( OUT_REG_TEX( 2 ) ); } |
+	TEX3 { v = 11; out( OUT_REG_TEX( 3 ) ); } |
+	TEX4 { v = 11; out( OUT_REG_TEX( 4 ) );	} |
+	TEX5 { v = 12; out( OUT_REG_TEX( 5 ) );	} |
+	TEX6 { v = 13; out( OUT_REG_TEX( 6 ) );	} |
+	TEX7 { v = 14; out( OUT_REG_TEX( 7 ) );	};
 
 scalarSuffix:
 	DOT component;

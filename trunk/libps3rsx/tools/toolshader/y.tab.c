@@ -41,8 +41,22 @@ int numreg;
 int dst_type;
 int src_type;
 int inst_ptr = 0;
+int vp_out = 0;
+int vp_in = 0;
+
+#define OUT_REG_COL0   (1<<0)
+#define OUT_REG_COL1   (1<<1)
+#define OUT_REG_BFC0   (1<<2)
+#define OUT_REG_BFC1   (1<<3)
+#define OUT_REG_FOGC   (1<<4)
+#define OUT_REG_PSIZ    (1<<5)
+#define OUT_REG_TEX(N)   (1<<( 14 + N ) )
 
 
+void out( uint32 feature )
+{
+	vp_out |= feature; 
+}
 
 void set_s0( uint32 src, uint32 abs )
 {
@@ -192,7 +206,10 @@ void print()
 	{
 		printf( "%8x %8x %8x %8x \n", inst_stack[i][0], inst_stack[i][1], inst_stack[i][2], inst_stack[i][3]  );
 	}
+	printf( "vp_out %8x \n", vp_out );
+	printf( "vp_in  %8x \n", vp_in );
 	inst_ptr = 0;
+	vp_out = 0;
 }
 
 void clean()
@@ -287,7 +304,7 @@ void swz( uint32 co )
 
 
 
-#line 291 "y.tab.c"
+#line 308 "y.tab.c"
 #define YYERRCODE 256
 #define _0 257
 #define _1 258
@@ -675,7 +692,7 @@ short *yyss;
 short *yysslim;
 YYSTYPE *yyvs;
 int yystacksize;
-#line 484 "crc.y"
+#line 501 "crc.y"
 
 
 void yyerror(const char *str)
@@ -700,7 +717,7 @@ main()
 
 
 
-#line 704 "y.tab.c"
+#line 721 "y.tab.c"
 /* allocate initial stack or double stack size, up to YYMAXDEPTH */
 static int yygrowstack()
 {
@@ -896,366 +913,370 @@ yyreduce:
     switch (yyn)
     {
 case 1:
-#line 282 "crc.y"
+#line 299 "crc.y"
 { print(); }
 break;
 case 4:
-#line 286 "crc.y"
+#line 303 "crc.y"
 { dump(); clean(); }
 break;
 case 15:
-#line 311 "crc.y"
+#line 328 "crc.y"
 { set( v, src_type ); }
 break;
 case 16:
-#line 314 "crc.y"
+#line 331 "crc.y"
 { set( v, src_type ); }
 break;
 case 17:
-#line 317 "crc.y"
+#line 334 "crc.y"
 { reg( v, dst_type ); }
 break;
 case 18:
-#line 320 "crc.y"
+#line 337 "crc.y"
 { msk( NV40_VP_DEST_MASK( 1, 1, 1, 1 ) ); }
 break;
 case 19:
-#line 321 "crc.y"
+#line 338 "crc.y"
 { msk( NV40_VP_DEST_MASK( 1, 0, 0, 0 ) ); }
 break;
 case 20:
-#line 322 "crc.y"
+#line 339 "crc.y"
 { msk( NV40_VP_DEST_MASK( 0, 1, 0, 0 ) ); }
 break;
 case 21:
-#line 323 "crc.y"
+#line 340 "crc.y"
 { msk( NV40_VP_DEST_MASK( 1, 1, 0, 0 ) ); }
 break;
 case 22:
-#line 324 "crc.y"
+#line 341 "crc.y"
 { msk( NV40_VP_DEST_MASK( 0, 0, 1, 0 ) ); }
 break;
 case 23:
-#line 325 "crc.y"
+#line 342 "crc.y"
 { msk( NV40_VP_DEST_MASK( 1, 0, 1, 0 ) ); }
 break;
 case 24:
-#line 326 "crc.y"
+#line 343 "crc.y"
 { msk( NV40_VP_DEST_MASK( 0, 1, 1, 0 ) ); }
 break;
 case 25:
-#line 327 "crc.y"
+#line 344 "crc.y"
 { msk( NV40_VP_DEST_MASK( 1, 1, 1, 0 ) ); }
 break;
 case 26:
-#line 328 "crc.y"
+#line 345 "crc.y"
 { msk( NV40_VP_DEST_MASK( 0, 0, 0, 1 ) ); }
 break;
 case 27:
-#line 329 "crc.y"
+#line 346 "crc.y"
 { msk( NV40_VP_DEST_MASK( 1, 0, 0, 1 ) ); }
 break;
 case 28:
-#line 330 "crc.y"
+#line 347 "crc.y"
 { msk( NV40_VP_DEST_MASK( 0, 1, 0, 1 ) ); }
 break;
 case 29:
-#line 331 "crc.y"
+#line 348 "crc.y"
 { msk( NV40_VP_DEST_MASK( 1, 1, 0, 1 ) ); }
 break;
 case 30:
-#line 332 "crc.y"
+#line 349 "crc.y"
 { msk( NV40_VP_DEST_MASK( 0, 0, 1, 1 ) ); }
 break;
 case 31:
-#line 333 "crc.y"
+#line 350 "crc.y"
 { msk( NV40_VP_DEST_MASK( 1, 0, 1, 1 ) ); }
 break;
 case 32:
-#line 334 "crc.y"
+#line 351 "crc.y"
 { msk( NV40_VP_DEST_MASK( 0, 1, 1, 1 ) ); }
 break;
 case 33:
-#line 335 "crc.y"
+#line 352 "crc.y"
 { msk( NV40_VP_DEST_MASK( 1, 1, 1, 1 ) ); }
 break;
 case 36:
-#line 340 "crc.y"
+#line 357 "crc.y"
 { neg = 1; }
 break;
 case 37:
-#line 343 "crc.y"
+#line 360 "crc.y"
 { src_type = 2; }
 break;
 case 38:
-#line 344 "crc.y"
+#line 361 "crc.y"
 { src_type = 1; }
 break;
 case 39:
-#line 345 "crc.y"
+#line 362 "crc.y"
 { src_type = 0; }
 break;
 case 40:
-#line 348 "crc.y"
+#line 365 "crc.y"
 { dst_type = 0; }
 break;
 case 41:
-#line 349 "crc.y"
+#line 366 "crc.y"
 { dst_type = 1; }
 break;
+case 42:
+#line 369 "crc.y"
+{ vp_in |= ( 1 << v ); }
+break;
 case 44:
-#line 356 "crc.y"
+#line 373 "crc.y"
 { v = 0; }
 break;
 case 45:
-#line 357 "crc.y"
+#line 374 "crc.y"
 { v = 1; }
 break;
 case 46:
-#line 358 "crc.y"
+#line 375 "crc.y"
 { v = 2; }
 break;
 case 47:
-#line 359 "crc.y"
+#line 376 "crc.y"
 { v = 3; }
 break;
 case 48:
-#line 360 "crc.y"
+#line 377 "crc.y"
 { v = 4; }
 break;
 case 49:
-#line 361 "crc.y"
+#line 378 "crc.y"
 { v = 5; }
 break;
 case 50:
-#line 362 "crc.y"
+#line 379 "crc.y"
 { v = 8; }
 break;
 case 51:
-#line 363 "crc.y"
+#line 380 "crc.y"
 { v = 9; }
 break;
 case 52:
-#line 364 "crc.y"
+#line 381 "crc.y"
 { v = 10; }
 break;
 case 53:
-#line 365 "crc.y"
+#line 382 "crc.y"
 { v = 11; }
 break;
 case 54:
-#line 366 "crc.y"
+#line 383 "crc.y"
 { v = 12; }
 break;
 case 55:
-#line 367 "crc.y"
+#line 384 "crc.y"
 { v = 13; }
 break;
 case 56:
-#line 368 "crc.y"
+#line 385 "crc.y"
 { v = 14; }
 break;
 case 57:
-#line 369 "crc.y"
+#line 386 "crc.y"
 { v = 15; }
 break;
 case 61:
-#line 379 "crc.y"
+#line 396 "crc.y"
 { n = 0; }
 break;
 case 62:
-#line 380 "crc.y"
+#line 397 "crc.y"
 { n = 1; }
 break;
 case 63:
-#line 381 "crc.y"
+#line 398 "crc.y"
 { n = 2; }
 break;
 case 64:
-#line 382 "crc.y"
+#line 399 "crc.y"
 { n = 3; }
 break;
 case 65:
-#line 383 "crc.y"
+#line 400 "crc.y"
 { n = 4; }
 break;
 case 66:
-#line 384 "crc.y"
+#line 401 "crc.y"
 { n = 5; }
 break;
 case 67:
-#line 385 "crc.y"
+#line 402 "crc.y"
 { n = 6; }
 break;
 case 68:
-#line 386 "crc.y"
+#line 403 "crc.y"
 { n = 7; }
 break;
 case 69:
-#line 387 "crc.y"
+#line 404 "crc.y"
 { n = 8; }
 break;
 case 70:
-#line 388 "crc.y"
+#line 405 "crc.y"
 { n = 9; }
 break;
 case 71:
-#line 393 "crc.y"
+#line 410 "crc.y"
 { v = n; }
 break;
 case 72:
-#line 394 "crc.y"
+#line 411 "crc.y"
 { v = v * 10 + n; }
 break;
 case 83:
-#line 424 "crc.y"
+#line 441 "crc.y"
 { v = 0; }
 break;
 case 84:
-#line 425 "crc.y"
-{ v = 1; }
+#line 442 "crc.y"
+{ v = 1; out( OUT_REG_COL0 ); }
 break;
 case 85:
-#line 426 "crc.y"
-{ v = 2; }
+#line 443 "crc.y"
+{ v = 2; out( OUT_REG_COL1 ); }
 break;
 case 86:
-#line 427 "crc.y"
-{ v = 3; }
+#line 444 "crc.y"
+{ v = 3; out( OUT_REG_BFC0 ); }
 break;
 case 87:
-#line 428 "crc.y"
-{ v = 4; }
+#line 445 "crc.y"
+{ v = 4; out( OUT_REG_BFC1 ); }
 break;
 case 88:
-#line 429 "crc.y"
-{ v = 5; }
+#line 446 "crc.y"
+{ v = 5; out( OUT_REG_FOGC ); }
 break;
 case 89:
-#line 430 "crc.y"
-{ v = 6; }
+#line 447 "crc.y"
+{ v = 6; out( OUT_REG_PSIZ ); }
 break;
 case 90:
-#line 431 "crc.y"
-{ v = 7; }
+#line 448 "crc.y"
+{ v = 7; out( OUT_REG_TEX( 0 ) ); }
 break;
 case 91:
-#line 432 "crc.y"
-{ v = 8; }
+#line 449 "crc.y"
+{ v = 8; out( OUT_REG_TEX( 1 ) ); }
 break;
 case 92:
-#line 433 "crc.y"
-{ v = 9; }
+#line 450 "crc.y"
+{ v = 9; out( OUT_REG_TEX( 2 ) ); }
 break;
 case 93:
-#line 434 "crc.y"
-{ v = 11; }
+#line 451 "crc.y"
+{ v = 11; out( OUT_REG_TEX( 3 ) ); }
 break;
 case 94:
-#line 435 "crc.y"
-{ v = 11; }
+#line 452 "crc.y"
+{ v = 11; out( OUT_REG_TEX( 4 ) );	}
 break;
 case 95:
-#line 436 "crc.y"
-{ v = 12; }
+#line 453 "crc.y"
+{ v = 12; out( OUT_REG_TEX( 5 ) );	}
 break;
 case 96:
-#line 437 "crc.y"
-{ v = 13; }
+#line 454 "crc.y"
+{ v = 13; out( OUT_REG_TEX( 6 ) );	}
 break;
 case 97:
-#line 438 "crc.y"
-{ v = 14; }
+#line 455 "crc.y"
+{ v = 14; out( OUT_REG_TEX( 7 ) );	}
 break;
 case 102:
-#line 449 "crc.y"
+#line 466 "crc.y"
 { swz( 0 ); }
 break;
 case 103:
-#line 450 "crc.y"
+#line 467 "crc.y"
 { swz( 1 ); }
 break;
 case 104:
-#line 451 "crc.y"
+#line 468 "crc.y"
 { swz( 2 ); }
 break;
 case 105:
-#line 452 "crc.y"
+#line 469 "crc.y"
 { swz( 3 ); }
 break;
 case 106:
-#line 455 "crc.y"
+#line 472 "crc.y"
 { opv( NV40_VP_INST_OP_MOV ); }
 break;
 case 107:
-#line 456 "crc.y"
+#line 473 "crc.y"
 { opv( NV40_VP_INST_OP_LIT ); }
 break;
 case 108:
-#line 458 "crc.y"
+#line 475 "crc.y"
 { ops( NV40_VP_INST_OP_RCP ); }
 break;
 case 109:
-#line 459 "crc.y"
+#line 476 "crc.y"
 { ops( NV40_VP_INST_OP_RSQ ); }
 break;
 case 110:
-#line 460 "crc.y"
+#line 477 "crc.y"
 { ops( NV40_VP_INST_OP_EXP ); }
 break;
 case 111:
-#line 461 "crc.y"
+#line 478 "crc.y"
 { ops( NV40_VP_INST_OP_LOG ); }
 break;
 case 112:
-#line 464 "crc.y"
+#line 481 "crc.y"
 { opv( NV40_VP_INST_OP_MUL ); }
 break;
 case 113:
-#line 465 "crc.y"
+#line 482 "crc.y"
 { opv( NV40_VP_INST_OP_ADD ); }
 break;
 case 114:
-#line 466 "crc.y"
+#line 483 "crc.y"
 { opv( NV40_VP_INST_OP_DP3 ); }
 break;
 case 115:
-#line 467 "crc.y"
+#line 484 "crc.y"
 { opv( NV40_VP_INST_OP_DP4 ); }
 break;
 case 116:
-#line 468 "crc.y"
+#line 485 "crc.y"
 { opv( NV40_VP_INST_OP_DST ); }
 break;
 case 117:
-#line 469 "crc.y"
+#line 486 "crc.y"
 { opv( NV40_VP_INST_OP_MIN ); }
 break;
 case 118:
-#line 470 "crc.y"
+#line 487 "crc.y"
 { opv( NV40_VP_INST_OP_MAX ); }
 break;
 case 119:
-#line 471 "crc.y"
+#line 488 "crc.y"
 { opv( NV40_VP_INST_OP_SLT ); }
 break;
 case 120:
-#line 472 "crc.y"
+#line 489 "crc.y"
 { opv( NV40_VP_INST_OP_SGE ); }
 break;
 case 121:
-#line 475 "crc.y"
+#line 492 "crc.y"
 { opv( NV40_VP_INST_OP_MAD ); }
 break;
 case 122:
-#line 480 "crc.y"
+#line 497 "crc.y"
 { printf("\tVP\n");  clean(); }
 break;
 case 123:
-#line 482 "crc.y"
+#line 499 "crc.y"
 { printf("\tEND\n"); }
 break;
-#line 1259 "y.tab.c"
+#line 1280 "y.tab.c"
     }
     yyssp -= yym;
     yystate = *yyssp;
