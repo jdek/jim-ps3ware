@@ -1,7 +1,9 @@
 !!VP1.0
-DP4 o[HPOS].x,  v[OPOS], c[0];
-DP4 o[HPOS].y,  v[OPOS], c[1];
-DP4 o[HPOS].z,  v[OPOS], c[2];
-DP4 o[HPOS].w,  v[OPOS], c[3];
+
+DP4 o[HPOS].x,  c[0], v[OPOS];
+DP4 o[HPOS].y,  c[1], v[OPOS];
+DP4 o[HPOS].z,  c[2], v[OPOS];
+DP4 o[HPOS].w,  c[3], v[OPOS];
+
 MOV o[TEX0],    v[TEX0];
 END
