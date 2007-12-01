@@ -21,6 +21,7 @@
 #include "../../src/types.h"
 #include "../../include/nouveau_class.h"
 #include "../../src/fifo/utils.h"
+#include "../../src/fifo/dma.h"
 #include "../../src/textures/textures.h"
 #include "../../src/geometry/geometry.h"
 #include "../../src/geometry/model.h"
@@ -46,12 +47,20 @@ uint32_t fp_offset = ( BB + 0 ) * 1024 * 1024;
 uint32_t vb_offset = ( BB + 1 ) * 1024 * 1024;
 uint32_t ib_offset = ( BB + 2 ) * 1024 * 1024;
 uint32_t tx_offset = ( BB + 3 ) * 1024 * 1024;
+uint32_t pl_offset = ( BB + 4 ) * 1024 * 1024;
 
 
 
 
-
-
+int put_dma( uint32_t *fifo, uint32_t *fbmem, uint32_t data, uint32_t dst_off  )
+{
+	dma_pool_t pool;
+	pool.dma_pool = fbmem + pl_offset / 4;
+	pool.gpu_dst_base = 0x0d000000;
+	pool.gpu_src_base = pl_offset;
+	pool.dma_pool_size = 1024;
+	return put_dma_dword_async( &pool, data, DDR_TO_XDR, dst_off, fifo );
+}
 
 int NV40_LoadFragProg( uint32_t *fifo, uint32_t *fbmem, nv_pshader_t *shader)
 {
@@ -89,7 +98,7 @@ int NV40_LoadFragProg( uint32_t *fifo, uint32_t *fbmem, nv_pshader_t *shader)
 
 
 
-int set_mvp(  uint32_t *fifo )
+int set_mvp(  uint32_t *fifo, float angle )
 {
 	
 	float matrix[16];
@@ -101,7 +110,7 @@ int set_mvp(  uint32_t *fifo )
 	frustrum( -w, +w, -h, +h, 1.0f, 100.0f, matrix );
 	translatef( 0.0f, 1.5f, -8.0f, matrix );
 	
-	rotatef( 180.0f, 0.0f, 1.0f, 0.0f, matrix );
+	rotatef( angle, 0.0f, 1.0f, 0.0f, matrix );
 	rotatef( 90.0f, 1.0f, 0.0f, 0.0f, matrix );
 
 	return set_vertex_shader_constants( matrix, 0, 16, fifo, Nv3D );
@@ -177,6 +186,9 @@ int load_texture( uint32_t *fifo, uint8_t *fbmem )
 }
 
 
+uint32_t     indices_num = 0;
+primitives_t indices;
+
 int load_geometry( uint32_t *fifo, uint8_t *mem )
 {
 
@@ -195,7 +207,9 @@ int load_geometry( uint32_t *fifo, uint8_t *mem )
 			ptr += set_geometry_source( &model->position, DDR, vb_offset, ptr, Nv3D );
 			ptr += set_geometry_source( &model->texcoord, DDR, vb_offset, ptr, Nv3D );
 			ptr += set_index_source( DDR, ib_offset, ptr, Nv3D );
-			ptr += draw_indexed_primitives( model->indices, 0, model->indices_num, ptr, Nv3D );
+			indices_num = model->indices_num;
+			indices = model->indices;    
+			ptr += draw_indexed_primitives( indices, 0, indices_num, ptr, Nv3D );
 			unmap_file( file, fd, size );
 		}
 	}
@@ -378,15 +392,33 @@ int bind3d(  uint32_t *fifo, uint32_t *fbmem, uint8_t *xdrmem, uint32_t obj )
 
 	ptr += load_texture( ptr, (uint8_t *)fbmem );
 	ptr += load_vertex_shader( ptr );
-	ptr += set_mvp( ptr );
+	ptr += set_mvp( ptr, 180.0f );
 
 	ptr += NV40_LoadFragProg( ptr, fbmem,  &nv30_fp );
 	//ptr += NV40_EmitGeometry( ptr );
 	ptr += load_geometry( ptr, (uint8_t *)fbmem );
+	
+	ptr += put_dma( ptr, fbmem, 0xfeedfeed, 10 * 1024 * 1024 / 4 );
+	//ptr += put_dma( ptr, fbmem, 0xfeedfeed, 0xe1f0000 / 4 );
 
 
 	return ptr - fifo;
 }
+
+int gfx_step(  uint32_t *fifo, uint32_t *fbmem )
+{
+
+	uint32_t *ptr = fifo;
+	static float angle = 180.0f;
+	ptr += set_mvp( ptr, angle += 0.5f );
+	ptr += draw_indexed_primitives( indices, 0, indices_num, ptr, Nv3D );
+	ptr += put_dma( ptr, fbmem, 0xfeedfeed, 10 * 1024 * 1024 / 4 );
+
+
+	return ptr - fifo;
+}
+
+
 
 
 static void gfx_test(struct gpu *gpu, unsigned int obj )
@@ -398,13 +430,25 @@ static void gfx_test(struct gpu *gpu, unsigned int obj )
 
 	int wptr;
 	int ret;
+	uint32 loops = 0;
 
 	wptr = (ctrl[0x10] & (gpu->fifo.len - 1)) / 4;
+	
+	printf( "%x %x %x\n", wptr, ctrl[0x10], gpu->xram.len );
 
+	volatile uint32_t *data = (uint32_t *)(xram + 10 * 1024 * 1024 );
+	
+	*data = 0;
 	ret = bind3d( &fifo[wptr], vram, xram, obj );
 	fifo_push(gpu, ret);
-	fifo_wait(gpu);
-
+	
+	
+	while( *data == 0 || loops > ( 1 << 30 ) )
+	{
+	    ++loops;
+	}
+	
+	printf( "wait %x ticks \n", loops );
 
 }
 
