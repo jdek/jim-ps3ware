@@ -41,8 +41,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <spu_dmalib.h>
-#include <yuv_datastructs.h>
-#include <spu_control.h>
+#include <spu-medialib/yuv_datastructs.h>
+#include <spu-medialib/spu_control.h>
 #include <spu_yuv_conv.h>
 
 int main(unsigned long long speid, unsigned long long argp, unsigned long long envp) 

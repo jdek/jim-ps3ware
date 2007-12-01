@@ -41,9 +41,9 @@
 #include <stdlib.h>
 #include <spu_dmalib.h>
 #include <spu_alu.h>
-#include <data_2d.h>
+#include <spu-medialib/data_2d.h>
 
-#include <spu_control.h>
+#include <spu-medialib/spu_control.h>
 #include <spu_print.h>
 
 #define MAXWIDTH 1920
@@ -191,12 +191,12 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 // 		}
 		
 		Inp = data->Inp; //yes you just have to be 128 bit (preferably also 128 byte.) aligned..
-
+	//	fprintf(stderr,"input pointer %p %p\n", data->Inp.spu>>31, data->Inp.spu);
 // 		Tmp = data->Outp;
 
 		Outp = data->Outp;
-
-		
+//  		fprintf(stderr,"Output pointer %p %p\n", data->Outp, data->Outp<<32);
+// 		
 		Outp = Outp + ( data->dst_y * data->pitchOut * data->bppO ) / 8;
 
 		Outp = Outp + ( ( data->dst_x * data->bppO ) / 8 ) & ~ 15;
@@ -244,9 +244,9 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 
 			Inp = Inp + ( ( data->src_x * data->bppI ) / 8 ) & ~ 15;
 
-			Inoff1 = ( ( data->src_x * data->bppI ) / 8) & 0x7; 
+			Inoff1 = ( ( data->src_x * data->bppI ) / 8) & 0xF; 
 
-			Inoff2 = ( ( ( data->src_x + data->width ) * data->bppI ) / 8 ) & 0x7;
+			Inoff2 = ( ( ( data->src_x + data->width ) * data->bppI ) / 8 ) & 0xF;
 	
 			dmaInW = ( ( ( data->width * data->bppI ) / 8 ) + Inoff1 + Inoff2 + 15 ) & ~ 15;
 
@@ -284,6 +284,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 				 data->Fg.A, data->Fg.R ,data->Fg.G, data->Fg.B,
 				 data->Fg.A, data->Fg.R ,data->Fg.G, data->Fg.B,
 				 data->Fg.A, data->Fg.R ,data->Fg.G, data->Fg.B};
+		//		fprintf(stderr,"data->Fg.R %d\n ",data->Fg.R);
 // 			printcharvec("color",color);
 		}
 		SelIn = 0;
@@ -316,7 +317,7 @@ int main(unsigned long long speid, unsigned long long argp, unsigned long long e
 			switch (data->operation) {
 
 				case FILL:
-
+				//	fprintf(stderr,"Fill %p %p\n", data->Outp, data->Outp.spu<<32);
 // 				if ( data->alu == SPUset ) {
 				
 					fill_line( TEMP[0][SelIn], OUTPUT[0][SelOut], Outoff1, Outoff2, data->width,data->alu, data->bppO, color);

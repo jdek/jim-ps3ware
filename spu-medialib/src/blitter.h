@@ -40,7 +40,7 @@
 #define __SPU_BLITTER_H
 
 #include <libspe2.h>
-#include <yuv_datastructs.h>
+#include <spu-medialib/yuv_datastructs.h>
 
 #ifdef __cplusplus
 extern "C" {

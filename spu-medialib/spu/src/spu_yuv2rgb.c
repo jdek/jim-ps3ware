@@ -43,8 +43,8 @@
 #include <stdio.h>
 #include <spu_dmalib.h>
 #include "spu_colorspace.h"
-#include <yuv_datastructs.h>
-#include <spu_control.h>
+#include <spu-medialib/yuv_datastructs.h>
+#include <spu-medialib/spu_control.h>
 
 #define PPU_ADDR_MASK	0xFF00000000000000ULL
 #define MAXWIDTH 1920

@@ -9,10 +9,11 @@
 #include <iostream>
 #include <fstream>
 #include <sys/time.h>
-#include <spu_control.h>
+#include <spu-medialib/spu_control.h>
 #include <spu-medialib/draw_rect.h>
 #include <ps3fb/libps3fb.h>
 #include <spu-medialib/data_2d.h>
+#include <spu-medialib/spu_medialib_types.h>
 
 using namespace std;
 
@@ -147,10 +148,11 @@ int main (int nArg, char* cArg[]) {
  	color.R=50;
  	color.G=100;
  	color.B=0;
-	prepare_solid(draw,(unsigned long long)fbuf[0],1920,32,SPUcopy,planemask,color);
+	fprintf(stderr,"prepare copy to %p\n",fbuf[0]);
+	prepare_solid(draw,fbuf[0],1920,32,SPUcopy,planemask,color);
 	printf("draw_solid\n");
-	int output=1;
-	int update=1;
+	int output=0;
+	int update=0;
 	int count=0;
 	int bppi=12;
 	int bppo=32;
@@ -163,7 +165,7 @@ int main (int nArg, char* cArg[]) {
 	int X;
 	int Y;
 	msg=draw_rect_receive_message_hard(draw);
-	solid(draw,(unsigned long long)fbuf[0],0,1920,0,1080);
+	solid(draw,fbuf[0],0,1920,0,1080);
 	int 	selOut=0;
 //	solid(draw,(unsigned long long)fbuf[selOut],0,1920,0,0);
 	selOut=0;
@@ -176,9 +178,9 @@ int main (int nArg, char* cArg[]) {
  	color.G=128;
  	color.B=80;
 	msg=draw_rect_receive_message_hard(draw);
-	prepare_solid(draw,(unsigned long long)fbuf[0],1920,32,SPUcopy,planemask,color);
+	prepare_solid(draw,fbuf[0],1920,32,SPUcopy,planemask,color);
 // 	msg=draw_rect_receive_message_hard(draw);
- 	solid(draw,(unsigned long long)fbuf[selOut],0,1,0,1);
+	solid(draw,fbuf[selOut],0,1,0,1);
 // 	msg=draw_rect_receive_message_hard(draw);
 // 	ps3fb_swapVsync();
 // // 	solid(draw,(unsigned long long)fbuf[selOut],210,215,0,520);
@@ -257,7 +259,7 @@ int main (int nArg, char* cArg[]) {
 			int x2=1;
 
 			for (i = 0; i < 32; i++ ) {
-				solid(draw,(unsigned long long)fbuf[selOut],x,x+x2,0,120);
+				solid(draw,fbuf[selOut],x,x+x2,0,120);
 				x=x+60;
 				x2=x2+1;
 	
@@ -267,7 +269,7 @@ int main (int nArg, char* cArg[]) {
 			x=1;
 			x2=1;
 			for (i = 0; i < 32; i++ ) {
-				solid(draw,(unsigned long long)fbuf[selOut],x,x+x2,130,250);
+				solid(draw,fbuf[selOut],x,x+x2,130,250);
 				x=x+60;
 				x2=x2+1;
 	
@@ -276,7 +278,7 @@ int main (int nArg, char* cArg[]) {
 			x=2;
 			x2=1;
 			for (i = 0; i < 32; i++ ) {
-				solid(draw,(unsigned long long)fbuf[selOut],x,x+x2,260,380);
+				solid(draw,fbuf[selOut],x,x+x2,260,380);
 				x=x+60;
 				x2=x2+1;
 	
@@ -286,7 +288,7 @@ int main (int nArg, char* cArg[]) {
 			x=3;
 			x2=1;
 			for (i = 0; i < 32; i++ ) {
-				solid(draw,(unsigned long long)fbuf[selOut],x,x+x2,390,510);
+				solid(draw,fbuf[selOut],x,x+x2,390,510);
 				x=x+60;
 				x2=x2+1;
 	
@@ -301,7 +303,7 @@ int main (int nArg, char* cArg[]) {
 
 
 			for (i = 0; i < 16; i++ ) {
-				solid(draw,(unsigned long long)fbuf[selOut],0,460,y,y+y2);
+				solid(draw,fbuf[selOut],0,460,y,y+y2);
 				y=y+20;
 				y2=y2+1;
 	
@@ -315,7 +317,7 @@ int main (int nArg, char* cArg[]) {
 
 
 			for (i = 0; i < 16; i++ ) {
-				solid(draw,(unsigned long long)fbuf[selOut],480,940,y,y+y2);
+				solid(draw,fbuf[selOut],480,940,y,y+y2);
 				y=y+20;
 				y2=y2+1;
 	
@@ -329,7 +331,7 @@ int main (int nArg, char* cArg[]) {
 
 
 			for (i = 0; i < 16; i++ ) {
-				solid(draw,(unsigned long long)fbuf[selOut],960,1420,y,y+y2);
+				solid(draw,fbuf[selOut],960,1420,y,y+y2);
 				y=y+20;
 				y2=y2+1;
 	
@@ -343,15 +345,15 @@ int main (int nArg, char* cArg[]) {
 
 
 			for (i = 0; i < 16; i++ ) {
-				solid(draw,(unsigned long long)fbuf[selOut],1440,1900,y,y+y2);
+				solid(draw,fbuf[selOut],1440,1900,y,y+y2);
 				y=y+20;
 				y2=y2+1;
 	
 				msg=draw_rect_receive_message_hard(draw);
 			}
 // 
- 			solid(draw,(unsigned long long)fbuf[selOut],0,1920,1079,1080);
-		//	}
+			solid(draw,fbuf[selOut],0,1920,1079,1080);
+//	}
 			if (output) {
 				ps3fb_swapVsync();
 			}

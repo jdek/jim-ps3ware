@@ -41,8 +41,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <yuv_datastructs.h>
-#include <spu_control.h>
+#include <spu-medialib/yuv_datastructs.h>
+#include <spu-medialib/spu_control.h>
 #include "blitter.h"
 
 extern spe_program_handle_t spu_blit_yuv420_handle;

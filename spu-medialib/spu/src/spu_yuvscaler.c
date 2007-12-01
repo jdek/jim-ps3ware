@@ -39,8 +39,8 @@
 #include <malloc.h>
 #include <stdio.h>
 #include <spu_dmalib.h>
-#include <yuv_datastructs.h>
-#include <spu_control.h>
+#include <spu-medialib/yuv_datastructs.h>
+#include <spu-medialib/spu_control.h>
 #include <spu_print.h>
 #include "spu_scaler.h"
 
