@@ -120,13 +120,14 @@ void prepare_solid(draw_rect_t *arg, ea_t outpoiter,int pitchOut,int bppO,int al
 
 	struct draw_rect_s * arg_ptr;
 	arg_ptr=(struct draw_rect_s *) arg;
-	arg_ptr->data->Outp=(unsigned long long)outpoiter;
+	arg_ptr->data->Outp=spu_mask(outpoiter);
 	arg_ptr->data->pitchOut=pitchOut;
 	arg_ptr->data->bppO=bppO;
 	arg_ptr->data->alu=alu;
 	arg_ptr->data->planemask=planemask;
 	arg_ptr->data->Fg=Fg;
 	arg_ptr->data->operation=FILL;
+//	fprintf(stderr,"prepare solid to %p ppu %p spu\n",arg_ptr->data->Outp.host,arg_ptr->data->Outp.spu);
 
 }
 
@@ -134,7 +135,7 @@ void solid(draw_rect_t *arg, ea_t outpointer,int x1, int x2 , int y1 , int y2) {
 
 	struct draw_rect_s * arg_ptr;
 	arg_ptr=(struct draw_rect_s *) arg;
-	arg_ptr->data->Outp=(unsigned long long)outpointer;
+	arg_ptr->data->Outp=spu_mask(outpointer);
 	arg_ptr->data->width=x2-x1;
 	arg_ptr->data->height=y2-y1;
 	arg_ptr->data->dst_x=x1;
@@ -142,15 +143,16 @@ void solid(draw_rect_t *arg, ea_t outpointer,int x1, int x2 , int y1 , int y2) {
 	draw_rect_send_message(arg_ptr,RUN);
 }
 
-void prepare_copy(draw_rect_t *arg, ea_t outpoiter,ea_t inpointer,int pitchIn,int pitchOut,int bppO,int alu, Spu_Pixel planemask) { //initiate a copy operation
+void prepare_copy(draw_rect_t *arg, ea_t outpoiter,ea_t inpointer,int pitchIn,int pitchOut,int bppO,int bppI,int alu, Spu_Pixel planemask) { //initiate a copy operation
 
 	struct draw_rect_s * arg_ptr;
 	arg_ptr=(struct draw_rect_s *) arg;
-	arg_ptr->data->Outp=(unsigned long long)outpoiter;
-	arg_ptr->data->Inp=(unsigned long long)inpointer;
+	arg_ptr->data->Outp=spu_mask(outpoiter);
+	arg_ptr->data->Inp=spu_mask(inpointer);
 	arg_ptr->data->pitchIn=pitchIn;
 	arg_ptr->data->pitchOut=pitchOut;
 	arg_ptr->data->bppO=bppO;
+	arg_ptr->data->bppI=bppI;
 	arg_ptr->data->alu=alu;
 	arg_ptr->data->planemask=planemask;
 // 	arg_ptr->data->Fg=Fg;
@@ -169,8 +171,8 @@ void copy(draw_rect_t *arg, ea_t outpointer,ea_t inpointer,int srcX, int srcY , 
 
 	struct draw_rect_s * arg_ptr;
 	arg_ptr=(struct draw_rect_s *) arg;
-	arg_ptr->data->Outp=(unsigned long long)outpointer;
-	arg_ptr->data->Inp=(unsigned long long)inpointer;
+	arg_ptr->data->Outp=spu_mask(outpointer);
+	arg_ptr->data->Inp=spu_mask(inpointer);
 	arg_ptr->data->src_x=srcX;
 	arg_ptr->data->src_y=srcY;
 	arg_ptr->data->width=width;

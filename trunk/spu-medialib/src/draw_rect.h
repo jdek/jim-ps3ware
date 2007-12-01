@@ -51,7 +51,7 @@ typedef struct data_2 data_2_t;
 struct draw_rect_s;
 typedef struct draw_rect_s draw_rect_t;
 
-typedef uint64_t ea_t;
+typedef void * ea_t;
 
 
 draw_rect_t* init_draw_rect();
@@ -61,7 +61,7 @@ void prepare_solid(draw_rect_t *, ea_t outpoiter,int pitchOut,int bppO,int alu, 
 
 void solid(draw_rect_t *, ea_t outpointer,int x1, int x2 , int y1 , int y2); 
 
-void prepare_copy(draw_rect_t *arg, ea_t outpoiter,ea_t inpointer,int pitchIn,int pitchOut,int bppO,int alu, Spu_Pixel planemask);
+void prepare_copy(draw_rect_t *arg, ea_t outpoiter,ea_t inpointer,int pitchIn,int pitchOut,int bppO,int bppI,int alu, Spu_Pixel planemask);
 
 void copy(draw_rect_t *arg, ea_t outpointer,ea_t inpointer,int srcX, int srcY , int dstX , int dstY,int width,int height);
 

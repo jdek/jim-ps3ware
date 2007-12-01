@@ -37,7 +37,7 @@
 #ifndef __SPU_ALU_H
 #define __SPU_ALU_H
 
-#include <data_2d.h>
+#include <spu-medialib/data_2d.h>
 
 static const vector unsigned char one={0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 vector unsigned char selfilter4[16];
@@ -48,6 +48,18 @@ static inline void fill_line( vector unsigned char *Tmp, vector unsigned char *O
 	//SPUclear,SPUnoop,SPUequiv,SPUcopyInverted,SPUset
 	int i = 0;
 	switch ( alu ) {
+		case SPUcopy:
+
+			for ( i = 0 ; i < width; i = i + 4 ) { //do this at least once.
+
+				Out[ i ]     = color;
+				Out[ i + 1 ] = color;
+				Out[ i + 2 ] = color;
+				Out[ i + 3 ] = color;
+			}
+
+			break;
+
 		case SPUor: 
 
 			for ( i = 0 ; i < width; i = i + 4 ) { //do this at least once.
@@ -171,18 +183,46 @@ static inline void fill_line( vector unsigned char *Tmp, vector unsigned char *O
 static inline void copy_line( vector unsigned char *Tmp, vector unsigned char *Out, vector unsigned char *In ,int Off1, int Off2,int Ioff1, int Ioff2, int width, int alu, int bpp ) {
 	//SPUclear,SPUnoop,SPUequiv,SPUcopyInverted,SPUset
 	int i = 0;
+	int x = 0;
 	int neg=0;
 	
-	int shuf=Ioff2-Off1;
+	int shuf=Ioff1-Off1;
 	
 	if (shuf < 0 ) {
-		int shuf=16+shuf;
-		neg=0;
+		shuf=shuf + 16;
+		neg=1;
 	}
 
 	vector unsigned char shufle0,shufle1,shufle2,shufle3;
 
 	switch ( alu ) {
+	
+		case SPUcopy: 
+			i=0;
+			x = 0;
+			if (neg ) { 
+			
+				i=-1;
+			}
+
+			for ( i; i < (width>>2) + 3; i = i + 4 ) { //do this at least once.
+
+				shufle0=spu_shuffle( In[ i ], In[ i + 1], shufflefilter[ shuf ] );
+				shufle1=spu_shuffle( In[ i + 1], In[ i + 2 ], shufflefilter[ shuf ] );
+				shufle2=spu_shuffle( In[ i + 2 ], In[ i + 3 ], shufflefilter[ shuf ] );
+				shufle3=spu_shuffle( In[ i + 3 ], In[ i + 4 ], shufflefilter[ shuf ] );
+			
+				
+		
+				Out[ x ]     = shufle0;
+				Out[ x + 1 ] = shufle1;
+				Out[ x + 2 ] = shufle2;
+				Out[ x + 3 ] = shufle3;
+				x=x+4;
+			}
+			
+			break;
+
 		case SPUor: 
 			i=0;
 			if (neg ) { 

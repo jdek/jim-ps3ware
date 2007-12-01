@@ -38,8 +38,8 @@
 
 #include <pthread.h>
 #include <malloc.h>
-#include <yuv_datastructs.h>
-#include <spu_control.h>
+#include <spu-medialib/yuv_datastructs.h>
+#include <spu-medialib/spu_control.h>
 #include "yuv2rgb.h"
 extern spe_program_handle_t spu_yuv2rgb_handle;
 struct yuv2rgb_s {

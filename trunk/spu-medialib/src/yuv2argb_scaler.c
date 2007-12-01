@@ -44,8 +44,8 @@
 
       
 
-#include <yuv_datastructs.h>
-#include <spu_control.h>
+#include <spu-medialib/yuv_datastructs.h>
+#include <spu-medialib/spu_control.h>
 #include "yuv2argb_scaler.h"
 
 extern spe_program_handle_t spu_yuv2argb_scaler_handle;
@@ -78,9 +78,9 @@ static void * yuvscsc_spe_thread(void * arg)
 
 
 	spe_context_run(arg_ptr->ctx, &arg_ptr->entry, arg_ptr->runflags,arg_ptr->argp,arg_ptr->envp, NULL);
-	
+	printf("exit from SPU\n");
 	spe_context_destroy(arg_ptr->ctx);
-	
+	printf("spu context destroyed\n");
 	pthread_exit(NULL);
 }
 
@@ -221,7 +221,6 @@ void yuvscsc_destroy(yuvscaler2argb_t* arg)
 	spe_in_mbox_write(arg_ptr->ctx,&message,1,SPE_MBOX_ALL_BLOCKING);
 	
 	pthread_join(arg_ptr->pts,NULL);
-	spe_context_destroy(arg_ptr->ctx);
 	
 }
 
