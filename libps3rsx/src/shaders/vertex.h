@@ -10,7 +10,7 @@ typedef struct
 	uint32_t 	vp_in;
 	uint32_t	vp_out;
 	uint32_t 	dword_length;
-	uint32_t	aux;
+	uint32_t	aux[1];
 }
 vertex_shader_desc_t;
 
