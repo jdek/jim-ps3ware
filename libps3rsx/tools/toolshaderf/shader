@@ -1,7 +1,4 @@
 !!FP1.0
-DECLARE _LMd;
-DECLARE _ambient;
-DECLARE _LMs;
 TEXX   H0, f[TEX0], TEX0, 2D;
 MULX   H0, H0, {0.3, 0.6, 1.0, 1.0};
 END
