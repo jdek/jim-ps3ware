@@ -223,7 +223,7 @@ void print()
 	{
 	    desc.vp_in = vp_in;
 	    desc.vp_out = vp_out;
-	    desc.aux = 0xcafebabe;
+	    desc.aux[0] = 0xcafebabe;
 	    desc.dword_length = inst_ptr * 4;
 	    fwrite( &desc, sizeof( desc ), 1, out );
 	    fwrite( &inst_stack[0][0], 4 * desc.dword_length, 1, out );
@@ -394,12 +394,12 @@ const short yylhs[] = {                                        -1,
    23,   25,   30,   30,   30,   30,   30,   30,   30,   30,
    30,   30,   30,   30,   30,   30,   30,   26,   26,   32,
    35,   35,   35,   35,   35,   35,   35,   35,   35,   35,
-   31,   31,   34,   33,   33,   33,   36,   37,   11,   28,
-   27,   29,   38,   38,   38,   38,   38,   38,   38,   38,
-   38,   38,   38,   38,   38,   38,   38,   21,   22,   22,
-   22,   39,   39,   39,   39,   13,   13,   16,   16,   16,
-   16,   17,   17,   17,   17,   17,   17,   17,   17,   17,
-   18,    1,    3,
+   31,   31,   34,   33,   33,   33,   36,   11,   28,   27,
+   29,   37,   37,   37,   37,   37,   37,   37,   37,   37,
+   37,   37,   37,   37,   37,   37,   21,   22,   22,   22,
+   38,   38,   38,   38,   13,   13,   16,   16,   16,   16,
+   17,   17,   17,   17,   17,   17,   17,   17,   17,   18,
+    1,    3,
 };
 const short yylen[] = {                                         2,
     3,    2,    1,    2,    1,    1,    1,    1,    1,    4,
@@ -409,38 +409,38 @@ const short yylen[] = {                                         2,
     1,    4,    1,    1,    1,    1,    1,    1,    1,    1,
     1,    1,    1,    1,    1,    1,    1,    1,    1,    4,
     1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-    1,    2,    1,    4,    6,    6,    1,    1,    3,    2,
-    2,    4,    1,    1,    1,    1,    1,    1,    1,    1,
-    1,    1,    1,    1,    1,    1,    1,    2,    0,    2,
-    5,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+    1,    2,    1,    4,    6,    6,    1,    3,    2,    2,
+    4,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+    1,    1,    1,    1,    1,    1,    2,    0,    2,    5,
     1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-    1,    1,    1,
+    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+    1,    1,
 };
 const short yydefred[] = {                                      0,
-  122,    0,    0,    0,  106,  107,  108,  109,  110,  111,
-  112,  113,  114,  115,  116,  117,  118,  119,  120,  121,
+  121,    0,    0,    0,  105,  106,  107,  108,  109,  110,
+  111,  112,  113,  114,  115,  116,  117,  118,  119,  120,
     0,    3,    0,    5,    6,    7,    8,    9,    0,    0,
-    0,    0,    0,    0,  123,    1,    2,    4,    0,    0,
+    0,    0,    0,    0,  122,    1,    2,    4,    0,    0,
     0,    0,   40,   41,    0,    0,    0,    0,    0,   61,
    62,   63,   64,   65,   66,   67,   68,   69,   70,    0,
-   71,    0,    0,    0,   17,    0,    0,    0,   79,   35,
-   36,   10,    0,   72,   84,   85,   88,   90,   91,   92,
-   93,   94,   95,   96,   97,   83,   86,   87,   89,    0,
+   71,    0,    0,    0,   17,    0,    0,    0,   78,   35,
+   36,   10,    0,   72,   83,   84,   87,   89,   90,   91,
+   92,   93,   94,   95,   96,   82,   85,   86,   88,    0,
    11,    0,    0,    0,    0,   26,   12,    0,    0,    0,
-    0,    0,    0,   37,   38,   39,   58,   59,   82,    0,
+    0,    0,    0,   37,   38,   39,   58,   59,   81,    0,
     0,    0,   27,    0,   28,   30,    0,    0,    0,    0,
     0,    0,   15,    0,   16,    0,   29,   31,   32,   13,
     0,   44,   45,   46,   47,   48,   49,   50,   51,   52,
    53,   54,   55,   56,   57,    0,    0,    0,    0,    0,
-  102,  103,  104,  105,   98,    0,   33,    0,   42,    0,
+  101,  102,  103,  104,   97,    0,   33,    0,   42,    0,
     0,   74,   60,    0,   14,    0,    0,    0,    0,   75,
-   76,  101,
+   76,  100,
 };
 const short yydgoto[] = {                                       2,
     3,   21,   36,   22,   23,   24,   25,   26,   27,   28,
    34,   72,   29,   41,   91,   30,   31,   32,   92,  103,
   123,  125,   42,   65,  104,  105,  106,   43,   44,  146,
-  166,  107,  108,  150,   61,  167,    0,   90,  155,
+  166,  107,  108,  150,   61,  167,   90,  155,
 };
 const short yysindex[] = {                                   -237,
     0,    0, -143, -291,    0,    0,    0,    0,    0,    0,
@@ -486,20 +486,20 @@ const short yygindex[] = {                                      0,
     0,    0,    0,  168,    0,    0,    0,    0,    0,    0,
    70,  124,    0,   27,  -62,    0,    0,    0,  -24,  100,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-  -32,    0,    0,    0,  -56,   32,    0,    0, -103,
+  -32,    0,    0,    0,  -56,   32,    0, -103,
 };
 #define YYTABLESIZE 212
 const short yytable[] = {                                     102,
    34,  162,   40,   74,   98,   99,   60,   50,   51,   52,
    53,   54,   55,   56,   57,   58,   59,   33,  101,   34,
-  156,   81,   81,   80,   73,   93,   94,   95,   96,    1,
+  156,   80,   80,   79,   73,   93,   94,   95,   96,    1,
    50,   51,   52,   53,   54,   55,   56,   57,   58,   59,
-   81,   73,   80,  151,  152,  153,  154,  111,  112,  113,
+   80,   73,   79,  151,  152,  153,  154,  111,  112,  113,
    38,   70,  164,   71,  130,  131,   45,   46,   47,   33,
   169,   49,   74,  114,  115,  172,   48,  119,  132,  133,
   134,  135,  136,  137,  138,  139,  140,  141,  142,  143,
-  144,  145,  126,  127,   99,   99,   62,  147,  149,   63,
-   74,   64,   74,  100,  100,  165,   66,   50,   51,   52,
+  144,  145,  126,  127,   98,   98,   62,  147,  149,   63,
+   74,   64,   74,   99,   99,  165,   66,   50,   51,   52,
    53,   54,   55,   56,   57,   58,   59,   35,   69,   74,
     4,    5,    6,    7,    8,    9,   10,   11,   12,   13,
    14,   15,   16,   17,   18,   19,   20,    4,    5,    6,
@@ -636,7 +636,6 @@ const char * const yyrule[] = {
 "relProgParamReg : 'c' '[' addrReg PLS progParamPosOffset ']'",
 "relProgParamReg : 'c' '[' addrReg MNS progParamPosOffset ']'",
 "progParamPosOffset : decCalc",
-"progParamNegOffset : decCalc",
 "addrReg : ADDREG DOT X",
 "temporaryRegDst : R decCalc",
 "temporaryRegSrc : R decCalc",
@@ -714,7 +713,7 @@ short *yyss;
 short *yysslim;
 YYSTYPE *yyvs;
 int yystacksize;
-#line 523 "crc.y"
+#line 520 "crc.y"
 
 
 void yyerror(const char *str)
@@ -746,7 +745,7 @@ int main( int argn, const char *argv[] )
 
 
 
-#line 750 "y.tab.c"
+#line 749 "y.tab.c"
 /* allocate initial stack or double stack size, up to YYMAXDEPTH */
 static int yygrowstack()
 {
@@ -1157,155 +1156,155 @@ case 72:
 #line 433 "crc.y"
 { v = v * 10 + n; }
 break;
-case 83:
-#line 463 "crc.y"
+case 82:
+#line 460 "crc.y"
 { v = 0; }
 break;
-case 84:
-#line 464 "crc.y"
+case 83:
+#line 461 "crc.y"
 { v = 1; out( OUT_REG_COL0 ); }
 break;
-case 85:
-#line 465 "crc.y"
+case 84:
+#line 462 "crc.y"
 { v = 2; out( OUT_REG_COL1 ); }
 break;
-case 86:
-#line 466 "crc.y"
+case 85:
+#line 463 "crc.y"
 { v = 3; out( OUT_REG_BFC0 ); }
 break;
-case 87:
-#line 467 "crc.y"
+case 86:
+#line 464 "crc.y"
 { v = 4; out( OUT_REG_BFC1 ); }
 break;
-case 88:
-#line 468 "crc.y"
+case 87:
+#line 465 "crc.y"
 { v = 5; out( OUT_REG_FOGC ); }
 break;
-case 89:
-#line 469 "crc.y"
+case 88:
+#line 466 "crc.y"
 { v = 6; out( OUT_REG_PSIZ ); }
 break;
-case 90:
-#line 470 "crc.y"
+case 89:
+#line 467 "crc.y"
 { v = 7; out( OUT_REG_TEX( 0 ) ); }
 break;
-case 91:
-#line 471 "crc.y"
+case 90:
+#line 468 "crc.y"
 { v = 8; out( OUT_REG_TEX( 1 ) ); }
 break;
-case 92:
-#line 472 "crc.y"
+case 91:
+#line 469 "crc.y"
 { v = 9; out( OUT_REG_TEX( 2 ) ); }
 break;
-case 93:
-#line 473 "crc.y"
+case 92:
+#line 470 "crc.y"
 { v = 11; out( OUT_REG_TEX( 3 ) ); }
 break;
-case 94:
-#line 474 "crc.y"
+case 93:
+#line 471 "crc.y"
 { v = 11; out( OUT_REG_TEX( 4 ) );	}
 break;
-case 95:
-#line 475 "crc.y"
+case 94:
+#line 472 "crc.y"
 { v = 12; out( OUT_REG_TEX( 5 ) );	}
 break;
-case 96:
-#line 476 "crc.y"
+case 95:
+#line 473 "crc.y"
 { v = 13; out( OUT_REG_TEX( 6 ) );	}
 break;
-case 97:
-#line 477 "crc.y"
+case 96:
+#line 474 "crc.y"
 { v = 14; out( OUT_REG_TEX( 7 ) );	}
 break;
-case 102:
-#line 488 "crc.y"
+case 101:
+#line 485 "crc.y"
 { swz( 0 ); }
 break;
-case 103:
-#line 489 "crc.y"
+case 102:
+#line 486 "crc.y"
 { swz( 1 ); }
 break;
-case 104:
-#line 490 "crc.y"
+case 103:
+#line 487 "crc.y"
 { swz( 2 ); }
+break;
+case 104:
+#line 488 "crc.y"
+{ swz( 3 ); }
 break;
 case 105:
 #line 491 "crc.y"
-{ swz( 3 ); }
-break;
-case 106:
-#line 494 "crc.y"
 { opv( NV40_VP_INST_OP_MOV ); }
 break;
-case 107:
-#line 495 "crc.y"
+case 106:
+#line 492 "crc.y"
 { opv( NV40_VP_INST_OP_LIT ); }
 break;
-case 108:
-#line 497 "crc.y"
+case 107:
+#line 494 "crc.y"
 { ops( NV40_VP_INST_OP_RCP ); }
 break;
-case 109:
-#line 498 "crc.y"
+case 108:
+#line 495 "crc.y"
 { ops( NV40_VP_INST_OP_RSQ ); }
 break;
-case 110:
-#line 499 "crc.y"
+case 109:
+#line 496 "crc.y"
 { ops( NV40_VP_INST_OP_EXP ); }
+break;
+case 110:
+#line 497 "crc.y"
+{ ops( NV40_VP_INST_OP_LOG ); }
 break;
 case 111:
 #line 500 "crc.y"
-{ ops( NV40_VP_INST_OP_LOG ); }
-break;
-case 112:
-#line 503 "crc.y"
 { opv( NV40_VP_INST_OP_MUL ); }
 break;
-case 113:
-#line 504 "crc.y"
+case 112:
+#line 501 "crc.y"
 { opv( NV40_VP_INST_OP_ADD ); }
 break;
-case 114:
-#line 505 "crc.y"
+case 113:
+#line 502 "crc.y"
 { opv( NV40_VP_INST_OP_DP3 ); }
 break;
-case 115:
-#line 506 "crc.y"
+case 114:
+#line 503 "crc.y"
 { opv( NV40_VP_INST_OP_DP4 ); }
 break;
-case 116:
-#line 507 "crc.y"
+case 115:
+#line 504 "crc.y"
 { opv( NV40_VP_INST_OP_DST ); }
 break;
-case 117:
-#line 508 "crc.y"
+case 116:
+#line 505 "crc.y"
 { opv( NV40_VP_INST_OP_MIN ); }
 break;
-case 118:
-#line 509 "crc.y"
+case 117:
+#line 506 "crc.y"
 { opv( NV40_VP_INST_OP_MAX ); }
 break;
-case 119:
-#line 510 "crc.y"
+case 118:
+#line 507 "crc.y"
 { opv( NV40_VP_INST_OP_SLT ); }
+break;
+case 119:
+#line 508 "crc.y"
+{ opv( NV40_VP_INST_OP_SGE ); }
 break;
 case 120:
 #line 511 "crc.y"
-{ opv( NV40_VP_INST_OP_SGE ); }
-break;
-case 121:
-#line 514 "crc.y"
 { opv( NV40_VP_INST_OP_MAD ); }
 break;
-case 122:
-#line 519 "crc.y"
+case 121:
+#line 516 "crc.y"
 { printf("\tVP\n");  clean(); }
 break;
-case 123:
-#line 521 "crc.y"
+case 122:
+#line 518 "crc.y"
 { printf("\tEND\n"); }
 break;
-#line 1309 "y.tab.c"
+#line 1308 "y.tab.c"
     }
     yyssp -= yym;
     yystate = *yyssp;

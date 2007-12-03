@@ -291,23 +291,23 @@ static void yy_fatal_error YY_PROTO(( yyconst char msg[] ));
 	*yy_cp = '\0'; \
 	yy_c_buf_p = yy_cp;
 
-#define YY_NUM_RULES 65
-#define YY_END_OF_BUFFER 66
+#define YY_NUM_RULES 64
+#define YY_END_OF_BUFFER 65
 static yyconst short int yy_accept[125] =
     {   0,
-        0,    0,   66,   65,   64,   63,   65,   14,   15,    1,
+        0,    0,   65,   64,   63,   62,   64,   14,   15,    1,
         2,    3,    4,    5,    6,    7,    8,    9,   10,   13,
-       65,   65,   65,   65,   65,   65,   65,   65,   65,   65,
-       65,   65,   57,   65,   65,   65,   19,   20,   17,   16,
-       18,   41,   38,   39,   40,   64,    0,   56,    0,    0,
+       64,   64,   64,   64,   64,   64,   64,   64,   64,   64,
+       64,   64,   56,   64,   64,   64,   19,   20,   17,   16,
+       18,   41,   38,   39,   40,   63,    0,   55,    0,    0,
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
         0,    0,    0,    0,   29,   21,    0,    0,   30,   31,
        32,   12,   26,    0,    0,   23,   27,   37,   34,   33,
        22,   28,    0,    0,    0,   24,   25,   36,   35,    0,
 
-        0,    0,   59,   60,   45,   46,   47,   58,   44,   42,
-       62,   48,   49,   50,   51,   52,   53,   54,   55,   43,
+        0,    0,   58,   59,   45,   46,   60,   57,   44,   42,
+       61,   47,   48,   49,   50,   51,   52,   53,   54,   43,
         0,    0,   11,    0
     } ;
 
@@ -922,99 +922,94 @@ return COL1;
 case 47:
 YY_RULE_SETUP
 #line 62 "crc.l"
-return FOGC;
+return TEX0;
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
 #line 63 "crc.l"
-return TEX0;
+return TEX1;
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
 #line 64 "crc.l"
-return TEX1;
+return TEX2;
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
 #line 65 "crc.l"
-return TEX2;
+return TEX3;
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
 #line 66 "crc.l"
-return TEX3;
+return TEX4;
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
 #line 67 "crc.l"
-return TEX4;
+return TEX5;
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
 #line 68 "crc.l"
-return TEX5;
+return TEX6;
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
 #line 69 "crc.l"
-return TEX6;
+return TEX7;
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
 #line 70 "crc.l"
-return TEX7;
+return ADDREG; 
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
 #line 71 "crc.l"
-return ADDREG; 
+return R;
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 72 "crc.l"
-return R;
+#line 73 "crc.l"
+return HPOS; 
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
 #line 74 "crc.l"
-return HPOS; 
+return BFC0;
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
 #line 75 "crc.l"
-return BFC0;
+return BFC1;
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
 #line 76 "crc.l"
-return BFC1;
+return FOGC;
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
 #line 77 "crc.l"
-return FOGC;
+return PSIZ;
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 78 "crc.l"
-return PSIZ;
+#line 79 "crc.l"
+/* ignore end of line */;
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
 #line 80 "crc.l"
-/* ignore end of line */;
+/* ignore whitespace */;
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
 #line 81 "crc.l"
-/* ignore whitespace */;
-	YY_BREAK
-case 65:
-YY_RULE_SETUP
-#line 82 "crc.l"
 ECHO;
 	YY_BREAK
-#line 1018 "lex.yy.c"
+#line 1013 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1896,5 +1891,5 @@ int main()
 	return 0;
 	}
 #endif
-#line 82 "crc.l"
+#line 81 "crc.l"
 
