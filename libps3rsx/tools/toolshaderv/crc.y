@@ -208,7 +208,7 @@ void print()
 	{
 	    desc.vp_in = vp_in;
 	    desc.vp_out = vp_out;
-	    desc.aux = 0xcafebabe;
+	    desc.aux[0] = 0xcafebabe;
 	    desc.dword_length = inst_ptr * 4;
 	    fwrite( &desc, sizeof( desc ), 1, out );
 	    fwrite( &inst_stack[0][0], 4 * desc.dword_length, 1, out );
@@ -441,9 +441,6 @@ relProgParamReg:
 	'c' '[' addrReg MNS progParamPosOffset ']';
 
 progParamPosOffset:
-	decCalc;
-
-progParamNegOffset:
 	decCalc;
 
 addrReg:	

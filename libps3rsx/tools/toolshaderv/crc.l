@@ -59,7 +59,6 @@ WGHT			return WGHT;
 NRML			return NRML;
 COL0			return COL0;
 COL1			return COL1;
-FOGC			return FOGC;
 TEX0			return TEX0;
 TEX1			return TEX1;
 TEX2			return TEX2;
