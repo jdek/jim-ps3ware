@@ -1,2 +1,2 @@
 make
-./a.exe ../../data/mvp.vertex < shader
+./a.out ../../data/custom.pixel < shader

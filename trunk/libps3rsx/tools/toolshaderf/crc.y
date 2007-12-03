@@ -7,17 +7,22 @@
 #define uint32 unsigned int
 #define uint32_t unsigned int
 
-#include "../../src/shaders/vertex.h"
+#include "../../src/shaders/fragment.h"
 void yyerror(const char *str);
 
+uint32 endian_fp( uint32 v )
+{
+  return ( ( ( v >> 16 ) & 0xffff ) << 0 ) |
+         ( ( ( v >> 0 ) & 0xffff ) << 16 );
 
+}
 
 
 #define NV40_FP_DEST_MASK(x,y,z,w)  ((w<<3)|(z<<2)|(y<<1)|x)
 #define NV40_FP_SWIZZLE(x,y,z,w)  ((w<<6)|(z<<4)|(y<<2)|x)
 
 
-uint32 vp_inst[4];
+uint32 fp_inst[4];
 float  f[256];
 
 
@@ -33,21 +38,50 @@ int type = 0;
 int src_ptr = 0;
 int mod = 0;
 int neg = 0;
-
+int cnst = 0;
+int last_cmd = 0;
+int max_reg = 0;
 
 const char *outfile;
 
-
+typedef union
+{
+	float f;
+	int i;
+}f2i;
 
 
 void dump()
 {
-	inst_stack[inst_ptr][0] = vp_inst[0];
-	inst_stack[inst_ptr][1] = vp_inst[1];
-	inst_stack[inst_ptr][2] = vp_inst[2];
-	inst_stack[inst_ptr][3] = vp_inst[3];
+	if( fp_inst[0] == 0 )
+	{
+		cnst = 0;
+		return;
+	}
+	inst_stack[inst_ptr][0] = fp_inst[0];
+	inst_stack[inst_ptr][1] = fp_inst[1];
+	inst_stack[inst_ptr][2] = fp_inst[2];
+	inst_stack[inst_ptr][3] = fp_inst[3];
 	
 	++inst_ptr;
+	last_cmd = 1;
+
+	if( cnst )
+	{
+		f2i c;
+		c.f = f[0];
+		inst_stack[inst_ptr][0] = c.i;
+		c.f = f[1];
+		inst_stack[inst_ptr][1] = c.i;
+		c.f = f[2];
+		inst_stack[inst_ptr][2] = c.i;
+		c.f = f[3];
+		inst_stack[inst_ptr][3]	= c.i;
+		++inst_ptr;
+		last_cmd = 2;
+		
+	}
+	cnst = 0;
 	
 	
 }
@@ -57,34 +91,46 @@ void print()
 	//printf( "asdasdasd" );
 	//inst_stack[inst_ptr - 1][3] |= NV40_VP_INST_LAST;
 	uint32 i;
+	inst_stack[inst_ptr - last_cmd][0] |= NV40_FP_OP_PROGRAM_END;
 	for( i = 0; i < inst_ptr; ++i )
 	{
 		printf( "%8x %8x %8x %8x \n", inst_stack[i][0], inst_stack[i][1], inst_stack[i][2], inst_stack[i][3]  );
+		inst_stack[i][0] = endian_fp( inst_stack[i][0] );
+		inst_stack[i][1] = endian_fp( inst_stack[i][1] );
+		inst_stack[i][2] = endian_fp( inst_stack[i][2] );
+		inst_stack[i][3] = endian_fp( inst_stack[i][3] );
+		
 	}
+
 	
-	vertex_shader_desc_t desc;
+
+
 	
-	/*
+	fragment_shader_desc_t desc;
+	
+	
 	FILE *out = fopen( outfile, "wb" );
 	if( out )
 	{
-	    desc.aux = 0xcafebabe;
+	    desc.aux[0] = 0xcafebabe;
 	    desc.dword_length = inst_ptr * 4;
+	    desc.num_regs = max_reg;
 	    fwrite( &desc, sizeof( desc ), 1, out );
 	    fwrite( &inst_stack[0][0], 4 * desc.dword_length, 1, out );
 	    fclose( out );
+	    printf( "fp regs %x \n", max_reg );
 	    	
-	} */
+	} 
 	inst_ptr = 0;
 }
 
 void clean()
 {
-	//0x17009e00, 0x1c9dc801, 0x0001c800, 0x3fe1c800
-	vp_inst[0] = 0;
-	vp_inst[1] = 0;
-	vp_inst[2] = 0;
-	vp_inst[3] = 0;
+	
+	fp_inst[0] = 0;
+	fp_inst[1] = 0;
+	fp_inst[2] = 0;
+	fp_inst[3] = 0;
 	src_ptr = 0;
 	type = 0;
 	mod = 0;
@@ -99,47 +145,47 @@ void opv( uint32 op )
 	}
 	
 	printf( "opv code 0x%2x ", op );
-	vp_inst[0] &= ~NV40_FP_OP_OPCODE_MASK; 
-  	vp_inst[0] |= ( op <<  NV40_FP_OP_OPCODE_SHIFT); 
-	printf( "%x \n", vp_inst[0] );
+	fp_inst[0] &= ~NV40_FP_OP_OPCODE_MASK; 
+  	fp_inst[0] |= ( op <<  NV40_FP_OP_OPCODE_SHIFT); 
+	
 }
 
 void msk( uint32 ms )
 {
 	printf( "ms %x %x %x %x ", ( ms >> 0 ) & 1, ( ms >> 1 ) & 1, ( ms >> 2 ) & 1, ( ms >> 3 ) & 1  );
-	vp_inst[0] &= ~NV40_FP_OP_OUTMASK_MASK; 
-  	vp_inst[0] |= ( ms << NV40_FP_OP_OUTMASK_SHIFT ); 
-	printf( "%x \n", vp_inst[0] );
+	fp_inst[0] &= ~NV40_FP_OP_OUTMASK_MASK; 
+  	fp_inst[0] |= ( ms << NV40_FP_OP_OUTMASK_SHIFT ); 
+
 }
 
 void cnd_msk( uint32 cn )
 {
-	vp_inst[1] &= ~NV40_FP_OP_COND_MASK;
-	vp_inst[1] |= ( cn << NV40_FP_OP_COND_SHIFT );
-	printf( "cnd %d \n", cn );
-	printf( "%x \n", vp_inst[0] );
+	fp_inst[1] &= ~NV40_FP_OP_COND_MASK;
+	fp_inst[1] |= ( cn << NV40_FP_OP_COND_SHIFT );
+	printf( "cnd %d ", cn );
+	
 }
 
 void sat( uint32 s )
 {
 	printf( "sat %x ", s );
-	vp_inst[0] &= ~NV40_FP_OP_OUT_SAT;
+	fp_inst[0] &= ~NV40_FP_OP_OUT_SAT;
 	if( s )
 	{	
-		vp_inst[0] |= NV40_FP_OP_OUT_SAT;	
+		fp_inst[0] |= NV40_FP_OP_OUT_SAT;	
 	}
-	printf( "%x \n", vp_inst[0] );
+
 }
 
 void cnd( uint32 s )
 {
 	printf( "cnd %x \n", s );
-	vp_inst[0] &= ~NV40_FP_OP_COND_WRITE_ENABLE;
+	fp_inst[0] &= ~NV40_FP_OP_COND_WRITE_ENABLE;
 	if( s )
 	{	
-		vp_inst[0] |= NV40_FP_OP_COND_WRITE_ENABLE;	
+		fp_inst[0] |= NV40_FP_OP_COND_WRITE_ENABLE;	
 	}
-	printf( "%x \n", vp_inst[0] );
+
 }
 	
 
@@ -151,8 +197,8 @@ void com( uint32 s )
 void set_input( uint32 in )
 {
 	type = 1;
-	vp_inst[0] &= ~NV40_FP_OP_INPUT_SRC_MASK;
-	vp_inst[0] |= ( in << NV40_FP_OP_INPUT_SRC_SHIFT );
+	fp_inst[0] &= ~NV40_FP_OP_INPUT_SRC_MASK;
+	fp_inst[0] |= ( in << NV40_FP_OP_INPUT_SRC_SHIFT );
 	printf( "inp %d ", in  );
 	
 }
@@ -187,10 +233,10 @@ uint32 get_swizzle()
 void prc( uint32 s )
 {
 	printf( "prc %x ", s );
-	vp_inst[0] &= ~NV40_FP_OP_PRECISION_MASK;
+	fp_inst[0] &= ~NV40_FP_OP_PRECISION_MASK;
 	if( s )
 	{	
-		vp_inst[0] |= ( s << NV40_FP_OP_PRECISION_SHIFT );	
+		fp_inst[0] |= ( s << NV40_FP_OP_PRECISION_SHIFT );	
 	}
 }
 
@@ -201,8 +247,8 @@ void set_cns()
 
 void set_tex( uint32 r )
 {
-	vp_inst[0] &= ~( NV40_FP_OP_TEX_UNIT_MASK );
-	vp_inst[0] |= ( r << NV40_FP_OP_TEX_UNIT_SHIFT );
+	fp_inst[0] &= ~( NV40_FP_OP_TEX_UNIT_MASK );
+	fp_inst[0] |= ( r << NV40_FP_OP_TEX_UNIT_SHIFT );
 	
 	printf( "tex %d \n", r );
 }
@@ -210,26 +256,26 @@ void set_tex( uint32 r )
 void src_reg( uint32 reg )
 {
 
-	vp_inst[src_ptr + 1] &= ~NV40_FP_REG_TYPE_MASK;
-	vp_inst[src_ptr + 1] |= ( type << NV40_FP_REG_TYPE_SHIFT );
+	fp_inst[src_ptr + 1] &= ~NV40_FP_REG_TYPE_MASK;
+	fp_inst[src_ptr + 1] |= ( type << NV40_FP_REG_TYPE_SHIFT );
 
-	vp_inst[src_ptr + 1] &= ~NV40_FP_REG_UNK_0;
+	fp_inst[src_ptr + 1] &= ~NV40_FP_REG_UNK_0;
 	if( h )
 	{
-		vp_inst[src_ptr + 1] |= NV40_FP_REG_UNK_0;
+		fp_inst[src_ptr + 1] |= NV40_FP_REG_UNK_0;
 	
 	}
 	
-	vp_inst[src_ptr + 1] &= ~NV40_FP_REG_NEGATE;
+	fp_inst[src_ptr + 1] &= ~NV40_FP_REG_NEGATE;
 	if( neg )
 	{
-		vp_inst[src_ptr + 1] |= NV40_FP_REG_NEGATE;
+		fp_inst[src_ptr + 1] |= NV40_FP_REG_NEGATE;
 	}
-	vp_inst[src_ptr + 1] &= ~NV40_FP_REG_SRC_MASK;
-	vp_inst[src_ptr + 1] |= ( reg << NV40_FP_REG_SRC_SHIFT );
+	fp_inst[src_ptr + 1] &= ~NV40_FP_REG_SRC_MASK;
+	fp_inst[src_ptr + 1] |= ( reg << NV40_FP_REG_SRC_SHIFT );
 	
-	vp_inst[src_ptr + 1] &= ~NV40_FP_REG_SWZ_ALL_MASK;
-	vp_inst[src_ptr + 1] |= ( get_swizzle() << NV40_FP_REG_SWZ_ALL_SHIFT );
+	fp_inst[src_ptr + 1] &= ~NV40_FP_REG_SWZ_ALL_MASK;
+	fp_inst[src_ptr + 1] |= ( get_swizzle() << NV40_FP_REG_SWZ_ALL_SHIFT );
 	
 	printf( "... src %s %2d type %d neg %d \n", h ? "h" : "r", reg, type, neg  );
 	src_ptr++;
@@ -241,23 +287,28 @@ void src_reg( uint32 reg )
         
 void out_reg( uint32 reg )
 {
-	vp_inst[0] &= ~NV40_FP_OP_UNK0_7;
+	uint32 reg_num =  h ? reg / 2 + 2: reg + 2;
+	if( reg_num > max_reg )
+	{
+		max_reg = reg_num;
+	}
+	fp_inst[0] &= ~NV40_FP_OP_UNK0_7;
 	if( h )
 	{
-		vp_inst[0] |= NV40_FP_OP_UNK0_7;
+		fp_inst[0] |= NV40_FP_OP_UNK0_7;
 	
 	}
 	
 	
-	vp_inst[0] &= ~NV40_FP_OP_OUT_REG_MASK;
-	vp_inst[0] |= ( reg << NV40_FP_OP_OUT_REG_SHIFT );
+	fp_inst[0] &= ~NV40_FP_OP_OUT_REG_MASK;
+	fp_inst[0] |= ( reg << NV40_FP_OP_OUT_REG_SHIFT );
 	printf( "out %s %2d ", h ? "h" : "r", reg  );	
 }
 
 void cnd_swz()
 {
-	vp_inst[1] &= ~NV40_FP_OP_COND_SWZ_ALL_MASK;
-	vp_inst[1] |= ( get_swizzle() << NV40_FP_OP_COND_SWZ_ALL_SHIFT );
+	fp_inst[1] &= ~NV40_FP_OP_COND_SWZ_ALL_MASK;
+	fp_inst[1] |= ( get_swizzle() << NV40_FP_OP_COND_SWZ_ALL_SHIFT );
 	
 }
 
@@ -570,8 +621,8 @@ texImageTarget:
 
 
 vectorConstant:
-	CONST { set_cns(); }| 
-	WORD  { set_cns(); }; 
+	CONST { set_cns(); cnst = 1;}| 
+	WORD  { set_cns(); cnst = 1;}; 
                
 
 negate:
