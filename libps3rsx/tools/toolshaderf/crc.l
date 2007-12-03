@@ -37,8 +37,11 @@ void lex( const char *s )
 			{
 				break;
 			}
-			printf( "%f\n", f[v_ptr] );
 			v_ptr++;
+			if( v_ptr == 4 )
+			{
+			    break;
+			}
 			s += symbols;
 		}
 	}
@@ -191,6 +194,6 @@ TEX                     return TEX;
 
 [_][a-zA-Z][a-zA-Z0-9]*   return WORD;
 
-[{][ \t.,\-\+0-9]*[}]      printf( "const %s", yytext ); lex( yytext );    return CONST;
+[{][ \t.,\-\+0-9]*[}]      printf( "const %s \n", yytext ); lex( yytext );    return CONST;
 
 %%
