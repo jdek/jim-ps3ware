@@ -1,7 +1,7 @@
 CFLAGS=-O2 -W -Wall -I/lib/modules/`uname -r`/build/include
 CPPFLAGS=-O2 -W -Wall -I/lib/modules/`uname -r`/build/include
 
-SRCC=../../src/fifo/dma.c ../../src/fifo/utils.c  ../../src/shaders/vertex.c  ../../src/textures/textures.c ../../src/geometry/geometry.c ps3gpu.c
+SRCC=../../src/fifo/dma.c ../../src/fifo/utils.c  ../../src/shaders/fragment.c ../../src/shaders/vertex.c  ../../src/textures/textures.c ../../src/geometry/geometry.c ps3gpu.c
 OBJC = $(SRCC:%.c=%.o)
 
 all:gpu
