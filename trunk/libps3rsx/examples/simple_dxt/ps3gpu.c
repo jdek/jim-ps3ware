@@ -26,8 +26,8 @@
 #include "../../src/geometry/geometry.h"
 #include "../../src/geometry/model.h"
 #include "../../src/shaders/vertex.h"
+#include "../../src/shaders/fragment.h"
 
-#include "nv_shaders.h"
 
 #include <linux/types.h>
 #include <linux/fb.h>
@@ -41,7 +41,8 @@ uint32_t width;
 uint32_t height;
 uint32_t pitch;
 
-#define  BB 64
+#define  BB 74
+
 
 uint32_t fp_offset = ( BB + 0 ) * 1024 * 1024;
 uint32_t vb_offset = ( BB + 1 ) * 1024 * 1024;
@@ -61,41 +62,6 @@ int put_dma( uint32_t *fifo, uint32_t *fbmem, uint32_t data, uint32_t dst_off  )
 	pool.dma_pool_size = 1024;
 	return put_dma_dword_async( &pool, data, DDR_TO_XDR, dst_off, fifo );
 }
-
-int NV40_LoadFragProg( uint32_t *fifo, uint32_t *fbmem, nv_pshader_t *shader)
-{
-	uint32_t i;
-	uint32_t offset = fp_offset / 4;
-	uint32_t *ptr = fifo;
-	static int next_hw_id_offset = 0;
-
-	if (!shader->hw_id)
-	{
-
-		for( i = 0; i < shader->size; ++i )
-		{
-			fbmem[ offset + next_hw_id_offset + i] = endian_fp( shader->data[i] );
-		}
-
-
-		shader->hw_id  = offset;
-		shader->hw_id += next_hw_id_offset;
-		shader->hw_id *= 4;
-
-		next_hw_id_offset += shader->size;
-		next_hw_id_offset = (next_hw_id_offset + 63) & ~63;
-	}
-
-	printf( "frag prog 0x%x \n", shader->hw_id );
-	BEGIN_RING(Nv3D, NV40TCL_FP_ADDRESS, 1);
-	OUT_RING  ( shader->hw_id | NV40TCL_FP_ADDRESS_DMA0);
-	BEGIN_RING(Nv3D, NV40TCL_FP_CONTROL, 1);
-	OUT_RING  ( ( shader->num_regs << NV40TCL_FP_CONTROL_TEMP_COUNT_SHIFT ) );
-
-
-	return ptr - fifo;
-}
-
 
 
 int set_mvp(  uint32_t *fifo, float angle )
@@ -157,7 +123,7 @@ int load_vertex_shader(  uint32_t *fifo )
 	if( size && file )
 	{
 		vertex_shader_desc_t *desc = file;
-		int res = set_vertex_shader( desc, (uint32_t *)( (uint8 *)file + sizeof( *desc ) ), fifo, Nv3D );
+		int res = set_vertex_shader( desc, &desc->aux[1], fifo, Nv3D );
 		unmap_file( file, fd, size );
 		return res;
 	}
@@ -165,6 +131,23 @@ int load_vertex_shader(  uint32_t *fifo )
 	return 0;
 }
 
+
+int load_pixel_shader(  uint32_t *fifo, uint8_t *fbmem )
+{
+	int fd, size;
+	void *file = map_file( "../../data/custom.pixel", &fd, &size );
+
+	if( size && file )
+	{
+		fragment_shader_desc_t *desc = file;
+		memcpy(fbmem + fp_offset, &desc->aux[1], desc->dword_length * 4 );
+		int res = set_fragment_shader( desc, fp_offset, fifo, Nv3D );
+		unmap_file( file, fd, size );
+		return res;
+	}
+
+	return 0;
+}
 
 
 int load_texture( uint32_t *fifo, uint8_t *fbmem )
@@ -393,9 +376,7 @@ int bind3d(  uint32_t *fifo, uint32_t *fbmem, uint8_t *xdrmem, uint32_t obj )
 	ptr += load_texture( ptr, (uint8_t *)fbmem );
 	ptr += load_vertex_shader( ptr );
 	ptr += set_mvp( ptr, 180.0f );
-
-	ptr += NV40_LoadFragProg( ptr, fbmem,  &nv30_fp );
-	//ptr += NV40_EmitGeometry( ptr );
+	ptr += load_pixel_shader( ptr, (uint8_t *)fbmem );
 	ptr += load_geometry( ptr, (uint8_t *)fbmem );
 	
 	ptr += put_dma( ptr, fbmem, 0xfeedfeed, 10 * 1024 * 1024 / 4 );
