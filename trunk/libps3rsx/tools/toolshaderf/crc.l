@@ -181,6 +181,8 @@ TEX                     return TEX;
 "NE"                    return NE;
 "TR"                    return TR;
 "FL"                    return FL;
+"EQ"                    return EQ;
+
 
 
 "COLR"			return COLR; 

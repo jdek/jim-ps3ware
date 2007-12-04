@@ -41,6 +41,7 @@ int neg = 0;
 int cnst = 0;
 int last_cmd = 0;
 int max_reg = 0;
+int creg = 0;
 
 const char *outfile;
 
@@ -288,7 +289,7 @@ void src_reg( uint32 reg )
 void out_reg( uint32 reg )
 {
 	uint32 reg_num =  h ? reg / 2 + 2: reg + 2;
-	if( reg_num > max_reg )
+	if( creg == 0 && reg_num > max_reg )
 	{
 		max_reg = reg_num;
 	}
@@ -303,6 +304,7 @@ void out_reg( uint32 reg )
 	fp_inst[0] &= ~NV40_FP_OP_OUT_REG_MASK;
 	fp_inst[0] |= ( reg << NV40_FP_OP_OUT_REG_SHIFT );
 	printf( "out %s %2d ", h ? "h" : "r", reg  );	
+	creg = 0;
 }
 
 void cnd_swz()
@@ -571,11 +573,12 @@ decCalc:
 
 
 fragF32Reg:
-	R decCalc { h = 0; };    
+	R decCalc { h = 0; }; |
+	R C { h = 0; v = 31; creg = 1; };
 
 fragF16Reg:
-	H decCalc { h = 1; };
-
+	H decCalc { h = 1; }; |
+	H C { h = 1; v = 63; creg = 1; };
 
 fragOutputReg:        
 	'o' '[' fragOutputRegName ']';
