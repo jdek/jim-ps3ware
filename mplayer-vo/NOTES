@@ -1,51 +1,68 @@
-Notes:
-  needs to do direct rendering, but you don't have
-  to specify -dr on the command line because vo will
-  enable it automatically if it can
-
-  needs to double buffer, but you don't have to specify that either (-double)
-
-  doesn't do windows - takes over framebuffer for now
-
-  h264 issues:
-        currently not working
-        video currently doesn't direct render unless u post process with -vf pp
-        broken on PS3 (regardless of vo) - too slow & audio strange
-        try with -demuxer 35 -lavdopts fast:threads=2 for improvement, but still not usable
-        try with -vo null and still broken (see, it's not vo's fault :) )
-
-  configure now autodetects ps3
-
-  works with:
-     'f'      for fullscreen scaling toggle
-     'space'  for pausing
-     '.       for single frame stepping
-
-  use -vo ps3:snapshot to save a .yuv file of current buffers on pause
-
-Dependencies:
-     spu-medialib & ps3fb must be installed
-     must be able to find:
-        libspe2.h
-        spu-medialib/spu_control.h
-        spu-medialib/yuv2argb_scaler.h
-        ps3fb/libps3fb.h
-        libspu-medialib.a
-        libps3lib.a
-
-Installation:
-  install ps3fb (http://forums.ps2dev.org/viewtopic.php?p=59150#59150)
-  install spu-medialib (http://forums.ps2dev.org/viewtopic.php?t=9109)
-  get & patch mplayer (currently tested with rev. 24714)
-     svn co svn://svn.mplayerhq.hu/mplayer/trunk mplayer
-     cd mplayer & patch:
-        $ patch -p0 < mplayer-r24714-vo_ps3-r1.patch
-         patching file libvo/video_out.c
-         patching file libvo/vo_ps3.c
-         patching file configure
-        make normally (./configure; make && make install)
-
-Usage:
-  $ ps3videomode
-  $ mplayer -vo ps3 /lost/video/watch-ppu-usage.mpg
-
+/* vo_ps3.c - video out interface utilizing spu-medialib
+ *            to offload scaling and yuv2rgb colorspace
+ *            conversion to the PS3's SPEs:
+ *    http://wiki.ps2dev.org/ps3:spu-medialib
+ *
+ * This is very experimental code which is not ready for
+ * public consumption.  Many todo:'s remain, and
+ * many more mistakes still need to be corrected.
+ *
+ * Distributed AS IS.  Use at your own risk.  Author is not liable
+ * in any way for any use, misuse, nonuse, expectation, failed
+ * expectation, problem, or anything else.
+ *
+ * Notes:
+ *    needs to do direct rendering but enables it automatically
+ *    don't need -dr flag
+ *
+ *    needs to double buffer - also automatic (no -double needed)
+ *
+ *    doesn't do windows - takes over framebuffer for now
+ *
+ *    h264 issues:
+ *       video currently doesn't "direct render" unless u post process
+ *       with -vf pp or something
+ *       broken on PS3 (regardless of vo) - too slow & audio strange
+ *       using -demuxer 35 -lavdopts fast:threads=2 will provide
+ *       improvement once ffmpeg uses threads for x264.  Now it's too slow
+ *       try with -vo null and still broken (see, it's not vo's fault :) )
+ *
+ *    configure now autodetects spu-medialib and enables vo_ps3
+ *
+ *    use -vo ps3:snapshot to save current buffers in a .yuv file on pause
+ *
+ * Installation:
+ *    install ps3fb (http://forums.ps2dev.org/viewtopic.php?p=59150#59150)
+ *    install spu-medialib (http://forums.ps2dev.org/viewtopic.php?t=9109)
+ *    get & patch mplayer
+ *       svn co svn://svn.mplayerhq.hu/mplayer/trunk mplayer
+ *       cd mplayer & patch:
+ *       $ patch -p0 < mplayer-r24714-vo_ps3-r1.patch
+ *          patching file libvo/video_out.c
+ *          patching file libvo/vo_ps3.c
+ *          patching file configure
+ *       make normally (./configure; make && make install)
+ *
+ * Usage:
+ *    $ ps3videomode -v 5 -f
+ *    $ mplayer -vo ps3 /lost/video/watch-ppu-usage.mpg
+ *
+ *
+ * Bugs (known):
+ *    Non direct rendered video is broken - on todo list
+ *    Lots more! :)
+ *
+ * Original version: Copyright 2007 by Bill Garrett (wgarrett@sc.rr.com)
+ * 
+ * Credits:
+ *    Many thanks to the creators & contributors of spu-medialib
+ *    and especially to unsolo - a tireless genius who made all this
+ *    possible.
+ *
+ *    Thanks also to _Demo_, jbit, and nomego for advice & testing, and
+ *    access to nomego's 32UL ps3! ;)
+ *
+ * Changelog:
+ *
+ *
+ */
