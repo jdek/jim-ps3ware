@@ -274,7 +274,10 @@ int map_resource(char const *name, struct resource *res)
 	virt = mmap(0, res->len, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
 	if (virt == MAP_FAILED)
+	{
+		close( fd );
 		return -1;
+	}
 
 	res->virt = virt;
 
