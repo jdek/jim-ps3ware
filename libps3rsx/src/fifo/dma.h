@@ -32,4 +32,10 @@ int put_dma_dword_async
     uint32_t *fifo_buffer
 );
 
+int jump_to_address
+(
+    uint32_t *fifo_buffer,
+    uint32_t address
+);
+
 

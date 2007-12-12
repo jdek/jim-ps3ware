@@ -147,11 +147,11 @@ static void ramin_write_dword_to_dword_offset( struct gpu *gpu, uint32_t addr, u
 
   }
   //wait...
-  usleep( 1000 );
+  usleep( 10000 );
   //patch with data
   vram[off] = endian( data );
   //wait...
-  usleep( 1000 );
+  usleep( 10000 );
   //copy data back
   {
     int wptr;

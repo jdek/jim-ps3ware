@@ -228,151 +228,26 @@ int load_geometry( uint32_t *fifo, uint8_t *mem )
 int bind3d(  uint32_t *fifo, uint32_t *fbmem, uint8_t *xdrmem, uint32_t obj )
 {
 
-	int i;
 	uint32_t *ptr = fifo;
-	uint32_t NvDmaNotifier0 = 0x66604200;
-	uint32_t NvDmaFB = 0xfeed0000;
 	xdrmem = xdrmem;
 
-	BEGIN_RING(Nv3D, 0, 1);
-	OUT_RING  (obj);
+	setup_buffer_t setup;
+	setup.pitchDepth = pitch;
+	setup.pitchColor = pitch;
+	setup.offsetDepth = width * height * 4;
+	setup.offsetColor = 0;
+	setup.typeDepth = Z16;
+	setup.width = width;
+	setup.height = height;
+	
+	clear_buffer_t clear;
+	clear.clearR = clear.clearG = clear.clearB = clear.clearA = clear.clearD = 1;
+	clear.rgba = 250 +  ( 120 << 8 ) + ( 50 << 16 );
+	clear.depth = 0xffff;
 
-	BEGIN_RING(Nv3D, NV40TCL_DMA_NOTIFY, 1);
-	OUT_RING  (NvDmaNotifier0);
-	BEGIN_RING(Nv3D, NV40TCL_DMA_TEXTURE0, 1);
-	OUT_RING  (NvDmaFB);
-
-	BEGIN_RING(Nv3D, NV40TCL_DMA_COLOR0, 2);
-	OUT_RING  (NvDmaFB);
-	OUT_RING  (NvDmaFB);
-
-	BEGIN_RING(Nv3D, NV40TCL_DMA_ZETA, 1 );
-	OUT_RING  (NvDmaFB);
-
-
-	/* voodoo */
-	BEGIN_RING(Nv3D, 0x1ea4, 3);
-	OUT_RING  (0x00000010);
-	OUT_RING  (0x01000100);
-	OUT_RING  (0xff800006);
-	BEGIN_RING(Nv3D, 0x1fc4, 1);
-	OUT_RING  (0x06144321);
-	BEGIN_RING(Nv3D, 0x1fc8, 2);
-	OUT_RING  (0xedcba987);
-	OUT_RING  (0x00000021);
-	BEGIN_RING(Nv3D, 0x1fd0, 1);
-	OUT_RING  (0x00171615);
-	BEGIN_RING(Nv3D, 0x1fd4, 1);
-	OUT_RING  (0x001b1a19);
-	BEGIN_RING(Nv3D, 0x1ef8, 1);
-	OUT_RING  (0x0020ffff);
-	BEGIN_RING(Nv3D, 0x1d64, 1);
-	OUT_RING  (0x00d30000);
-	BEGIN_RING(Nv3D, 0x1e94, 1);
-	OUT_RING  (0x00000001);
-
-	BEGIN_RING(Nv3D, NV40TCL_VIEWPORT_TRANSLATE_X, 8);
-	OUT_RINGf (0.5f * width );
-	OUT_RINGf (0.5f * height );
-	OUT_RINGf (0.0);
-	OUT_RINGf (0.0);
-	OUT_RINGf (0.5f * width );
-	OUT_RINGf (0.5f * height );
-	OUT_RINGf (1.0);
-	OUT_RINGf (1.0);
-
-	/* default 3D state */
-	BEGIN_RING(Nv3D, NV40TCL_STENCIL_FRONT_ENABLE, 1);
-	OUT_RING  (0);
-	BEGIN_RING(Nv3D, NV40TCL_STENCIL_BACK_ENABLE, 1);
-	OUT_RING  (0);
-	BEGIN_RING(Nv3D, NV40TCL_ALPHA_TEST_ENABLE, 1);
-	OUT_RING  (0);
-	BEGIN_RING(Nv3D, NV40TCL_DEPTH_WRITE_ENABLE, 1);
-	OUT_RING  (1);
-	BEGIN_RING(Nv3D, NV40TCL_DEPTH_TEST_ENABLE, 1);
-	OUT_RING  (1);
-	BEGIN_RING(Nv3D, NV40TCL_DEPTH_FUNC, 1);
-	OUT_RING  (NV40TCL_DEPTH_FUNC_LESS);
-	BEGIN_RING(Nv3D, NV40TCL_COLOR_MASK, 1);
-	OUT_RING  (0x01010101); /* TR,TR,TR,TR */
-	BEGIN_RING(Nv3D, NV40TCL_CULL_FACE_ENABLE, 1);
-	OUT_RING  (0);
-	BEGIN_RING(Nv3D, NV40TCL_BLEND_ENABLE, 1);
-	OUT_RING  (0);
-	BEGIN_RING(Nv3D, NV40TCL_COLOR_LOGIC_OP_ENABLE, 2);
-	OUT_RING  (0);
-	OUT_RING  (NV40TCL_COLOR_LOGIC_OP_COPY);
-	BEGIN_RING(Nv3D, NV40TCL_DITHER_ENABLE, 1);
-	OUT_RING  (0);
-	BEGIN_RING(Nv3D, NV40TCL_SHADE_MODEL, 1);
-	OUT_RING  (NV40TCL_SHADE_MODEL_SMOOTH);
-	BEGIN_RING(Nv3D, NV40TCL_POLYGON_OFFSET_FACTOR,2);
-	OUT_RINGf (0.0);
-	OUT_RINGf (0.0);
-	BEGIN_RING(Nv3D, NV40TCL_POLYGON_MODE_FRONT, 2);
-	OUT_RING  (NV40TCL_POLYGON_MODE_FRONT_FILL);
-	OUT_RING  (NV40TCL_POLYGON_MODE_BACK_FILL);
-	BEGIN_RING(Nv3D, NV40TCL_POLYGON_STIPPLE_PATTERN(0), 0x20);
-	for (i=0;i<0x20;i++)
-		OUT_RING  (0xFFFFFFFF);
-	for (i=0;i<16;i++)
-	{
-		BEGIN_RING(Nv3D, NV40TCL_TEX_ENABLE(i), 1);
-		OUT_RING  (0);
-	}
-
-	BEGIN_RING(Nv3D, 0x1d78, 1);
-	OUT_RING  (0x110);
-
-	BEGIN_RING(Nv3D, NV40TCL_RT_ENABLE, 1);
-	OUT_RING  (NV40TCL_RT_ENABLE_COLOR0);
-
-	BEGIN_RING(Nv3D, NV40TCL_RT_HORIZ, 2);
-	OUT_RING  ((width << 16));
-	OUT_RING  ((height << 16));
-	BEGIN_RING(Nv3D, NV40TCL_SCISSOR_HORIZ, 2);
-	OUT_RING  ((width << 16));
-	OUT_RING  ((height << 16));
-	BEGIN_RING(Nv3D, NV40TCL_VIEWPORT_HORIZ, 2);
-	OUT_RING  ((width << 16));
-	OUT_RING  ((height << 16));
-	BEGIN_RING(Nv3D, NV40TCL_VIEWPORT_CLIP_HORIZ(0), 2);
-	OUT_RING  ((width << 16));
-	OUT_RING  ((height << 16));
-
-
-	BEGIN_RING(Nv3D, NV40TCL_ZETA_OFFSET, 1 );
-	OUT_RING( pitch * height );
-	BEGIN_RING(Nv3D, NV40TCL_ZETA_PITCH, 1 );
-	OUT_RING( pitch );
-
-
-
-	BEGIN_RING(Nv3D, NV40TCL_RT_FORMAT, 3);
-	OUT_RING  (NV40TCL_RT_FORMAT_TYPE_LINEAR |
-	           NV40TCL_RT_FORMAT_ZETA_Z16 |
-	           NV40TCL_RT_FORMAT_COLOR_A8R8G8B8);
-	OUT_RING  (pitch);
-	OUT_RING  (0);
-	BEGIN_RING(Nv3D, NV40TCL_CLEAR_VALUE_COLOR, 1 );
-	OUT_RING( ( 50 << 16 ) + ( 150 << 8 ) + 250  );
-
-	BEGIN_RING(Nv3D, NV40TCL_CLEAR_VALUE_DEPTH, 1 );
-	OUT_RING( 0xffff );
-
-
-	BEGIN_RING(Nv3D,NV40TCL_CLEAR_BUFFERS,1 );
-	OUT_RING
-	(
-	    NV40TCL_CLEAR_BUFFERS_COLOR_B |
-	    NV40TCL_CLEAR_BUFFERS_COLOR_G |
-	    NV40TCL_CLEAR_BUFFERS_COLOR_R |
-	    NV40TCL_CLEAR_BUFFERS_COLOR_A |
-	    NV40TCL_CLEAR_BUFFERS_STENCIL |
-	    NV40TCL_CLEAR_BUFFERS_DEPTH
-	);
-
+	ptr += setup_and_voodoo( 0x66604200, 0xfeed0000, obj, ptr, Nv3D ); 
+	ptr += setup_buffers( &setup, ptr, Nv3D );
+	ptr += clear_buffers( &clear, ptr, Nv3D );
 	ptr += load_texture( ptr, (uint8_t *)fbmem );
 	ptr += load_vertex_shader( ptr );
 	ptr += set_mvp( ptr, 180.0f );
@@ -380,8 +255,6 @@ int bind3d(  uint32_t *fifo, uint32_t *fbmem, uint8_t *xdrmem, uint32_t obj )
 	ptr += load_geometry( ptr, (uint8_t *)fbmem );
 	
 	ptr += put_dma( ptr, fbmem, 0xfeedfeed, 10 * 1024 * 1024 / 4 );
-	//ptr += put_dma( ptr, fbmem, 0xfeedfeed, 0xe1f0000 / 4 );
-
 
 	return ptr - fifo;
 }
@@ -421,6 +294,8 @@ static void gfx_test(struct gpu *gpu, unsigned int obj )
 	
 	*data = 0;
 	ret = bind3d( &fifo[wptr], vram, xram, obj );
+	
+
 	fifo_push(gpu, ret);
 	
 	
@@ -430,6 +305,7 @@ static void gfx_test(struct gpu *gpu, unsigned int obj )
 	}
 	
 	printf( "wait %x ticks \n", loops );
+	
 
 }
 

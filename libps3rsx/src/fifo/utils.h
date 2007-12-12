@@ -46,6 +46,49 @@ struct gpu
 };
 
 
+typedef enum
+{
+	Z16 = 0x20,
+	Z24S8 = 0x40,
+}
+type_depth_t;
+
+typedef struct
+{
+	uint8_t clearR;
+	uint8_t clearG;
+	uint8_t clearB;
+	uint8_t clearA;
+	uint8_t clearD;
+	uint32_t rgba;
+	uint32_t depth;
+	
+	
+}
+clear_buffer_t;
+
+
+
+typedef struct
+{
+	uint16_t width;
+	uint16_t height;
+	uint32_t pitchColor;
+	uint32_t pitchDepth;
+	uint32_t offsetColor;
+	uint32_t offsetDepth;
+	type_depth_t typeDepth;
+	
+}
+setup_buffer_t;
+
+int setup_and_voodoo( uint32_t dma_notifier, uint32_t dma_fb, uint32_t obj_3d, uint32_t *fifo_buffer, uint32_t hw_sub );
+int clear_buffers( const clear_buffer_t *buffers, uint32_t *fifo, uint32_t hw_sub );
+int setup_buffers( const setup_buffer_t *buffers, uint32_t *fifo, uint32_t hw_sub );
+
+
+
+
 int gpu_get_info(struct gpu *gpu);
 int map_resource(char const *name, struct resource *res);
 int unmap_resource(struct resource *res);
