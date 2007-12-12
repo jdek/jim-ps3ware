@@ -48,3 +48,16 @@ int put_dma_dword_async
 	return ptr - fifo;
 }
 
+
+int jump_to_address
+(
+    uint32_t *fifo,
+    uint32_t  address
+)
+{
+	uint32_t *ptr = fifo;
+	
+	OUT_RING( address | 0x20000000 );
+
+	return ptr - fifo;
+}

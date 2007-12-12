@@ -66,7 +66,7 @@ uint32_t width;
 uint32_t height;
 uint32_t pitch;
 
-#define  BB 41
+#define  BB 45
 
 uint32_t fp_offset = ( BB + 0 ) * 1024 * 1024;
 uint32_t vb_offset = ( BB + 1 ) * 1024 * 1024;
@@ -196,9 +196,11 @@ int NV40_EmitBufferGeometry( uint32_t *fifo, uint8_t *mem )
   OUT_RING  ( xdrmem );
   OUT_RING  ( xdrmem );
   
-  //BEGIN_RING(Nv3D, 0x1740, 1 );
-  //OUT_RING( 0 );
+  //BEGIN_RING(Nv3D, 0x1714, 1 );
+  //OUT_RING( 2 );
   
+  //BEGIN_RING(Nv3D, 0x1710, 1);
+  //OUT_RING  (0);
   
   BEGIN_RING(Nv3D, NV40TCL_VTXFMT( 0 ), 9 );
   OUT_RING  ( NV40TCL_VTXFMT_TYPE_FLOAT | ( 4 << NV40TCL_VTXFMT_SIZE_SHIFT ) | ( stride << NV40TCL_VTXFMT_STRIDE_SHIFT )  );
@@ -247,17 +249,17 @@ int NV40_EmitBufferGeometry( uint32_t *fifo, uint8_t *mem )
   float pi = atan( 1.0f ) * 4.0f;
 
 
-  uint32_t vnum = 90;
+  uint32_t vnum = 30;
   
   
-  for( i = 0; i < 30; ++i )
+  for( i = 0; i < 60; ++i )
   {
     index_data[i * 3 + 0] = i * 3 + 0;
     index_data[i * 3 + 1] = i * 3 + 1;
     index_data[i * 3 + 2] = i * 3 + 2;
 
-    float si = sin( i * pi / 15.0f );
-    float co = cos( i * pi / 15.0f );
+    float si = sin( i * pi / 30.0f );
+    float co = cos( i * pi / 30.0f );
 
     float x1 = 200.0f, y1 = 80.0f;
     float x2 = -200.0f, y2 = 10.0f;
@@ -271,6 +273,8 @@ int NV40_EmitBufferGeometry( uint32_t *fifo, uint8_t *mem )
   }
   
 
+  BEGIN_RING(Nv3D, 0x1714, 1 );
+  OUT_RING( 16 );
   
   
   BEGIN_RING(Nv3D, NV40TCL_BEGIN_END, 1);
@@ -555,9 +559,10 @@ int main(void)
   }
 
   fb_fd = enter_direct(&resinfo);
-  width = resinfo.xres;
-  height = resinfo.yres;
+  width = 1280;
+  height = 1024;
   pitch = width * 4;
+  printf( "%d %d\n", resinfo.xres, resinfo.yres );
   signal(SIGINT, sigint_handler);
 
   gfx_test( &gpu, 0xfeed0003 );
