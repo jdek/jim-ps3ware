@@ -273,8 +273,6 @@ int NV40_EmitBufferGeometry( uint32_t *fifo, uint8_t *mem )
   }
   
 
-  BEGIN_RING(Nv3D, 0x1714, 1 );
-  OUT_RING( 16 );
   
   
   BEGIN_RING(Nv3D, NV40TCL_BEGIN_END, 1);
