@@ -168,68 +168,63 @@ static void ramin_write_dword_to_dword_offset( struct gpu *gpu, uint32_t addr, u
 
 }
 
+#define RAMIN_BASE 0x180000
+#define RAMHT_BASE 0x190000
 
-int fb_fd = -1;
+static void create_gfx_object(struct gpu *gpu,
+			      uint32_t klass, uint32_t handle, uint32_t offset)
+{
+  uint32_t hash;
+
+  hash = hash_handle(gpu->hw_id, handle);
+
+  ramin_write_dword_to_dword_offset( gpu,
+				     (RAMHT_BASE + hash) / 4, handle );
+  //engine zero, offset
+  ramin_write_dword_to_dword_offset( gpu,
+				     (RAMHT_BASE + hash + 4) / 4,
+				     (gpu->hw_id << 23) |
+				     (1 << 20)  |
+				     (offset >> 4));
+
+  ramin_write_dword_to_dword_offset( gpu, (RAMIN_BASE + offset) / 4 + 0, klass );
+  ramin_write_dword_to_dword_offset( gpu, (RAMIN_BASE + offset) / 4 + 1, 0x00000000 );
+  //endianness
+  ramin_write_dword_to_dword_offset( gpu, (RAMIN_BASE + offset) / 4 + 2, 0x01000000 );
+  ramin_write_dword_to_dword_offset( gpu, (RAMIN_BASE + offset) / 4 + 3, 0x00000000 );
+  ramin_write_dword_to_dword_offset( gpu, (RAMIN_BASE + offset) / 4 + 4, 0x00000000 );
+  ramin_write_dword_to_dword_offset( gpu, (RAMIN_BASE + offset) / 4 + 5, 0x00000000 );
+  ramin_write_dword_to_dword_offset( gpu, (RAMIN_BASE + offset) / 4 + 6, 0x00000000 );
+  ramin_write_dword_to_dword_offset( gpu, (RAMIN_BASE + offset) / 4 + 7, 0x00000000 );
+}
+
+struct gpu gpu;
 
 void sigint_handler(int sig)
 {
   (void) sig;
-  if (fb_fd >= 0)
-  {
-    leave_direct(fb_fd);
-    fb_fd = -1;
-  }
+
+  gpu_cleanup(&gpu);
 }
 
 uint32_t RAMIN1[1024 * 1024 / 2];
 
 int main(void)
 {
-  struct gpu gpu;
 
-
-
-  memset(&gpu, 0, sizeof(gpu));
-
-  if (gpu_get_info(&gpu) < 0)
+  if (gpu_init(&gpu) < 0)
   {
-    fprintf(stderr, "Failed to retrieve GPU info\n");
+    fprintf(stderr, "Failed to initialize GPU\n");
     return -1;
   }
 
-  if (map_gpu(&gpu) < 0)
-  {
-    fprintf(stderr, "Failed to map gpu card\n");
-    return -1;
-  }
-
-  fb_fd = enter_direct( 0 );
   signal(SIGINT, sigint_handler);
 
-  ramin_write_dword_to_dword_offset( &gpu, 0x64cb8, 0xfeed0003 );
-  //engine zero, offset
-  ramin_write_dword_to_dword_offset( &gpu, 0x64cb9, 0x00105020 );
-
   //0x40 for NV40, 0x97 - 3D engine
-  ramin_write_dword_to_dword_offset( &gpu, 0x1d020 * 4 + 0, 0x00004097 );
-  ramin_write_dword_to_dword_offset( &gpu, 0x1d020 * 4 + 1, 0x00000000 );
-  //endianness
-
-  ramin_write_dword_to_dword_offset( &gpu, 0x1d020 * 4 + 2, 0x01000000 );
-  ramin_write_dword_to_dword_offset( &gpu, 0x1d020 * 4 + 3, 0x00000000 );
-  ramin_write_dword_to_dword_offset( &gpu, 0x1d020 * 4 + 4, 0x00000000 );
-  ramin_write_dword_to_dword_offset( &gpu, 0x1d020 * 4 + 5, 0x00000000 );
-  ramin_write_dword_to_dword_offset( &gpu, 0x1d020 * 4 + 6, 0x00000000 );
-  ramin_write_dword_to_dword_offset( &gpu, 0x1d020 * 4 + 7, 0x00000000 );
-
+  create_gfx_object(&gpu, 0x00004097, 0xfeed0007, 0x40200);
 
   printf( "3d engine setup completed \n" );
-  if (fb_fd >= 0)
-  {
-    leave_direct(fb_fd);
-    fb_fd = -1;
-  }
-  unmap_gpu(&gpu);
+  gpu_cleanup(&gpu);
 
   return 0;
 }
