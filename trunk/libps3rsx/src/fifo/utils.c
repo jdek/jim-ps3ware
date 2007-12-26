@@ -14,11 +14,13 @@
 #include <sys/ioctl.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #include <linux/types.h>
 #include <linux/fb.h>
 #include <asm/ps3fb.h>
 #include "utils.h"
+#include "ioctl.h"
 
 #include "../../src/types.h"
 #include "../../include/nouveau_class.h"
@@ -223,65 +225,17 @@ uint32_t endian_fp( uint32_t v )
 
 }
 
-int gpu_get_info(struct gpu *gpu)
-{
-	struct ps3fb_ioctl_gpu_info info;
-	int ret = -1;
-	int fd;
-
-
-	if ((fd = open(DEV_VFB, O_RDWR)) < 0)
-	{
-		perror("open");
-		return -1;
-	}
-
-	if ((ret = ioctl(fd, PS3FB_IOCTL_GPU_INFO, &info)) < 0)
-	{
-		perror("ioctl");
-		goto out;
-	}
-
-	printf("vram %d fifo %d ctrl %d\n",
-	       info.vram_size, info.fifo_size, info.ctrl_size);
-
-	gpu->xram.len = 16 * 1024 * 1024;
-	gpu->vram.len = info.vram_size;
-	gpu->fifo.len = info.fifo_size;
-	gpu->ctrl.len = info.ctrl_size;
-
-	ret = 0;
-out:
-	close(fd);
-
-	return ret;
-}
-
-int map_resource(char const *name, struct resource *res)
+static int map_resource(int fd, off_t offset, struct resource *res)
 {
 	void *virt;
-	int fd;
 
-	if ((fd = open(name, O_RDWR)) < 0)
-	{
-		perror("open");
-		return -1;
-	}
-
-	// TEMP
-	printf("mmap: %s len %d\n", name, (uint32_t)res->len);
-
-	virt = mmap(0, res->len, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	virt = mmap(0, res->len, PROT_READ | PROT_WRITE,
+		    MAP_SHARED, fd, offset);
 
 	if (virt == MAP_FAILED)
-	{
-		close( fd );
 		return -1;
-	}
 
 	res->virt = virt;
-
-	close(fd);
 
 	return 0;
 }
@@ -294,46 +248,11 @@ int unmap_resource(struct resource *res)
 	return 0;
 }
 
-int map_gpu(struct gpu *gpu)
-{
-
-
-	if (map_resource(DEV_VFB, &gpu->xram) < 0)
-	{
-		fprintf(stderr, "failed to map vram\n");
-		return -1;
-	}
-
-	if (map_resource(DEV_GPU_VRAM, &gpu->vram) < 0)
-	{
-		fprintf(stderr, "failed to map vram\n");
-		return -1;
-	}
-
-	if (map_resource(DEV_GPU_FIFO, &gpu->fifo) < 0)
-	{
-		fprintf(stderr, "failed to map fifo\n");
-		goto err_unmap_vram;
-	}
-
-	if (map_resource(DEV_GPU_CTRL, &gpu->ctrl) < 0)
-	{
-		fprintf(stderr, "failed to map ctrl\n");
-		goto err_unmap_fifo;
-	}
-
-	return 0;
-
-err_unmap_fifo:
-	unmap_resource(&gpu->fifo);
-err_unmap_vram:
-	unmap_resource(&gpu->vram);
-	return -1;
-}
-
 int unmap_gpu(struct gpu *gpu)
 {
+	unmap_resource(&gpu->ctrl);
 	unmap_resource(&gpu->fifo);
+	unmap_resource(&gpu->vram);
 
 	return 0;
 }
@@ -352,82 +271,177 @@ void fifo_wait(struct gpu *gpu)
 	while (ctrl[0x10] != ctrl[0x11]);
 }
 
+#define RAMHT_BITS 11
 
-
-
-int enter_direct(struct ps3fb_ioctl_res * res)
+uint32_t hash_handle(int channel, uint32_t handle)
 {
-	struct fb_fix_screeninfo fix;
+	uint32_t hash = 0;
+	int i;
+
+//	printf("ch%d handle=0x%08x\n", channel, handle);
+	
+	for (i = 32; i > 0; i -= RAMHT_BITS) {
+		hash ^= (handle & ((1 << RAMHT_BITS) - 1));
+		handle >>= RAMHT_BITS;
+	}
+	
+	hash ^= channel << (RAMHT_BITS - 4);
+	hash <<= 3;
+
+//	printf("hash = %08x\n", hash);
+
+	return hash;
+}
+
+int gpu_init(struct gpu *gpu)
+{
+	struct ps3rsx_ioctl_context_info info;
 	int ret = 0;
-	int fd;
+	int fb_fd, rsx_fd;
 	int val = 0;
 
-	if ((fd = open("/dev/fb0", O_RDWR)) < 0)
+	memset(gpu, 0, sizeof(gpu));
+
+	if ((fb_fd = open(DEV_VFB, O_RDWR)) < 0)
 	{
 		perror("open");
 		return -1;
 	}
 
-	/* get framebuffer size */
-	if ((ret = ioctl(fd, FBIOGET_FSCREENINFO, &fix)) < 0)
+	/* get the screen res info */
+	if ((ret = ioctl(fb_fd, PS3FB_IOCTL_SCREENINFO, &gpu->res)) < 0)
 	{
 		perror("ioctl");
-		goto out;
-	}
-
-	/* get the screen res info */
-	if( res )
-	{
-		if ((ret = ioctl(fd, PS3FB_IOCTL_SCREENINFO, res)) < 0)
-		{
-			perror("ioctl");
-			goto out;
-		}
+		goto err_close_fb;
 	}
 
 	/* stop that incessant blitting! */
-	if ((ret = ioctl(fd, PS3FB_IOCTL_ON, 0)) < 0)
+	if ((ret = ioctl(fb_fd, PS3FB_IOCTL_ON, 0)) < 0)
 	{
 		perror("ioctl");
-		goto out;
+		goto err_close_fb;
 	}
 
 	/* wait for vsync */
-	if ((ret = ioctl(fd, FBIO_WAITFORVSYNC, &val)) < 0)
+	if ((ret = ioctl(fb_fd, FBIO_WAITFORVSYNC, &val)) < 0)
 	{
 		perror("ioctl");
-		goto out;
+		goto err_leave_direct;
 	}
 
-	/* wait for vsync */
-	if ((ret = ioctl(fd, PS3FB_IOCTL_GPU_SETUP, &val)) < 0)
+	/* open gpu */
+	if ((ret = open(DEV_RSX, O_RDWR)) < 0)
+	{
+		fprintf(stderr, "failed to open RSX device: %s\n", strerror(errno));
+		goto err_leave_direct;
+	}
+  
+	rsx_fd = ret;
+
+	/* get context info */
+	if ((ret = ioctl(rsx_fd, PS3RSX_IOCTL_CONTEXT_INFO, &info)) < 0)
 	{
 		perror("ioctl");
-		goto out;
+		goto err_close_rsx;
 	}
 
-	/* keep open */
-	return fd;
+/*
+	printf("id %d, ioif %d at 0x%08x, vram %d, fifo %d, ctrl %d, reports %d\n",
+	       info.hw_id, info.ioif_size, info.ioif_addr,
+	       info.vram_size, info.fifo_size, info.ctrl_size, info.reports_size);
+*/
 
-out:
-	close(fd);
+	gpu->hw_id = info.hw_id;
+	gpu->ioif  = info.ioif_addr;
+	gpu->xram.len = info.ioif_size;
+	gpu->vram.len = info.vram_size;
+	gpu->fifo.len = info.fifo_size;
+	gpu->ctrl.len = info.ctrl_size;
+	gpu->reports.len = info.reports_size;
+
+	/* map XDR apperture */
+	if ((ret = map_resource(rsx_fd, OFFSET_IOIF, &gpu->xram)) < 0)
+	{
+		fprintf(stderr, "failed to map vram\n");
+		goto err_close_rsx;
+	}
+
+	/* map video RAM */
+	if ((ret = map_resource(rsx_fd, OFFSET_VRAM, &gpu->vram)) < 0)
+	{
+		fprintf(stderr, "failed to map vram\n");
+		goto err_unmap_ioif;
+	}
+
+	/* map FIFO */
+	if ((ret = map_resource(rsx_fd, OFFSET_FIFO, &gpu->fifo)) < 0)
+	{
+		fprintf(stderr, "failed to map fifo\n");
+		goto err_unmap_vram;
+	}
+
+	/* map FIFO control registers */
+	if ((ret = map_resource(rsx_fd, OFFSET_CTRL, &gpu->ctrl)) < 0)
+	{
+		fprintf(stderr, "failed to map ctrl\n");
+		goto err_unmap_fifo;
+	}
+
+	/* map DMA notify region */
+	if ((ret = map_resource(rsx_fd, OFFSET_REPORTS, &gpu->reports)) < 0)
+	{
+		fprintf(stderr, "failed to map ctrl\n");
+		goto err_unmap_ctrl;
+	}
+
+	/* enter exclusive mode */
+	if ((ret = ioctl(rsx_fd, PS3RSX_IOCTL_EXCLUSIVE, NULL)) < 0)
+	{
+		perror("ioctl");
+		goto err_unmap_reports;
+	}
+
+	gpu->fb_fd = fb_fd;
+	gpu->rsx_fd = rsx_fd;
+	gpu->init = 1;
+
+	return 0;
+
+err_unmap_reports:
+	unmap_resource(&gpu->reports);
+err_unmap_ctrl:
+	unmap_resource(&gpu->ctrl);
+err_unmap_fifo:
+	unmap_resource(&gpu->fifo);
+err_unmap_vram:
+	unmap_resource(&gpu->vram);
+err_unmap_ioif:
+	unmap_resource(&gpu->xram);
+err_close_rsx:
+	close(rsx_fd);
+err_leave_direct:
+	ioctl(fb_fd, PS3FB_IOCTL_OFF, 0);
+err_close_fb:
+	close(fb_fd);
 
 	return ret;
 }
 
-int leave_direct(int fd)
+void gpu_cleanup(struct gpu *gpu)
 {
-	int ret = 0;
+	int rsx_fd, fb_fd;
 
-	if ((ret = ioctl(fd, PS3FB_IOCTL_OFF, 0)) < 0)
-	{
-		perror("ioctl");
-		goto out;
-	}
+	fb_fd = gpu->fb_fd;
+	rsx_fd = gpu->rsx_fd;
 
-out:
-	close(fd);
+	unmap_resource(&gpu->reports);
+	unmap_resource(&gpu->ctrl);
+	unmap_resource(&gpu->fifo);
+	unmap_resource(&gpu->vram);
+	unmap_resource(&gpu->xram);
+	close(rsx_fd);
+	ioctl(fb_fd, PS3FB_IOCTL_OFF, 0);
+	close(fb_fd);
 
-	return ret;
+	gpu->init = 0;
 }
-

@@ -518,62 +518,36 @@ static void gfx_test(struct gpu *gpu, unsigned int obj )
   ret = bind3d( &fifo[wptr], vram, xram, obj );
   fifo_push(gpu, ret);
   fifo_wait(gpu);
-
-
 }
 
-
-int fb_fd = -1;
+struct gpu gpu;
 
 void sigint_handler(int sig)
 {
   (void) sig;
-  if (fb_fd >= 0)
-  {
-    leave_direct(fb_fd);
-    fb_fd = -1;
-  }
-}
 
+  gpu_cleanup(&gpu);
+}
 
 int main(void)
 {
-  struct gpu gpu;
-  struct ps3fb_ioctl_res resinfo;
-
-
-  memset(&gpu, 0, sizeof(gpu));
-
-  if (gpu_get_info(&gpu) < 0)
+  if (gpu_init(&gpu) < 0)
   {
     fprintf(stderr, "Failed to retrieve GPU info\n");
     return -1;
   }
 
-  if (map_gpu(&gpu) < 0)
-  {
-    fprintf(stderr, "Failed to map gpu card\n");
-    return -1;
-  }
-
-  fb_fd = enter_direct(&resinfo);
   width = 1280;
   height = 1024;
   pitch = width * 4;
-  printf( "%d %d\n", resinfo.xres, resinfo.yres );
+  printf( "%d %d\n", gpu.res.xres, gpu.res.yres );
   signal(SIGINT, sigint_handler);
 
-  gfx_test( &gpu, 0xfeed0003 );
+  gfx_test( &gpu, 0xfeed0007 );
 
   sleep( 3 );
 
-
-  if (fb_fd >= 0)
-  {
-    leave_direct(fb_fd);
-    fb_fd = -1;
-  }
-  unmap_gpu(&gpu);
+  gpu_cleanup(&gpu);
 
   return 0;
 }

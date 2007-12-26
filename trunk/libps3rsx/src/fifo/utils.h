@@ -14,9 +14,12 @@
 
 #define DEV_MEM		"/dev/mem"
 #define DEV_VFB		"/dev/fb0"
-#define DEV_GPU_VRAM	"/dev/ps3gpu_vram"
-#define DEV_GPU_FIFO	"/dev/ps3gpu_fifo"
-#define DEV_GPU_CTRL	"/dev/ps3gpu_ctrl"
+#define DEV_RSX		"/dev/fb1"
+#define OFFSET_VRAM	0x00000000
+#define OFFSET_IOIF	0x10000000
+#define OFFSET_FIFO	0x20000000
+#define OFFSET_CTRL	0x30000000
+#define OFFSET_REPORTS	0x0fe00000
 
 #define barrier() asm volatile ("" : : : "memory");
 #define OUT_RING(data) *(ptr)++ = (data)
@@ -39,10 +42,17 @@ struct resource
 
 struct gpu
 {
+  int init;
+  int fb_fd;
+  int rsx_fd;
+  int hw_id;
+  uint32_t ioif;
+  struct ps3fb_ioctl_res res;
   struct resource xram;
   struct resource vram;
   struct resource fifo;
   struct resource ctrl;
+  struct resource reports;
 };
 
 
@@ -89,14 +99,10 @@ int setup_buffers( const setup_buffer_t *buffers, uint32_t *fifo, uint32_t hw_su
 
 
 
-int gpu_get_info(struct gpu *gpu);
-int map_resource(char const *name, struct resource *res);
-int unmap_resource(struct resource *res);
-int map_gpu(struct gpu *gpu);
-int unmap_gpu(struct gpu *gpu);
 void fifo_push(struct gpu *gpu, int len);
 void fifo_wait(struct gpu *gpu);
-int enter_direct(struct ps3fb_ioctl_res *res);
-int leave_direct(int fd);
+uint32_t hash_handle(int channel, uint32_t handle);
 uint32_t endian( uint32_t v );
 uint32_t endian_fp( uint32_t v );
+int gpu_init(struct gpu *gpu);
+void gpu_cleanup(struct gpu *gpu);

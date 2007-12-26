@@ -53,11 +53,11 @@ uint32_t pl_offset = ( BB + 4 ) * 1024 * 1024;
 
 
 
-int put_dma( uint32_t *fifo, uint32_t *fbmem, uint32_t data, uint32_t dst_off  )
+int put_dma( struct gpu *gpu, uint32_t *fifo, uint32_t *fbmem, uint32_t data, uint32_t dst_off  )
 {
 	dma_pool_t pool;
 	pool.dma_pool = fbmem + pl_offset / 4;
-	pool.gpu_dst_base = 0x0d000000;
+	pool.gpu_dst_base = gpu->ioif;
 	pool.gpu_src_base = pl_offset;
 	pool.dma_pool_size = 1024;
 	return put_dma_dword_async( &pool, data, DDR_TO_XDR, dst_off, fifo );
@@ -225,7 +225,7 @@ int load_geometry( uint32_t *fifo, uint8_t *mem )
 
 
 
-int bind3d(  uint32_t *fifo, uint32_t *fbmem, uint8_t *xdrmem, uint32_t obj )
+int bind3d( struct gpu *gpu, uint32_t *fifo, uint32_t *fbmem, uint8_t *xdrmem, uint32_t obj )
 {
 
 	uint32_t *ptr = fifo;
@@ -254,19 +254,19 @@ int bind3d(  uint32_t *fifo, uint32_t *fbmem, uint8_t *xdrmem, uint32_t obj )
 	ptr += load_pixel_shader( ptr, (uint8_t *)fbmem );
 	ptr += load_geometry( ptr, (uint8_t *)fbmem );
 	
-	ptr += put_dma( ptr, fbmem, 0xfeedfeed, 10 * 1024 * 1024 / 4 );
+	ptr += put_dma( gpu, ptr, fbmem, 0xfeedfeed, 10 * 1024 * 1024 / 4 );
 
 	return ptr - fifo;
 }
 
-int gfx_step(  uint32_t *fifo, uint32_t *fbmem )
+int gfx_step(  struct gpu *gpu, uint32_t *fifo, uint32_t *fbmem )
 {
 
 	uint32_t *ptr = fifo;
 	static float angle = 180.0f;
 	ptr += set_mvp( ptr, angle += 0.5f );
 	ptr += draw_indexed_primitives( indices, 0, indices_num, ptr, Nv3D );
-	ptr += put_dma( ptr, fbmem, 0xfeedfeed, 10 * 1024 * 1024 / 4 );
+	ptr += put_dma( gpu, ptr, fbmem, 0xfeedfeed, 10 * 1024 * 1024 / 4 );
 
 
 	return ptr - fifo;
@@ -293,7 +293,7 @@ static void gfx_test(struct gpu *gpu, unsigned int obj )
 	volatile uint32_t *data = (uint32_t *)(xram + 10 * 1024 * 1024 );
 	
 	*data = 0;
-	ret = bind3d( &fifo[wptr], vram, xram, obj );
+	ret = bind3d( gpu, &fifo[wptr], vram, xram, obj );
 	
 
 	fifo_push(gpu, ret);
@@ -309,58 +309,33 @@ static void gfx_test(struct gpu *gpu, unsigned int obj )
 
 }
 
-
-int fb_fd = -1;
+struct gpu gpu;
 
 void sigint_handler(int sig)
 {
 	(void) sig;
-	if (fb_fd >= 0)
-	{
-		leave_direct(fb_fd);
-		fb_fd = -1;
-	}
+	gpu_cleanup(&gpu);
 }
 
 
 int main(void)
 {
-	struct gpu gpu;
-	struct ps3fb_ioctl_res resinfo;
-
-	memset(&gpu, 0, sizeof(gpu));
-
-	if (gpu_get_info(&gpu) < 0)
+	if (gpu_init(&gpu) < 0)
 	{
-		fprintf(stderr, "Failed to retrieve GPU info\n");
+		fprintf(stderr, "Failed to initialize GPU\n");
 		return -1;
 	}
 
-	if (map_gpu(&gpu) < 0)
-	{
-		fprintf(stderr, "Failed to map gpu card\n");
-		return -1;
-	}
-
-	fb_fd = enter_direct(&resinfo);
-	width = resinfo.xres;
-	height = resinfo.yres;
+	width = gpu.res.xres;
+	height = gpu.res.yres;
 	pitch = width * 4;
 	signal(SIGINT, sigint_handler);
 
-	gfx_test( &gpu, 0xfeed0003 );
-	
-	
+	gfx_test( &gpu, 0xfeed0007 );
 
 	sleep( 3 );
 
-
-	if (fb_fd >= 0)
-	{
-		leave_direct(fb_fd);
-		fb_fd = -1;
-	}
-	unmap_gpu(&gpu);
+	gpu_cleanup(&gpu);
 
 	return 0;
 }
