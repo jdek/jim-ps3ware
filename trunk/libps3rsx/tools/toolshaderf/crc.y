@@ -51,6 +51,7 @@ typedef union
 	int i;
 }f2i;
 
+int inst = 0;
 
 void dump()
 {
@@ -63,7 +64,8 @@ void dump()
 	inst_stack[inst_ptr][1] = fp_inst[1];
 	inst_stack[inst_ptr][2] = fp_inst[2];
 	inst_stack[inst_ptr][3] = fp_inst[3];
-	
+
+	++inst;
 	++inst_ptr;
 	last_cmd = 1;
 
@@ -113,7 +115,7 @@ void print()
 	FILE *out = fopen( outfile, "wb" );
 	if( out )
 	{
-	    desc.aux[0] = 0xcafebabe;
+	    desc.aux[0] = inst;
 	    desc.dword_length = inst_ptr * 4;
 	    desc.num_regs = max_reg;
 	    fwrite( &desc, sizeof( desc ), 1, out );
@@ -385,7 +387,7 @@ TXDop_instruction:
 prec:
 	R  { prc( 0 ); }   	                       |
 	H  { prc( 1 ); }                               |
-	X  { prc( 2 ); }			       |
+	X  { prc( 3 ); }			       |
 	/* empty */ { prc( 0 );	};	
 	
 
@@ -418,7 +420,7 @@ SCALARop:
 	EXP  { opv( NV40_FP_OP_OPCODE_EX2 ); } |
 	LG2  { opv( NV40_FP_OP_OPCODE_LG2 ); } |
 	RCP  { opv( NV40_FP_OP_OPCODE_RCP ); } |
-	RSQ  { opv( 0xff ); } |
+	RSQ  { opv( NV40_FP_OP_OPCODE_RSQ ); } |
 	SIN  { opv( NV40_FP_OP_OPCODE_SIN ); } |
 	UP2H { opv( NV40_FP_OP_OPCODE_UP2H ); } |
 	UP2US{ opv( NV40_FP_OP_OPCODE_UP2US ); } |
@@ -669,6 +671,7 @@ int main( int argn, const char *argv[] )
 	}
 	outfile = argv[1];
         yyparse();
+	printf( "inst slots %d \n", inst );
 	return 0;
 } 
 
