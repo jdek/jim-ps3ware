@@ -257,8 +257,6 @@ int bind3d( uint32_t *fifo, uint32_t *fbmem, uint8_t *xdrmem, uint32_t obj, uint
 
 int gfx_step(  uint32_t *fifo,  uint32_t jmp )
 {
-
-	int n;
 	clear_buffer_t clear;
 	clear.clearR = clear.clearG = clear.clearB = clear.clearA = clear.clearD = 1;
 	clear.rgba = 250 +  ( 120 << 8 ) + ( 50 << 16 );
