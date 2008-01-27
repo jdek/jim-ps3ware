@@ -83,7 +83,15 @@ int setup_and_voodoo
 	BEGIN_RING(Nv3D, NV40TCL_STENCIL_BACK_ENABLE, 1);
 	OUT_RING  (0);
 	BEGIN_RING(Nv3D, NV40TCL_ALPHA_TEST_ENABLE, 1);
-	OUT_RING  (0);
+	OUT_RING  (1);
+	
+	BEGIN_RING(Nv3D, NV40TCL_ALPHA_TEST_FUNC, 1);
+	OUT_RING  (NV40TCL_ALPHA_TEST_FUNC_GREATER);
+	
+	BEGIN_RING(Nv3D, NV40TCL_ALPHA_TEST_REF, 1);
+	OUT_RING  (0x128);
+	
+	
 	BEGIN_RING(Nv3D, NV40TCL_DEPTH_WRITE_ENABLE, 1);
 	OUT_RING  (1);
 	BEGIN_RING(Nv3D, NV40TCL_DEPTH_TEST_ENABLE, 1);
@@ -292,6 +300,14 @@ uint32_t hash_handle(int channel, uint32_t handle)
 
 	return hash;
 }
+
+int sync_gpu(struct gpu *gpu)
+{
+    int val;
+    ioctl(gpu->fb_fd, FBIO_WAITFORVSYNC, &val);
+    return val;
+}
+
 
 int gpu_init(struct gpu *gpu)
 {
