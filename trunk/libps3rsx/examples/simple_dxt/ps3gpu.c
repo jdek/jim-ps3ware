@@ -16,6 +16,8 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <math.h>
+#include <time.h>
+
 
 #include "../../include/matrix.h"
 #include "../../src/types.h"
@@ -94,7 +96,7 @@ void  *map_file( const char *file, int *fd, int *size )
 		struct stat buffer;
 		status = fstat( *fd, &buffer );
 		*size = buffer.st_size;
-		printf( "mmaped 0x%x bytes from %s \n", (uint32_t)buffer.st_size, file );
+		printf( "mmaped %d bytes from %s \n", (uint32_t)buffer.st_size, file );
 		return mmap( 0, buffer.st_size, PROT_READ, MAP_PRIVATE, *fd, 0 );
 	}
 	return 0;
@@ -132,6 +134,7 @@ int load_vertex_shader(  uint32_t *fifo )
 }
 
 
+
 int load_pixel_shader(  uint32_t *fifo, uint8_t *fbmem )
 {
 	int fd, size;
@@ -154,7 +157,7 @@ int load_texture( uint32_t *fifo, uint8_t *fbmem )
 {
 
 	int fd, size;
-	void *file = map_file( "../../data/troll.dxt1", &fd, &size );
+	void *file = map_file( "../../data/troll.dxt3", &fd, &size );
 
 	if( size && file )
 	{
@@ -192,7 +195,6 @@ int load_geometry( uint32_t *fifo, uint8_t *mem )
 			ptr += set_index_source( DDR, ib_offset, ptr, Nv3D );
 			indices_num = model->indices_num;
 			indices = model->indices;    
-			ptr += draw_indexed_primitives( indices, 0, indices_num, ptr, Nv3D );
 			unmap_file( file, fd, size );
 		}
 	}
@@ -225,7 +227,7 @@ int load_geometry( uint32_t *fifo, uint8_t *mem )
 
 
 
-int bind3d( struct gpu *gpu, uint32_t *fifo, uint32_t *fbmem, uint8_t *xdrmem, uint32_t obj )
+int bind3d( uint32_t *fifo, uint32_t *fbmem, uint8_t *xdrmem, uint32_t obj, uint32_t jmp )
 {
 
 	uint32_t *ptr = fifo;
@@ -240,39 +242,53 @@ int bind3d( struct gpu *gpu, uint32_t *fifo, uint32_t *fbmem, uint8_t *xdrmem, u
 	setup.width = width;
 	setup.height = height;
 	
-	clear_buffer_t clear;
-	clear.clearR = clear.clearG = clear.clearB = clear.clearA = clear.clearD = 1;
-	clear.rgba = 250 +  ( 120 << 8 ) + ( 50 << 16 );
-	clear.depth = 0xffff;
-
+	
 	ptr += setup_and_voodoo( 0x66604200, 0xfeed0000, obj, ptr, Nv3D ); 
 	ptr += setup_buffers( &setup, ptr, Nv3D );
-	ptr += clear_buffers( &clear, ptr, Nv3D );
 	ptr += load_texture( ptr, (uint8_t *)fbmem );
 	ptr += load_vertex_shader( ptr );
 	ptr += set_mvp( ptr, 180.0f );
 	ptr += load_pixel_shader( ptr, (uint8_t *)fbmem );
 	ptr += load_geometry( ptr, (uint8_t *)fbmem );
-	
-	ptr += put_dma( gpu, ptr, fbmem, 0xfeedfeed, 10 * 1024 * 1024 / 4 );
+	ptr += jump_to_address( ptr, jmp );	
 
 	return ptr - fifo;
 }
 
-int gfx_step(  struct gpu *gpu, uint32_t *fifo, uint32_t *fbmem )
+int gfx_step(  uint32_t *fifo,  uint32_t jmp )
 {
+
+	int n;
+	clear_buffer_t clear;
+	clear.clearR = clear.clearG = clear.clearB = clear.clearA = clear.clearD = 1;
+	clear.rgba = 250 +  ( 120 << 8 ) + ( 50 << 16 );
+	clear.depth = 0xffff;
+	
+
 
 	uint32_t *ptr = fifo;
 	static float angle = 180.0f;
-	ptr += set_mvp( ptr, angle += 0.5f );
+	ptr += clear_buffers( &clear, ptr, Nv3D );
+	ptr += set_mvp( ptr, angle += 0.4f );
 	ptr += draw_indexed_primitives( indices, 0, indices_num, ptr, Nv3D );
-	ptr += put_dma( gpu, ptr, fbmem, 0xfeedfeed, 10 * 1024 * 1024 / 4 );
+	ptr += jump_to_address( ptr, jmp );	
 
 
 	return ptr - fifo;
 }
 
 
+static volatile int cnt;
+
+void wait( volatile uint32_t *volatile ctrl, uint32_t jmp )
+{
+    	ctrl[0x10] = jmp; 
+	while( ctrl[0x11] != jmp  )
+	{
+	    ++cnt;
+	}
+
+}
 
 
 static void gfx_test(struct gpu *gpu, unsigned int obj )
@@ -281,32 +297,35 @@ static void gfx_test(struct gpu *gpu, unsigned int obj )
 	uint32_t *ctrl = gpu->ctrl.virt;
 	uint32_t *vram = gpu->vram.virt;
 	uint8_t *xram = gpu->xram.virt;
+	uint32_t i;
 
+	memset( fifo, 0, gpu->fifo.len );
 	int wptr;
 	int ret;
-	uint32 loops = 0;
+	uint32 jmp = ctrl[0x10] & ~(gpu->fifo.len - 1 );
 
 	wptr = (ctrl[0x10] & (gpu->fifo.len - 1)) / 4;
 	
 	printf( "%x %x %x\n", wptr, ctrl[0x10], gpu->xram.len );
 
-	volatile uint32_t *data = (uint32_t *)(xram + 10 * 1024 * 1024 );
+	ret = bind3d( &fifo[wptr], vram, xram, obj, jmp );
+	wait( ctrl, jmp );
 	
-	*data = 0;
-	ret = bind3d( gpu, &fifo[wptr], vram, xram, obj );
+	uint32 old_jump = jmp;
 	
-
-	fifo_push(gpu, ret);
-	
-	
-	while( *data == 0 || loops > ( 1 << 30 ) )
+	for( i = 0; i < 200; ++i )
 	{
-	    ++loops;
+	    memset( fifo, 0, gpu->fifo.len );
+	    
+	    uint32_t jmpt = jmp + 4 + 4 * ( i & 1 );
+	    fifo[ ( old_jump - jmp ) / 4 ] = 0x20000000 | ( jmp + 0x10 );
+	    old_jump = jmpt;
+	    gfx_step( &fifo[0x10], jmpt );
+	    wait( ctrl, jmpt );
+	    sync_gpu( gpu );
 	}
+	printf( "done...\n" );
 	
-	printf( "wait %x ticks \n", loops );
-	
-
 }
 
 struct gpu gpu;
@@ -333,7 +352,7 @@ int main(void)
 
 	gfx_test( &gpu, 0xfeed0007 );
 
-	sleep( 3 );
+	//sleep( 3 );
 
 	gpu_cleanup(&gpu);
 
