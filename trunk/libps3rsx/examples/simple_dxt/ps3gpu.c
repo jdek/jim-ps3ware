@@ -31,9 +31,6 @@
 #include "../../src/shaders/fragment.h"
 
 
-#include <linux/types.h>
-#include <linux/fb.h>
-#include <asm/ps3fb.h>
 
 
 #define Nv3D 7
