@@ -1,0 +1,2 @@
+#!/bin/sh
+make && (sudo rmmod ps3rsx.ko; sudo insmod ps3rsx.ko; dmesg)
