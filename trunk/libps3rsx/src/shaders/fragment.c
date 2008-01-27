@@ -30,7 +30,7 @@ int set_fragment_shader
 	uint32_t *ptr = fifo;
 	uint32_t Nv3D = hw_subch;
 
-	printf( "frag prog 0x%x num_regs 0x%x \n", data_storage, desc->num_regs );
+	printf( "aux = %d frag prog 0x%x num_regs 0x%x \n", desc->aux[0], data_storage, desc->num_regs );
 	
 	BEGIN_RING(Nv3D, NV40TCL_FP_ADDRESS, 1);
 	OUT_RING  ( data_storage | NV40TCL_FP_ADDRESS_DMA0);
