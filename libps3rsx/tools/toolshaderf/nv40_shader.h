@@ -351,6 +351,8 @@
 #        define NV40_FP_OP_OPCODE_TXP                                       0x18
 #        define NV40_FP_OP_OPCODE_TXD                                       0x19
 #        define NV40_FP_OP_OPCODE_RCP                                       0x1A
+#        define NV40_FP_OP_OPCODE_RSQ                                       0x1B
+
 #        define NV40_FP_OP_OPCODE_EX2                                       0x1C
 #        define NV40_FP_OP_OPCODE_LG2                                       0x1D
 #        define NV40_FP_OP_OPCODE_COS                                       0x22
