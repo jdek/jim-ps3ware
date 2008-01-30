@@ -102,6 +102,7 @@ int setup_buffers( const setup_buffer_t *buffers, uint32_t *fifo, uint32_t hw_su
 void fifo_push(struct gpu *gpu, int len);
 void fifo_wait(struct gpu *gpu);
 int sync_gpu(struct gpu *gpu );
+int flip_scrn(struct gpu *gpu, int off );
 uint32_t hash_handle(int channel, uint32_t handle);
 uint32_t endian( uint32_t v );
 uint32_t endian_fp( uint32_t v );

@@ -18,37 +18,11 @@
 #include "../../../src/geometry/geometry.h"
 #include "../../../src/geometry/model.h"
 
-
 struct cache_opt_t
 {
 	uint16 entries[4 + 3];
 
-	uint16 cache[256];
-	uint16 cache_ptr;
-	uint16 vertices;
-	uint16 parts;
-
-
-	void add_pt( uint16 value )
-	{
-		for( uint16 i = 0; i < cache_ptr; ++i )
-		{
-			if( cache[i] == value )
-			{
-				return;
-			}
-		}
-		cache[cache_ptr++] = value;
-		++vertices;
-		if( cache_ptr == 256 )
-		{
-			memcpy( &cache[0], &cache[128], 256 );
-			++parts;
-			cache_ptr = 128;
-		}
-	}
-
-	cache_opt_t( ) : cache_ptr( 0 ), vertices( 0 )
+	cache_opt_t( ) 
 	{
 		entries[0] = 0xffff;
 		entries[1] = 0xffff;
@@ -75,9 +49,7 @@ struct cache_opt_t
 
 			entries[ptr++] = trn[j];
 
-		skip:
-
-			add_pt( trn[j] );
+		skip:;
 		}
 
 		ptr -= 4;
@@ -114,6 +86,7 @@ struct cache_opt_t
 	}
 
 };
+
 
 void re_arrange( const std::vector<uint16> &_indices, std::vector<uint16> &dst )
 {
@@ -158,12 +131,203 @@ void re_arrange( const std::vector<uint16> &_indices, std::vector<uint16> &dst )
 		}
 	}
 
-	printf( "vertices %d parts %d \n", cache.vertices, cache.parts );
-
+	
 
 	misses = 3.0f * misses / (float)indices.size();
 	printf( "cache misses per tri %f \n", misses );
 
+}
+
+
+#define CHUNK 64
+
+
+struct MeshHeader
+{
+}
+
+struct MatrixAffector
+{
+    uint8  bone;
+    uint8  geomChunks[3];
+    uint8  weights[3][4];
+    
+    MatrixAffector();
+    
+    MatrixAffector( uint8 _bone, uint8 chunk, uint8 *_weights ) : bone( _bone )
+    {
+
+	geomChunks[0] = 0xff;
+	geomChunks[1] = 0xff;
+	geomChunks[2] = 0xff;
+	
+	SetChunk( bone, chunk, _weights );
+	
+    }
+    
+    bool SetChunk( uint8 _bone, uint8 chunk, uint8 *_weights )
+    {
+
+	if( bone != _bone )
+	{
+	    return false;
+	}
+	
+	for( size_t i = 0; i < 3; ++i )
+	{
+	    if( geomChunks[i] == 0xff )
+	    {
+		geomChunks[i] = chunk;
+		memcpy( weights[i], weights, 4 );
+		return true;
+	    }
+	}
+	
+	return false;
+    }
+};
+
+
+void AddMatrix( size_t lastMark, std::vector<MatrixAffector> &chunks, uint8 bone, uint8 chunk, uint8 *weights )
+{
+    for( size_t i = lastMark; i < chunks.size(); ++i )
+    {
+	if( chunks[i].SetChunk( bone, chunk, weights ) )
+	{
+	    return;
+	}
+    } 
+    
+    chunks.push_back( MatrixAffector( bone, chunk, weights ) );
+    
+}
+
+void remap_vertices( std::vector<SFatVertex> &vertices, std::vector<uint16> &indices )
+{
+	uint16 beg = 0;
+	std::vector<uint16> remap;
+	remap.resize( vertices.size(), 0xffff );
+	std::vector<SFatVertex> tempVertices( vertices.size() );
+	std::vector<uint16>	tempIndices( indices.size() );
+	
+	for( size_t i = 0; i < indices.size(); ++i )
+	{
+	    uint16 ind = indices[i];
+	    if( remap[ind] == 0xffff )
+	    {
+		remap[ind] = beg++;
+	    }
+	    
+	    tempIndices[i] = remap[ind];
+	    tempVertices[remap[ind]] = vertices[ind];
+	}
+	
+	vertices = tempVertices;
+	indices = tempIndices;
+	
+	uint8 table[256];
+	uint8 value[256][4];
+	
+	memset( table, 0, sizeof( table ) );
+	memset( value, 0, sizeof( value ) );
+	
+	float matrices = 0.0f;
+	float clusters = 0.0001f + vertices.size();
+	
+	std::vector<MatrixAffector> chunks;
+	std::vector<size_t> marks;
+	size_t lastChunk = 0;
+	size_t lastMark = 0;
+	
+	for( size_t i = 0; i < vertices.size(); i += 4 )
+	{
+	    uint8 ptr = 0;
+	    uint8 weights[16][4];
+	    uint8 indices[16];
+	    
+	    
+	    
+	    for( size_t j = 0; j < 4 && ( i + j < vertices.size() ); ++j )
+	    {
+		for( size_t k = 0; k < 4; ++k )
+		{
+		    uint8 ind = vertices[i + j].indices[k];
+		    value[ind][0] = 0;
+		    value[ind][1] = 0;
+		    value[ind][2] = 0;
+		    value[ind][3] = 0;
+		    
+		    table[ind] = 0;
+		}
+	    }
+	    for( size_t j = 0; j < 4 && ( i + j < vertices.size() ); ++j )
+	    {
+		for( size_t k = 0; k < 4; ++k )
+		{
+		    uint8 ind = vertices[i + j].indices[k];
+		    uint8 w = vertices[i + j].weights[k];
+		    table[ind] += w > 0 ? 1 : 0;
+		    value[ind][j] += w;
+		}
+		
+	    }    
+	    
+	    for( size_t j = 0; j < 4 && ( i + j < vertices.size() ); ++j )
+	    {
+		for( size_t k = 0; k < 4; ++k )
+		{
+		    uint8 ind = vertices[i + j].indices[k];
+		    if( table[ind] > 0 )
+		    {
+			//printf( "%3d ", ind );
+			for( size_t l = 0; l < 4; ++l )
+			{
+			    //printf( "%3d ", value[ind][l] );
+			    weights[ptr][l] = value[ind][l];
+			}
+			indices[ptr] = ind;
+			table[ind] = 0;
+			++ptr;
+			//printf( "\n" );
+		    }
+		}
+		
+		//printf( "%d matrices \n", ptr );
+	    }
+	    
+	    
+	    for( size_t j = 0; j < 4 && ( i + j < vertices.size() ); ++j )
+	    {
+		uint8 w = 0;
+		for( size_t l = 0; l < ptr; ++l )
+		{
+		    w += weights[l][j];
+		}
+		
+	    }
+	    
+	    for( size_t l = 0; l < ptr; ++l )
+	    {
+		AddMatrix( lastMark, chunks, table[l], i, &weights[l][0] );
+	    }
+		
+	
+		
+	    //matrices += ptr;
+	    if( ( i - lastChunk >= CHUNK - 4 ) || ( i + 4 >= vertices.size() ) )
+	    {
+		marks.push_back( lastMark );
+		size_t s = chunks.size() - lastMark;
+		//lastChunk = i;
+		matrices += 3.0f * 4.0f * s;
+		//printf( "chunk with %2d vertices and 3x %2d matrices \n", i - lastChunk + 4, s );
+		lastMark = chunks.size();
+		lastChunk = i;
+	    }
+	}
+	
+	printf( "%d matrix groups in %d chunks  \n", chunks.size(), marks.size() );
+	printf( "%f matrices per vertex \n", matrices / clusters );
 }
 
 struct FOpen
@@ -239,7 +403,9 @@ void convert_model( const char *fileNameOut, const char *fileNameIn )
 		std::vector<uint16> indices;
 
 		triangles[i]->GetFatVertices( &vertices, &indices );
-		//re_arrange( indices, indices );
+		
+		re_arrange( indices, indices );
+		remap_vertices( vertices, indices );
 		printf( "%s %i %i\n", triangles[i]->GetEffect()->GetDiffuse()->GetFileName().ptr, vertices.size(), indices.size() );
 
 

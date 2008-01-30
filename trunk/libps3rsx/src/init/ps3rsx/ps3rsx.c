@@ -82,6 +82,8 @@ MODULE_LICENSE("GPL");
 
 #define L1GPU_CONTEXT_ATTRIBUTE_FIFO_SETUP 0x001
 #define L1GPU_CONTEXT_ATTRIBUTE_FB_BLIT 0x601
+#define L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_FLIP 0x102
+
 
 int debug;
 module_param(debug, bool, 0);
@@ -478,6 +480,14 @@ static int ps3rsx_ioctl(struct fb_info *info,
 	context = &ps3rsx.ucontext;
 
         switch (cmd) {
+	
+	
+	case PS3RSX_IOCTL_FLIP_SCRN:
+		
+	
+		lv1_gpu_context_attribute( context->context_handle, L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_FLIP, 0, arg, 0, 0 );
+		break;
+        
 
 	case PS3RSX_IOCTL_CONTEXT_INFO:
                {
