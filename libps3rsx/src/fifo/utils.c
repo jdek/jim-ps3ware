@@ -142,7 +142,7 @@ int setup_buffers(
 	uint16_t width = buffers->width;
 	uint16_t height = buffers->height;
 
-	printf( "width = %d height = %d \n", (uint32_t)width, (uint32_t)height );
+	//printf( "width = %d height = %d \n", (uint32_t)width, (uint32_t)height );
 
 	BEGIN_RING(Nv3D, NV40TCL_VIEWPORT_TRANSLATE_X, 8);
 	OUT_RINGf (0.5f * width );
@@ -305,6 +305,13 @@ int sync_gpu(struct gpu *gpu)
 {
     int val;
     ioctl(gpu->fb_fd, FBIO_WAITFORVSYNC, &val);
+    return val;
+}
+
+
+int flip_scrn(struct gpu *gpu, int off)
+{
+    int val = ioctl(gpu->rsx_fd, PS3RSX_IOCTL_FLIP_SCRN, off );
     return val;
 }
 

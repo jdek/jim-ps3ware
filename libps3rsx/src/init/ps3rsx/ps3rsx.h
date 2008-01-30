@@ -7,6 +7,8 @@
 #define PS3RSX_IOCTL_CONTEXT_INFO  _IOR('r', 0x100, int)
 #define PS3RSX_IOCTL_KICK_FIFO     _IO('r', 0x101)
 #define PS3RSX_IOCTL_EXCLUSIVE     _IO('r', 0x102)
+#define PS3RSX_IOCTL_FLIP_SCRN     _IOR('r', 0x103, int)
+
 
 struct ps3rsx_ioctl_context_info {
 	__u32 hw_id;          /* hardware context number */

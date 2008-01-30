@@ -223,6 +223,22 @@ int load_geometry( uint32_t *fifo, uint8_t *mem )
 }
 
 
+int setup_surfaces_with_offset( uint32_t *fifo, int off )
+{
+	uint32_t *ptr = fifo;
+	setup_buffer_t setup;
+	setup.pitchDepth = pitch;
+	setup.pitchColor = pitch;
+	setup.offsetDepth = width * height * 4 * 2;
+	setup.offsetColor = width * height * 4 * off;
+	setup.typeDepth = Z16;
+	setup.width = width;
+	setup.height = height;
+	
+    
+	ptr += setup_buffers( &setup, ptr, Nv3D );
+	return ptr - fifo;
+}
 
 int bind3d( uint32_t *fifo, uint32_t *fbmem, uint8_t *xdrmem, uint32_t obj, uint32_t jmp )
 {
@@ -230,18 +246,9 @@ int bind3d( uint32_t *fifo, uint32_t *fbmem, uint8_t *xdrmem, uint32_t obj, uint
 	uint32_t *ptr = fifo;
 	xdrmem = xdrmem;
 
-	setup_buffer_t setup;
-	setup.pitchDepth = pitch;
-	setup.pitchColor = pitch;
-	setup.offsetDepth = width * height * 4;
-	setup.offsetColor = 0;
-	setup.typeDepth = Z16;
-	setup.width = width;
-	setup.height = height;
-	
 	
 	ptr += setup_and_voodoo( 0x66604200, 0xfeed0000, obj, ptr, Nv3D ); 
-	ptr += setup_buffers( &setup, ptr, Nv3D );
+	ptr += setup_surfaces_with_offset( ptr, 1 );
 	ptr += load_texture( ptr, (uint8_t *)fbmem );
 	ptr += load_vertex_shader( ptr );
 	ptr += set_mvp( ptr, 180.0f );
@@ -252,7 +259,7 @@ int bind3d( uint32_t *fifo, uint32_t *fbmem, uint8_t *xdrmem, uint32_t obj, uint
 	return ptr - fifo;
 }
 
-int gfx_step(  uint32_t *fifo,  uint32_t jmp )
+int gfx_step(  uint32_t *fifo,  uint32_t jmp, int off )
 {
 	clear_buffer_t clear;
 	clear.clearR = clear.clearG = clear.clearB = clear.clearA = clear.clearD = 1;
@@ -263,6 +270,7 @@ int gfx_step(  uint32_t *fifo,  uint32_t jmp )
 
 	uint32_t *ptr = fifo;
 	static float angle = 180.0f;
+	ptr += setup_surfaces_with_offset( ptr, off );
 	ptr += clear_buffers( &clear, ptr, Nv3D );
 	ptr += set_mvp( ptr, angle += 0.4f );
 	ptr += draw_indexed_primitives( indices, 0, indices_num, ptr, Nv3D );
@@ -308,16 +316,17 @@ static void gfx_test(struct gpu *gpu, unsigned int obj )
 	
 	uint32 old_jump = jmp;
 	
-	for( i = 0; i < 200; ++i )
+	for( i = 0; i < 1000; ++i )
 	{
 	    memset( fifo, 0, gpu->fifo.len );
 	    
 	    uint32_t jmpt = jmp + 4 + 4 * ( i & 1 );
 	    fifo[ ( old_jump - jmp ) / 4 ] = 0x20000000 | ( jmp + 0x10 );
 	    old_jump = jmpt;
-	    gfx_step( &fifo[0x10], jmpt );
+	    gfx_step( &fifo[0x10], jmpt, i & 1 );
 	    wait( ctrl, jmpt );
 	    sync_gpu( gpu );
+	    flip_scrn( gpu, ( ( i + 1 ) & 1 ) * width * height * 4 );
 	}
 	printf( "done...\n" );
 	
