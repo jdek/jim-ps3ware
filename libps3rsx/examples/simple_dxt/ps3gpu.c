@@ -325,8 +325,9 @@ static void gfx_test(struct gpu *gpu, unsigned int obj )
 	    old_jump = jmpt;
 	    gfx_step( &fifo[0x10], jmpt, i & 1 );
 	    wait( ctrl, jmpt );
+	    flip_scrn( gpu, ( i & 1 ) * width * height * 4 );
 	    sync_gpu( gpu );
-	    flip_scrn( gpu, ( ( i + 1 ) & 1 ) * width * height * 4 );
+	    
 	}
 	printf( "done...\n" );
 	
