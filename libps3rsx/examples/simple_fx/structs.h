@@ -5,7 +5,8 @@ struct instance_data_t
     float    col[4];
     float    mat[16];
     uint32_t time;
-    float    padd[3];
+    float    scale;
+    float    padd[2];
 };
 
 struct program_data_t

@@ -58,7 +58,7 @@ int set_mvp(  uint32_t *fifo, float angle )
 	float h = 0.3f;
 	
 	frustrum( -w, +w, -h, +h, 1.0f, 100.0f, matrix );
-	translatef( 0.0f, 0.0f, -5.0f, matrix );
+	translatef( 0.0f, 0.0f, -4.0f, matrix );
 	
 	rotatef( angle, 0.0f, 1.0f, 0.0f, matrix );
 	rotatef( 90.0f, 1.0f, 0.0f, 0.0f, matrix );
@@ -489,7 +489,7 @@ struct job_t
 
 };
 
-#define INUMBER 20
+#define INUMBER 32
 instance_data_t    insts[INUMBER]  __attribute__((aligned( 128 ) ));
 uint32_t           dt[INUMBER];
 float		   rnds[INUMBER][4];
@@ -515,7 +515,7 @@ int gfx_step(  uint32_t *fifo,  uint32_t jmp, int off )
 		rnds[i][0] = 360.0f * i / (float)( INUMBER );//rnd( 0.0f, 360.0f );
 		rnds[i][1] = rnd( -0.2f, +0.2f );
 		rnds[i][2] = rnd( -0.8f, +0.3f );
-		rnds[i][3] = rnd( 0.7f, 1.7f );
+		rnds[i][3] = rnd( 0.3f, 1.0f );
 		
 		
 		insts[i].time 	= rand();
@@ -534,11 +534,13 @@ int gfx_step(  uint32_t *fifo,  uint32_t jmp, int off )
 	
 	    rotatef( 80.0f, 1.0f, 0.0f, 0.0f, insts[i].mat );
 	    rotatef( off * 0.5f + rnds[i][0], 0.0f, 0.0f, 1.0f, insts[i].mat );
-	    translatef( rnds[i][3], rnds[i][1], rnds[i][2], insts[i].mat );
+	    translatef( 1.6f, rnds[i][1], rnds[i][2], insts[i].mat );
+	    scalef( rnds[i][3], insts[i].mat );
 	    
 	    float d = insts[i].mat[11];
 	    
 	    d = ( 1.0f -  d );
+	    insts[i].scale = rnds[i][3];
 	    insts[i].col[0] = d;
 	    insts[i].col[1] = 0.5f + d;
 	    insts[i].col[2] = d;
