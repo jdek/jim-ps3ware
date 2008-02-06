@@ -44,6 +44,19 @@ void translatef( float x, float y, float z, float *matrix )
 }
 
 
+void scalef( float x,  float *matrix )
+{
+	float a[16];
+	float b[16];
+	identity( b );
+	M( b, 0, 0 ) = x;
+	M( b, 1, 1 ) = x;
+	M( b, 2, 2 ) = x;
+	M( b, 3, 3 ) = 1.0f;
+	multiply( matrix, b, a );
+	memcpy( matrix, a, sizeof( a ) );
+}
+
 void rotatef( float angle, float x, float y, float z, float *matrix )
 {
 	float a[16];
