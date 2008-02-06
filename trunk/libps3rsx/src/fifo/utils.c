@@ -83,7 +83,7 @@ int setup_and_voodoo
 	BEGIN_RING(Nv3D, NV40TCL_STENCIL_BACK_ENABLE, 1);
 	OUT_RING  (0);
 	BEGIN_RING(Nv3D, NV40TCL_ALPHA_TEST_ENABLE, 1);
-	OUT_RING  (1);
+	OUT_RING  (0);
 	
 	BEGIN_RING(Nv3D, NV40TCL_ALPHA_TEST_FUNC, 1);
 	OUT_RING  (NV40TCL_ALPHA_TEST_FUNC_GREATER);
@@ -308,6 +308,69 @@ int sync_gpu(struct gpu *gpu)
     return val;
 }
 
+
+void analyze_fifo( uint32_t *fifo, int length )
+{
+    uint32_t jmps = 0;
+    uint32_t nops = 0;
+    uint32_t ring = 0;
+    uint32_t cmds = 0;
+    uint32_t regs = 0;
+    uint32_t seqs = 0;
+    uint32_t incr = 0;
+    
+    uint32_t *ptr = fifo;
+    
+    while( 1 )
+    {
+	uint32_t cmd = *ptr;
+    
+	if( ( cmd & 0x20000000 ) && ( ring == 0 ) )
+	{
+	    ++jmps;
+	}
+	else if( cmd == 0 && ( ring == 0 ) )
+	{
+	    ++nops;
+	}
+	else if( ring != 0 )
+	{
+	    --ring;
+	    if( incr )
+	    {
+		++regs;
+	    }
+	}
+	else if( ring == 0 )
+	{
+	    uint32_t nring = ( cmd >> 18 ) & 0xffff;
+	    uint32_t nincr = cmd & 0x40000000;
+	    uint32_t nregs = cmd & ( ( 1 << 13 ) - 1 );
+	    if( incr && nincr && regs == nregs )
+	    {
+		++seqs;
+	    }
+	    
+	    
+	    regs = nregs;
+	    incr = nincr;
+	    ring = nring;
+	    printf( "%d %d %x %d\n", incr, ring, regs, ( cmd >> 13 ) & 15 ); 
+	    ++cmds;
+	}
+	
+	++ptr;
+	if( ptr >= fifo + length )
+	{
+	    break;
+	}
+    }
+    
+    printf( "jmps : %d \n", jmps );
+    printf( "nops : %d \n", nops );
+    printf( "cmds : %d \n", cmds );
+    printf( "seqs : %d \n", seqs );    
+}
 
 int flip_scrn(struct gpu *gpu, int off)
 {

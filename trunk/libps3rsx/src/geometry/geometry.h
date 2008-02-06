@@ -8,6 +8,7 @@
 typedef enum
 {
     TRIANGLES = 0x5,
+    QUADS = 0x8,
 }
 primitives_t;
 
@@ -15,8 +16,10 @@ typedef enum
 {
     EMPTY=0x0,//not used?
     FLOAT=0x2,
+    HALF = 0x3,
     UBYTE=0x4,
-    SHORT=0x5
+    SHORT=0x5,
+
 }
 geom_format_t;
 
@@ -91,8 +94,9 @@ int set_geometry_pipe
 );
 
 
-int draw_indexed_primitives
+int draw_primitives
 (
+    uint32_t use_index_buffer,
     primitives_t type,
     uint32_t first_index,
     uint32_t num_primitives,

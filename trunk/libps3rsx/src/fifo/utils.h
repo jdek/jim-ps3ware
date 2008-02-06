@@ -97,7 +97,7 @@ int clear_buffers( const clear_buffer_t *buffers, uint32_t *fifo, uint32_t hw_su
 int setup_buffers( const setup_buffer_t *buffers, uint32_t *fifo, uint32_t hw_sub );
 
 
-
+void analyze_fifo( uint32_t *fifo, int length );
 
 void fifo_push(struct gpu *gpu, int len);
 void fifo_wait(struct gpu *gpu);
