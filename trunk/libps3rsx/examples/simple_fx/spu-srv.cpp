@@ -323,7 +323,10 @@ void inline DoParticle( size_t next, size_t inst )
     
     u = *(float *)&vu;
     v = *(float *)&vv;
-        
+
+    u *= insts[inst].scale;
+    v *= insts[inst].scale;
+            
 
     
     Vertex &a00 = outBuffer[(outPtr + 0 ) & 511];
