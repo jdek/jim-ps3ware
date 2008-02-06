@@ -67,6 +67,7 @@ int set_mvp(  uint32_t *fifo, float angle )
 {
 	
 	float matrix[16];
+	int i;
 	
 	identity( matrix );
 	float w = 0.4f;
@@ -82,6 +83,18 @@ int set_mvp(  uint32_t *fifo, float angle )
 	
 }
 
+
+int set_cnst(  uint32_t *fifo )
+{
+	
+	//static float v = 0.0f;
+	//v += 0.01f;
+	float coeff[8] = { 1.0f / 4096.0f, 1.0f / 4096.0f, 0.0f, 1.0, 10.0f, 0.0f, 0.0f, 0.0f };
+	 
+
+	return set_vertex_shader_constants( coeff, 4, 8, fifo, Nv3D );
+	
+}
 
 void  *map_file( const char *file, int *fd, int *size )
 {
@@ -252,15 +265,18 @@ int bind3d( uint32_t *fifo, uint32_t *fbmem, uint8_t *xdrmem, uint32_t obj, uint
 	ptr += load_texture( ptr, (uint8_t *)fbmem );
 	ptr += load_vertex_shader( ptr );
 	ptr += set_mvp( ptr, 180.0f );
+	ptr += set_cnst( ptr );
 	ptr += load_pixel_shader( ptr, (uint8_t *)fbmem );
 	ptr += load_geometry( ptr, (uint8_t *)fbmem );
 	ptr += jump_to_address( ptr, jmp );	
-
+	
+	//analyze_fifo( fifo, ptr - fifo );
 	return ptr - fifo;
 }
 
 int gfx_step(  uint32_t *fifo,  uint32_t jmp, int off )
 {
+	int i;
 	clear_buffer_t clear;
 	clear.clearR = clear.clearG = clear.clearB = clear.clearA = clear.clearD = 1;
 	clear.rgba = 250 +  ( 120 << 8 ) + ( 50 << 16 );
@@ -272,11 +288,15 @@ int gfx_step(  uint32_t *fifo,  uint32_t jmp, int off )
 	static float angle = 180.0f;
 	ptr += setup_surfaces_with_offset( ptr, off );
 	ptr += clear_buffers( &clear, ptr, Nv3D );
+	
 	ptr += set_mvp( ptr, angle += 0.4f );
-	ptr += draw_indexed_primitives( indices, 0, indices_num, ptr, Nv3D );
+	ptr += set_cnst( ptr );
+	ptr += draw_primitives( 1, indices, 0, indices_num, ptr, Nv3D );
+	
 	ptr += jump_to_address( ptr, jmp );	
 
 
+	//analyze_fifo( fifo, ptr - fifo );
 	return ptr - fifo;
 }
 
@@ -316,7 +336,7 @@ static void gfx_test(struct gpu *gpu, unsigned int obj )
 	
 	uint32 old_jump = jmp;
 	
-	for( i = 0; i < 1000; ++i )
+	for( i = 0; i < 100; ++i )
 	{
 	    memset( fifo, 0, gpu->fifo.len );
 	    
