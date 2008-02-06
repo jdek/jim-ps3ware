@@ -1,6 +1,6 @@
 #pragma once
 
-#include "XMLUtils.h"
+#include "../../common/XMLUtils.h"
 
 class CColladaFloatArray : public CAutoContainer<CColladaFloatArray>
 {

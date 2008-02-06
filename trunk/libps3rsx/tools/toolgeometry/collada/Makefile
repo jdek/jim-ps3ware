@@ -1,4 +1,4 @@
-CPPFLAGS=-Wall -g -I/usr/include/libxml2
+CPPFLAGS=-Wall -O3 -g -I/usr/include/libxml2
 
 SOURCE= colladatool.cpp ColladaNode.cpp ColladaSource.cpp ColladaTriangles.cpp ColladaVertices.cpp ColladaAnimation.cpp ColladaMaterial.cpp ColladaBindMaterial.cpp ColladaController.cpp ColladaEffect.cpp ColladaFloatArray.cpp ColladaGeometry.cpp ColladaImage.cpp ColladaIDREFArray.cpp
 

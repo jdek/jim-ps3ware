@@ -1,6 +1,9 @@
 #include "StdAfx.h"
 
-#include "XMLUtils.h"
+#include "../../common/XMLUtils.h"
+#include "../../common/conv.h"
+
+
 #include "ColladaTriangles.h"
 #include "ColladaImage.h"
 #include "ColladaEffect.h"
@@ -88,6 +91,9 @@ struct cache_opt_t
 };
 
 
+
+
+
 void re_arrange( const std::vector<uint16> &_indices, std::vector<uint16> &dst )
 {
 	if( _indices.empty() )
@@ -142,9 +148,6 @@ void re_arrange( const std::vector<uint16> &_indices, std::vector<uint16> &dst )
 #define CHUNK 64
 
 
-struct MeshHeader
-{
-}
 
 struct MatrixAffector
 {
@@ -346,11 +349,26 @@ struct FOpen
 
 struct local_vertex_t
 {
-	float coo[3];
-	float tex[2];
-}
-;
+	uint16 coo[3];
+	uint16 tex[2];
+};
 
+uint16 f2us( float f )
+{
+    int v = (int) ( f * 4096.0f + ( 1 << 15 ) );
+    
+    if( v < 0 )
+    {
+	v = 0;
+    }
+    
+    if( v > 65535 )
+    {
+	v = 65535;
+    }
+    
+    return (uint16)v;
+}
 
 void convert_model( const char *fileNameOut, const char *fileNameIn )
 {
@@ -420,16 +438,16 @@ void convert_model( const char *fileNameOut, const char *fileNameIn )
 			FOpen fp( buff, false );
 			if( fp.fp )
 			{
-				model.position.format = FLOAT;
+				model.position.format = HALF;
 				model.position.type = POS0;
 				model.position.components = 3;
 				model.position.offset = 0;
 				model.position.stride = sizeof( local_vertex_t );
 
-				model.texcoord.format = FLOAT;
+				model.texcoord.format = HALF;
 				model.texcoord.type = TEX0;
 				model.texcoord.components = 2;
-				model.texcoord.offset = 12;
+				model.texcoord.offset = 6;
 				model.texcoord.stride = sizeof( local_vertex_t );
 
 				model.indices = TRIANGLES;
@@ -455,11 +473,11 @@ void convert_model( const char *fileNameOut, const char *fileNameIn )
 				lvertices.resize( vertices.size() );
 				for( size_t j = 0; j < vertices.size(); ++j )
 				{
-					lvertices[j].coo[0] = vertices[j].coo[0];
-					lvertices[j].coo[1] = vertices[j].coo[1];
-					lvertices[j].coo[2] = vertices[j].coo[2];
-					lvertices[j].tex[0] = vertices[j].tx0[0];
-					lvertices[j].tex[1] = 1.0f - vertices[j].tx0[1];
+					lvertices[j].coo[0] = floatToHalf( vertices[j].coo[0] );
+					lvertices[j].coo[1] = floatToHalf( vertices[j].coo[1] );
+					lvertices[j].coo[2] = floatToHalf( vertices[j].coo[2] );
+					lvertices[j].tex[0] = floatToHalf( vertices[j].tx0[0] );
+					lvertices[j].tex[1] = floatToHalf( 1.0f - vertices[j].tx0[1] );
 
 
 				}

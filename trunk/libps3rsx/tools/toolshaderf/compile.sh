@@ -1,2 +1,2 @@
 make
-./a.out ../../data/custom.pixel < shader
+./a.out ../../data/particle.pixel < shader

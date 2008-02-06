@@ -1,2 +1,2 @@
 make
-./a.out ../../data/mvp.vertex < shader
+./a.out ../../data/particle.vertex < shader

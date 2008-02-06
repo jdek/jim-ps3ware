@@ -1,5 +1,5 @@
 #include "StdAfx.h"
-#include "XMLUtils.h"
+#include "../../common/XMLUtils.h"
 #include "ColladaTriangles.h"
 #include "ColladaSource.h"
 #include "ColladaVertices.h"
