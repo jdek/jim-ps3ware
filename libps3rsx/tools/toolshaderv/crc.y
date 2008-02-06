@@ -221,7 +221,7 @@ void print()
 
 void clean()
 {
-	vp_inst[0] = 0x401f9c6c;
+	vp_inst[0] = 0x00001c6c;
 	vp_inst[1] = 0x0000000d;
 	vp_inst[2] = 0x8106c083;
 	vp_inst[3] = 0x60401f80;

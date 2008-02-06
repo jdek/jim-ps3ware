@@ -1,5 +1,5 @@
 #pragma once
-#include "XMLUtils.h"
+#include "../../common/XMLUtils.h"
 
 class CColladaSource;
 

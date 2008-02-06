@@ -1,6 +1,6 @@
 #pragma once
 
-#include "XMLUtils.h"
+#include "../../common/XMLUtils.h"
 #include "vec3.h"
 
 class CColladaFloatArray;

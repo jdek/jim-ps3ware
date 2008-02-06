@@ -1,3 +1,6 @@
 !!FP1.0
 TEXH    H0, f[TEX0], TEX0, 2D;
+MULH    H0, f[COL0], H0;
+MULH    H0, H0.wwww, H0;
+
 END
