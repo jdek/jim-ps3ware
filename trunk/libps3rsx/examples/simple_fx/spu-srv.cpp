@@ -302,12 +302,6 @@ void inline DoParticle( size_t next, size_t inst )
     process_linear_spline( dptr, vp, vtime, startFrame, endFrame );
     process_linear_spline( dptr, vs, vtime, startFrame, endFrame );
 
-
-    //printf( "a5 \n" );
-
-
-    static int aaa = 0;
-    
     float ix, iy, iz;
     
     ix = *(float *)&vx;
