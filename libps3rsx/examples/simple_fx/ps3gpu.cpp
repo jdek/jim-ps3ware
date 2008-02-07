@@ -539,7 +539,7 @@ int gfx_step(  uint32_t *fifo,  uint32_t jmp, int off )
 	    
 	    float d = insts[i].mat[11];
 	    
-	    d = ( 1.0f -  d );
+	    d = ( 1.0f - 0.6f * d );
 	    insts[i].scale = rnds[i][3];
 	    insts[i].col[0] = d;
 	    insts[i].col[1] = 0.5f + d;

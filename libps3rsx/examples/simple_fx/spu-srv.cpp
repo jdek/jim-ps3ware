@@ -92,56 +92,6 @@ struct sin_cos
 sin_cos table;
 
 	    
-void inline process_linear_spline( qword &address, vec_float4 &value, vec_float4 time, vec_uint4 startFrame, vec_uint4 endFrame )
-{
-    vec_uint4 num = spu_rl( uint16_uload( address ), 1 );
-    vec_uint4 dec = spu_sub( num, spu_splats( (unsigned int)0x2) );
-    vec_uint4 ptr = spu_sel( num, dec, spu_cmpgt( num, (unsigned int)0x2 ) );
-    vec_uint4 fptr = spu_add( (vec_uint4)address, ptr );
-    
-    vec_uint4 beg = spu_splats( (unsigned int)0x0 );
-    vec_uint4 end = dec;
-    vec_uint4 ibeg = startFrame;
-    vec_uint4 iend = endFrame;
-    
-    while( 1 )
-    {
-	vec_uint4 bega = spu_add( beg, spu_splats( (unsigned int)0x4 ) );
-	vec_uint4 tst = spu_cmpgt( bega, end );
-	
-	unsigned int ret = si_to_uint( (qword)tst );
-	
-	if( ret == 0xffffffff )
-	{
-	    break;
-	}
-	
-	vec_uint4 med = spu_rl( spu_rlmask( spu_add( beg, end ), -2 ), 1 );
-	vec_uint4 i = uint16_uload( (qword)spu_add( med, (vec_uint4)address ) );
-	
-	vec_float4 fi = spu_convtf( i, 0 );
-	vec_uint4 b = spu_cmpgt( time, fi );
-	
-	beg = spu_sel( beg, med, b );
-	end = spu_sel( med, end, b );
-	
-	ibeg = spu_sel( ibeg, i, b );
-	iend = spu_sel( i, iend, b );
-	
-    }
-    
-    vec_uint4 f1 = uint16_uload( (qword)spu_add( beg, fptr) ); 
-    vec_uint4 f2 = uint16_uload( (qword)spu_add( end, fptr) ); 
-    
-    vec_float4 f = h2f( spu_shuffle( f1, f2, SWZ{ F_X, S_X, E_4, E_4 } ) );
-    vec_float4 times = spu_convtf( spu_shuffle( ibeg, iend, SWZ{ S_X, F_X, E_4, E_4 } ), 0 );
-    vec_float4 d = spu_sub( times, time );
-    
-    vec_float4 mul = spu_sub( times, YX( times ) );
-    mul = spu_mul( spu_re( mul ), spu_mul( f, d ) );
-    value = spu_add( mul, Y( mul ) );
-    address = (qword)spu_add( fptr, num );
-}
 
 vec_float4 inline conv(
     vec_uint4 kbeg,
@@ -267,51 +217,58 @@ void inline DoParticle( size_t next, size_t inst )
     float  x, y, z, u, v;
     short  r, g, b, a;
     
+    /*
+    unsigned long long te;
+    GetTime( te );
+    */
+    
+    
+    vec_float4 *iptr = (vec_float4 *)&insts[inst];
+    
     qword dptr = si_from_ptr( data );
     
     vec_float4 vtime = spu_splats( time );
-    vec_float4 vx, vy, vz, vu, vv, vp, vs;
     
-    
-    process_linear_spline( dptr, vx, vtime, startFrame, endFrame );
-    process_linear_spline( dptr, vy, vtime, startFrame, endFrame );
-    process_linear_spline( dptr, vz, vtime, startFrame, endFrame );
     
     vec_uint4  kbeg = spu_splats( (unsigned int)0 );
     vec_uint4  kend = spu_splats( (unsigned int)0 );
     vec_uint4  vbeg = spu_splats( (unsigned int)0 );
     vec_uint4  vend = spu_splats( (unsigned int)0 );
     
-    //printf( "a7 \n" );
+    
+    process_linear_spline( dptr, kbeg, kend, vbeg, vend, vtime, startFrame, endFrame );
+    process_linear_spline( dptr, kbeg, kend, vbeg, vend, vtime, startFrame, endFrame );
+    process_linear_spline( dptr, kbeg, kend, vbeg, vend, vtime, startFrame, endFrame );
+    
+    vec_float4 exyz = conv( kbeg, kend, vbeg, vend, vtime );
+    
+    vec_float4 xxxx = YYYY( exyz );
+    vec_float4 yyyy = ZZZZ( exyz );
+    vec_float4 zzzz = WWWW( exyz );
+    
+    vec_float4 xyze = spu_madd( xxxx, iptr[1], spu_madd( yyyy, iptr[2], spu_madd( zzzz, iptr[3] , iptr[4] ) ) );
+    
+    process_linear_spline( dptr, kbeg, kend, vbeg, vend, vtime, startFrame, endFrame );
+    process_linear_spline( dptr, kbeg, kend, vbeg, vend, vtime, startFrame, endFrame );
+    process_linear_spline( dptr, kbeg, kend, vbeg, vend, vtime, startFrame, endFrame );
+    process_linear_spline( dptr, kbeg, kend, vbeg, vend, vtime, startFrame, endFrame );
+    
 
-    
-    process_linear_spline( dptr, kbeg, kend, vbeg, vend, vtime, startFrame, endFrame );
-    process_linear_spline( dptr, kbeg, kend, vbeg, vend, vtime, startFrame, endFrame );
-    process_linear_spline( dptr, kbeg, kend, vbeg, vend, vtime, startFrame, endFrame );
-    process_linear_spline( dptr, kbeg, kend, vbeg, vend, vtime, startFrame, endFrame );
-    
-    //printf( "a6 \n" );
-
-    
     vec_float4 rgba = conv( kbeg, kend, vbeg, vend, vtime );
-    rgba = spu_mul( *(vec_float4 *)insts[inst].col, rgba );
+    rgba = spu_mul( rgba, iptr[0] );
     vec_uint4  colh = f2h( ( vec_uint4 ) rgba );
     
-    process_linear_spline( dptr, vu, vtime, startFrame, endFrame );
-    process_linear_spline( dptr, vv, vtime, startFrame, endFrame );
-    process_linear_spline( dptr, vp, vtime, startFrame, endFrame );
-    process_linear_spline( dptr, vs, vtime, startFrame, endFrame );
+    process_linear_spline( dptr, kbeg, kend, vbeg, vend, vtime, startFrame, endFrame );
+    process_linear_spline( dptr, kbeg, kend, vbeg, vend, vtime, startFrame, endFrame );
+    process_linear_spline( dptr, kbeg, kend, vbeg, vend, vtime, startFrame, endFrame );
+    process_linear_spline( dptr, kbeg, kend, vbeg, vend, vtime, startFrame, endFrame );
+    
+    vec_float4 uvps = conv( kbeg, kend, vbeg, vend, vtime );
+    
 
-    float ix, iy, iz;
-    
-    ix = *(float *)&vx;
-    iy = *(float *)&vy;
-    iz = *(float *)&vz;
-    
-    
-    x = ix * insts[inst].mat[0] + iy * insts[inst].mat[1] + iz * insts[inst].mat[2] + insts[inst].mat[3];
-    y = ix * insts[inst].mat[4] + iy * insts[inst].mat[5] + iz * insts[inst].mat[6] + insts[inst].mat[7];
-    z = ix * insts[inst].mat[8] + iy * insts[inst].mat[9] + iz * insts[inst].mat[10] + insts[inst].mat[11];
+    x = ((float *)&xyze)[0];
+    y = ((float *)&xyze)[1];
+    z = ((float *)&xyze)[2];
     
     
     
@@ -321,24 +278,23 @@ void inline DoParticle( size_t next, size_t inst )
     a = ((unsigned  int *)&colh)[3];
     
     
-    u = *(float *)&vu;
-    v = *(float *)&vv;
+    u = ((float *)&uvps)[0];
+    v = ((float *)&uvps)[1];
 
     u *= insts[inst].scale;
     v *= insts[inst].scale;
             
 
+    Vertex &a00 = outBuffer[outPtr + 0];
+    Vertex &a01 = outBuffer[outPtr + 1];
+    Vertex &a11 = outBuffer[outPtr + 2];
+    Vertex &a10 = outBuffer[outPtr + 3];
     
-    Vertex &a00 = outBuffer[(outPtr + 0 ) & 511];
-    Vertex &a01 = outBuffer[(outPtr + 1 ) & 511];
-    Vertex &a11 = outBuffer[(outPtr + 2 ) & 511];
-    Vertex &a10 = outBuffer[(outPtr + 3 ) & 511];
-    
-    vec_uint4 ind = spu_convtu( vs, 0 );
+    vec_uint4 ind = spu_convtu( WWWW( uvps ), 0 );
     uint32_t sprite = si_to_uint( (qword)ind ) & 255;    
     
     
-    vec_float4 rot = table.value( XXXX( vp ) );
+    vec_float4 rot = table.value( ZZZZ( uvps ) );
     
     float si = ((float *)&rot)[0];
     float co = ((float *)&rot)[1];
@@ -388,8 +344,20 @@ void inline DoParticle( size_t next, size_t inst )
     a10.a = a;
     
     
-    outPtr += 4;
+    outPtr = ( outPtr + 4 ) & 511;
     ++number;
+    
+    
+    /*
+    float cl1 = GetTime( te );
+    
+    
+    static int out = 0;
+    
+    if( ++out < 100 )
+    {
+	printf( "%f \n", 1.0f / cl1 );
+    }*/
 }
 
 
@@ -458,6 +426,27 @@ void SampleParticles( float _time, uint32 num, unsigned long long base, uint16 l
 
 
 
+void transpose( vec_float4 *mat )
+{
+    vec_float4 m0 = mat[0];
+    vec_float4 m1 = mat[1];
+    vec_float4 m2 = mat[2];
+    vec_float4 m3 = mat[3];
+    
+    vec_float4 s0 = spu_shuffle( m0, m1, SWZ{ F_X, F_Y, S_X, S_Y } );
+    vec_float4 s1 = spu_shuffle( m0, m1, SWZ{ F_Z, F_W, S_Z, S_W } );
+    
+    vec_float4 s2 = spu_shuffle( m2, m3, SWZ{ F_X, F_Y, S_X, S_Y } );
+    vec_float4 s3 = spu_shuffle( m2, m3, SWZ{ F_Z, F_W, S_Z, S_W } );
+    
+    mat[0] = spu_shuffle( s0, s2, SWZ{ F_X, F_Z, S_X, S_Z } );
+    mat[1] = spu_shuffle( s0, s2, SWZ{ F_Y, F_W, S_Y, S_W } );
+    mat[2] = spu_shuffle( s1, s3, SWZ{ F_X, F_Z, S_X, S_Z } );
+    mat[3] = spu_shuffle( s1, s3, SWZ{ F_Y, F_W, S_Y, S_W } );
+    
+    
+}
+
 
 int main(unsigned long long spe_id, unsigned long long program_data_ea, unsigned long long env)
 {
@@ -483,6 +472,8 @@ int main(unsigned long long spe_id, unsigned long long program_data_ea, unsigned
 		mfc_get( &header, data.fx, sizeof( header ), 0, 0, 0 );
 		mfc_write_tag_mask( 1 );
 		mfc_read_tag_status_any();
+		
+	
 
 		int particleSize =  header.trackOffset - header.particleOffset;
 		
@@ -500,6 +491,7 @@ int main(unsigned long long spe_id, unsigned long long program_data_ea, unsigned
 		{
 		    outPtr = 0;
 		    
+		    transpose( (vec_float4 *)insts[i].mat );
 		    uint32_t t = insts[i].time;
 		    
 		    float ftime = ( t >> 8 ) % ( header.loopFrame ) + ( t & 255 ) / 256.0f;
