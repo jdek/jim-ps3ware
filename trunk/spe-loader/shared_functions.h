@@ -1,8 +1,8 @@
 /**
- * SPE Loader
+ * SPE Loader 
  * --------------------------------
  * Licensed under the BSDv2 
- * spe_loader.c  - source code for spu function in the loader example
+ * shared_functions.h  - header for shared data for main function in the loader example
  * Copyright (c) 2007, Kristian Jerpetjøn <kristian.jerpetjoen@gmail.com>
  * 
  * All rights reserved.
@@ -29,56 +29,33 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "shared_functions.h"
-#include <malloc.h>
-#include <stdio.h>
-#include <spu_mfcio.h>
-#include <spu_intrinsics.h>
 
-int main(unsigned long long speid, unsigned long long argp, unsigned long long envp) 
-{
-	arg_t *args =(arg_t *) memalign(128, (envp +15)&~15);
+#ifndef SHARED_FUNCTIONS_H
+#define SHARED_FUNCTIONS_H
+
+#include <stdint.h>
+
+typedef struct arg_s {
+	uint64_t fileaddr;
+	uint64_t fsize;
+	int	argument;
+} arg_t __attribute__((aligned(128)));
+
+typedef struct functions_s {
+	void (*dmaGetnWait)(void *localstore, unsigned long long extern_adr, uint32_t size, int tag);	
+	void (*printint)(int to_print);
+}functions_t;
+
+#ifdef __SPU__
+
+void dmaWaitAny(unsigned int uiMask);
 	
-	dmaGetnWait(args,argp,(envp +15)&~15,1);
 
-	printf("spu: Dma of args complete\n");
 
-	printf("spu: filesize is %d\n",(int)args->fsize);
-	printf("spu: file is located at h:%x\tl:%x\n",(unsigned int)(args->fileaddr>>32),(unsigned int)args->fileaddr);
+void printint(int to_print);
 
-	//args->argument=1337;
-	printf("spu: args argument is %d\n",args->argument);
-	///fetch the executable code as data
 
-	
-	char *data=(char*)memalign(128,(args->fsize +15)&~15);
+void dmaGetnWait(void *localstore, unsigned long long extern_adr, uint32_t size, int tag);
+#endif
 
-	dmaGetnWait(data,args->fileaddr,(args->fsize +15)&~15,1);
-
-	printf("spu: Dma of Data(program) complete\n");
-	
-	///setting up some functions to share
-	functions_t functions;
-	
-	functions.dmaGetnWait=dmaGetnWait;
-	
-	functions.printint=printint;
-
-	while (spu_stat_out_mbox() == 0);
-	int result=1337;
-	spu_write_out_mbox(result);
-	
-	int (*runme)(functions_t *func,arg_t *arg);
-
-	printf("spu: byte 0:%1x 1:%1x 2:%1x 3:%1x\n",data[0],data[1],data[2],data[3]);
-	runme=(void*)data;
-
-	printf("spu: attemting to run spe as data from spe\n");
-	result=runme(&functions,args);
-	printf("spu: spe from spe completed with results %d \n" , result );
-	
-	while (spu_stat_out_mbox() == 0);
-	
-	spu_write_out_mbox(result);
-	return result;
-}
+#endif
