@@ -33,21 +33,17 @@
 #include <pthread.h>
 #include <malloc.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <sys/stat.h>
-#include "spe_loader.h"
+#include "shared_functions.h"
 
-// int FileSize(char* filename)
-// {
-// 	struct stat stbuf;
-// 	stat(filename, &stbuf);
-// 	return stbuf.st_size;
-// }
 
 typedef struct run_struct_s {
 		struct spe_context * ctx;
+		struct arg_s *args;
 		pthread_t pts;
 		int thread_id;
-		void *argp;
+		uint64_t *argp;
 		uint64_t *envp;
 		spe_program_handle_t *image;
 		unsigned int createflags;
@@ -63,11 +59,11 @@ int main () {
 	
 	
 	run_struct_t *rs;
-	rs = (run_struct_t *)memalign(128,sizeof(struct run_struct_s ));
+	rs = (struct run_struct_s *)memalign(64,sizeof(struct run_struct_s ));
 	
-	arg_t *args;
+	//arg_t *args;
 	
-	args = (arg_t *)memalign(128,sizeof(struct arg_s));
+	rs->args = (struct arg_s *)memalign(128,sizeof(struct arg_s));
 	
 	printf("Reading file\n");
 	
@@ -80,23 +76,29 @@ int main () {
 	}
 	fseek(LOADME,0,SEEK_END);
 	
-	args->fsize=ftell(LOADME);
+	rs->args->fsize=ftell(LOADME);
 	
-	args->argument=1337;
+	rs->args->argument=1337;
 	
-	char *buffer=memalign(128,(args->fsize + 15 ) & ~15);
-	
-	printf("filesize is %d\n",args->fsize);
-	
+	char *buffer;
+
+	printf("ppu: buffer pointer %p\n",&buffer);
+	buffer= (char  *)memalign(128, (( rs->args->fsize + 15 ) &~15) );
+
 	rewind(LOADME);
-	
-	fread(buffer,1,args->fsize,LOADME);
-	
-	rs->argp = args;
-	
-	printf("setting envp\n");
-	
-	rs->envp =(uint64_t) sizeof(struct arg_s);
+
+	fread(buffer,1,rs->args->fsize,LOADME);
+
+	printf("ppu: first 4 bytes of executable 0:%1x 1:%1x 2:%1x 3:%1x\n",buffer[0],buffer[1],buffer[2],buffer[3]);
+
+	rs->args->fileaddr=buffer;
+
+	rs->argp = rs->args;
+
+	printf("ppu: filesize is %d\n",rs->args->fsize);
+	printf("ppu: file buffer is allocated at %p\n",rs->args->fileaddr);
+
+	rs->envp =(void*)sizeof(struct arg_s);
 	
 	rs->createflags = 0;
 	
@@ -107,7 +109,7 @@ int main () {
 	rs->image=spe_image_open("spe_loader");
 	
 	rs->ctx = spe_context_create(rs->createflags, NULL);
-	printf("starting spu thread\n");
+	printf("ppu: starting spu thread\n");
 	rs->thread_id = pthread_create(&rs->pts, NULL,&spe_thread,rs);
 	
 	uint32_t msg=0;
@@ -115,12 +117,20 @@ int main () {
 	while (spe_out_mbox_status(rs->ctx) == 0);
 	spe_out_mbox_read(rs->ctx,&msg,1);
 	
-	printf("spe sendt back %d\n",msg);
-	
+	printf("ppu: spe sendt pre load handshake %d\n",msg);
+
+	while (spe_out_mbox_status(rs->ctx) == 0);
+	spe_out_mbox_read(rs->ctx,&msg,1);
+
+	printf("ppu: spe sendt back %d\n",msg);	
+
 	fclose(LOADME);
 	
 	free(buffer);
-	
+
+	spe_context_destroy(rs->ctx);
+	printf("ppu_thread: spu context destroyed\n");	
+
 	return 0;
 }
 static void * spe_thread(void * arg)
@@ -130,14 +140,13 @@ static void * spe_thread(void * arg)
 
 	if (spe_program_load(arg_ptr->ctx, arg_ptr->image) < 0) 
 	{
-		fprintf(stderr,"error loading spu-elf");
+		fprintf(stderr,"ppu: error loading spu-elf");
 		pthread_exit(NULL);
 	}
 
-	printf("starting spu\n");
-	spe_context_run(arg_ptr->ctx, &arg_ptr->entry, arg_ptr->runflags,arg_ptr->argp,arg_ptr->envp, NULL);
-	printf("exit from SPU\n");
-	spe_context_destroy(arg_ptr->ctx);
-	printf("spu context destroyed\n");
+	printf("ppu_thread: starting spu\n");
+	spe_context_run(arg_ptr->ctx, &arg_ptr->entry, arg_ptr->runflags, arg_ptr->argp, arg_ptr->envp, NULL);
+	printf("ppu_thread: exit from SPU\n");
+
 	pthread_exit(NULL);
 }

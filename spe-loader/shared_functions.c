@@ -2,7 +2,7 @@
  * SPE Loader
  * --------------------------------
  * Licensed under the BSDv2 
- * spe_header.h  - header for shared data for main function in the loader example
+ * shared_functions.c  - functions for shared data for main function in the loader example
  * Copyright (c) 2007, Kristian Jerpetjøn <kristian.jerpetjoen@gmail.com>
  * 
  * All rights reserved.
@@ -30,28 +30,20 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __SPE_LOADER_H
-#define __SPE_LOADER_H
+#include "shared_functions.h"
 
-#include <stdint.h>
 #include <stdio.h>
-
-typedef struct arg_s {
-	uint64_t fileaddr;
-	uint64_t fsize;
-	int	argument;
-} arg_t ;
-
-#ifdef __SPU__
-
 #include <spu_mfcio.h>
 #include <spu_intrinsics.h>
 
-typedef struct functions_s {
-	void (*dmaGetnWait)(void *localstore, unsigned long long extern_adr, uint32_t size, int tag);	
-	void (*printint)(int to_print);
-}functions_t;
+ void dmaWaitAny(unsigned int uiMask) {
+	mfc_write_tag_mask(uiMask);
+	mfc_read_tag_status_any();	
+}
 
+void printint(int to_print){
+	printf("\nspu: Loaded Program is Printing int %d\n\n",to_print);	
+}
 
  void dmaGetnWait(void *localstore, unsigned long long extern_adr, uint32_t size, int tag)
 {
@@ -60,18 +52,3 @@ typedef struct functions_s {
 	mfc_write_tag_mask(uiMask);
 	mfc_read_tag_status_any();	
 }
-
-void printint(int to_print){
-	printf("Printing int %d\n",to_print);	
-}
-
- void dmaWaitAny(unsigned int uiMask) {
-	mfc_write_tag_mask(uiMask);
-	mfc_read_tag_status_any();	
-}
-
-
-#endif
-
-#endif
-
